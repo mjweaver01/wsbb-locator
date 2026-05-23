@@ -23,13 +23,49 @@ function makePinSvg(color: string): string {
   `)
 }
 
+type LocatedCoach = RawCoach & { lat: number; lng: number }
+
+function addMarkers(
+  L: typeof import('leaflet'),
+  map: import('leaflet').Map,
+  coaches: LocatedCoach[],
+  onPinClick?: (id: number) => void,
+) {
+  coaches.forEach(coach => {
+    const color = TIER_COLORS[coach.tier] ?? '#a8a49c'
+    const icon = L.icon({
+      iconUrl: `data:image/svg+xml,${makePinSvg(color)}`,
+      iconSize: [24, 32],
+      iconAnchor: [12, 32],
+      popupAnchor: [0, -34],
+    })
+
+    const popup = L.popup({
+      className: 'coach-map-popup',
+      closeButton: false,
+      maxWidth: 220,
+    }).setContent(`
+      <div class="map-popup">
+        <p class="map-popup__name">${coach.fullName}</p>
+        <span class="map-popup__tier map-popup__tier--${coach.tier}">${coach.tier}</span>
+        ${coach.city ? `<p class="map-popup__loc">${coach.city}, ${coach.state ?? ''}</p>` : ''}
+      </div>
+    `)
+
+    L.marker([coach.lat, coach.lng], { icon })
+      .addTo(map)
+      .bindPopup(popup)
+      .on('click', () => onPinClick?.(coach.thinkificUserId))
+  })
+}
+
 export function CoachMap({ coaches, onPinClick }: CoachMapProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<import('leaflet').Map | null>(null)
   const [active, setActive] = useState(false)
 
   const coachesWithLocation = coaches.filter(
-    (c): c is RawCoach & { lat: number; lng: number } =>
+    (c): c is LocatedCoach =>
       typeof c.lat === 'number' && typeof c.lng === 'number',
   )
 
@@ -62,35 +98,7 @@ export function CoachMap({ coaches, onPinClick }: CoachMapProps) {
         },
       ).addTo(map)
 
-      coachesWithLocation.forEach(coach => {
-        const color = TIER_COLORS[coach.tier] ?? '#a8a49c'
-        const icon = L.icon({
-          iconUrl: `data:image/svg+xml,${makePinSvg(color)}`,
-          iconSize: [24, 32],
-          iconAnchor: [12, 32],
-          popupAnchor: [0, -34],
-        })
-
-        const popup = L.popup({
-          className: 'coach-map-popup',
-          closeButton: false,
-          maxWidth: 220,
-        }).setContent(`
-          <div class="map-popup">
-            <p class="map-popup__name">${coach.fullName}</p>
-            <span class="map-popup__tier map-popup__tier--${coach.tier}">${coach.tier}</span>
-            ${coach.city ? `<p class="map-popup__loc">${coach.city}, ${coach.state ?? ''}</p>` : ''}
-          </div>
-        `)
-
-        const marker = L.marker([coach.lat, coach.lng], { icon })
-          .addTo(map)
-          .bindPopup(popup)
-
-        marker.on('click', () => {
-          onPinClick?.(coach.thinkificUserId)
-        })
-      })
+      addMarkers(L, map, coachesWithLocation, onPinClick)
     })
 
     return () => {
@@ -100,7 +108,6 @@ export function CoachMap({ coaches, onPinClick }: CoachMapProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Re-render markers when filter changes coaches
   useEffect(() => {
     if (!mapRef.current) return
     import('leaflet').then(L => {
@@ -108,36 +115,7 @@ export function CoachMap({ coaches, onPinClick }: CoachMapProps) {
       map.eachLayer(layer => {
         if (layer instanceof L.Marker) map.removeLayer(layer)
       })
-
-      coachesWithLocation.forEach(coach => {
-        const color = TIER_COLORS[coach.tier] ?? '#a8a49c'
-        const icon = L.icon({
-          iconUrl: `data:image/svg+xml,${makePinSvg(color)}`,
-          iconSize: [24, 32],
-          iconAnchor: [12, 32],
-          popupAnchor: [0, -34],
-        })
-
-        const popup = L.popup({
-          className: 'coach-map-popup',
-          closeButton: false,
-          maxWidth: 220,
-        }).setContent(`
-          <div class="map-popup">
-            <p class="map-popup__name">${coach.fullName}</p>
-            <span class="map-popup__tier map-popup__tier--${coach.tier}">${coach.tier}</span>
-            ${coach.city ? `<p class="map-popup__loc">${coach.city}, ${coach.state ?? ''}</p>` : ''}
-          </div>
-        `)
-
-        const marker = L.marker([coach.lat, coach.lng], { icon })
-          .addTo(map)
-          .bindPopup(popup)
-
-        marker.on('click', () => {
-          onPinClick?.(coach.thinkificUserId)
-        })
-      })
+      addMarkers(L, map, coachesWithLocation, onPinClick)
     })
   }, [coaches]) // eslint-disable-line react-hooks/exhaustive-deps
 

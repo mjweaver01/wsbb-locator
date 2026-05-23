@@ -5,8 +5,8 @@
  * upsert records into coach_profiles and coach_certifications.
  *
  * Run:
- *   bun run scripts/seed-db.ts              # live upsert
- *   bun run scripts/seed-db.ts --dry-run    # preview only, no DB writes
+ *   bun run seed              # live upsert
+ *   bun run seed --dry-run    # preview only, no DB writes
  *
  * Env vars required:
  *   DATABASE_URL   - Postgres connection string (prod)
@@ -17,14 +17,14 @@
  */
 
 import { readFileSync } from "fs";
-import type { RawCoach } from "./fetch-thinkific";
+import type { Coach as RawCoach } from "../lib/thinkific";
 
 // ---------------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------------
 
 const DRY_RUN = process.argv.includes("--dry-run");
-const INPUT_FILE = "coaches-raw.json";
+const INPUT_FILE = "apps/web/public/coaches-raw.json";
 
 if (DRY_RUN) {
   console.log("🔍  DRY RUN — no database writes will occur\n");
@@ -202,7 +202,7 @@ async function main() {
   const errors: string[] = [];
 
   for (const coach of coaches) {
-    const userId = syntheticUserId(coach.thinkificId);
+    const userId = syntheticUserId(coach.thinkificUserId);
 
     try {
       // Upsert coach_profiles — ON CONFLICT (user_id) update tier
@@ -217,7 +217,7 @@ async function main() {
       if (existing.length === 0) {
         await db.insert(coachProfiles).values({
           userId,
-          thinkificId: coach.thinkificId,
+          thinkificId: coach.thinkificUserId,
           name: coach.fullName,
           email: coach.email,
           bio: coach.bio ?? null,
@@ -241,7 +241,7 @@ async function main() {
             .update(coachProfiles)
             .set({
               ...(shouldUpgradeTier && { tier: coach.tier }),
-              thinkificId: coach.thinkificId,
+              thinkificId: coach.thinkificUserId,
               updatedAt: new Date(),
             })
             .where(eq(coachProfiles.userId, userId));
@@ -278,7 +278,7 @@ async function main() {
         }
       }
     } catch (err) {
-      const msg = `${coach.fullName} (id: ${coach.thinkificId}): ${(err as Error).message}`;
+      const msg = `${coach.fullName} (id: ${coach.thinkificUserId}): ${(err as Error).message}`;
       errors.push(msg);
       console.log(`  ✗ ERROR   ${coach.fullName}`);
     }
