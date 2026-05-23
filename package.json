@@ -1,5 +1,5 @@
 {
-  "name": "wsbb-coach-directory",
+  "name": "wsbb-locator",
   "version": "0.1.0",
   "private": true,
   "workspaces": ["apps/*"],

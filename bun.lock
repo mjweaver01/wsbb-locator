@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "wsbb-coach-directory",
+      "name": "wsbb-locator",
     },
     "apps/api": {
       "name": "@wsbb/api",
