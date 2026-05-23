@@ -5,6 +5,8 @@
   "workspaces": ["apps/*"],
   "scripts": {
     "dev": "bun run --cwd apps/web dev",
+    "dev:api": "bun run --cwd apps/api dev",
+    "dev:all": "bun run dev:api & bun run dev",
     "build": "bun run --cwd apps/web build",
     "preview": "bun run --cwd apps/web preview",
     "fetch": "bun run apps/api/src/scripts/fetch-thinkific.ts",

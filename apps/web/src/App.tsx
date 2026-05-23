@@ -8,7 +8,7 @@ import { CoachMap } from '@/components/CoachMap'
 import { FilterBar } from '@/components/FilterBar'
 import { CoachGrid } from '@/components/CoachGrid'
 
-const DATA_URL = '/coaches-raw.json'
+const DATA_URL = '/api/coaches'
 
 const DEFAULT_FILTERS: FilterState = { tier: 'all', search: '' }
 
