@@ -1,0 +1,13 @@
+{
+  "name": "wsbb-coach-directory",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": ["apps/*"],
+  "scripts": {
+    "dev": "bun run --cwd apps/web dev",
+    "build": "bun run --cwd apps/web build",
+    "preview": "bun run --cwd apps/web preview",
+    "fetch": "bun run apps/api/src/scripts/fetch-thinkific.ts",
+    "seed": "bun run apps/api/src/scripts/seed-db.ts"
+  }
+}

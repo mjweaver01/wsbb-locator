@@ -1,0 +1,189 @@
+{
+  "fetchedAt": "2026-05-23T16:00:00.000Z",
+  "subdomain": "westsidebarbell",
+  "totalCoaches": 10,
+  "tierBreakdown": {
+    "master": 2,
+    "instructor": 3,
+    "certified": 5
+  },
+  "coaches": [
+    {
+      "thinkificUserId": 1001,
+      "email": "jim.wendler@example.com",
+      "firstName": "Jim",
+      "lastName": "Wendler",
+      "fullName": "Jim Wendler",
+      "avatarUrl": null,
+      "bio": "30+ years under the bar. WSBB faculty since 2019. Specializes in conjugate method programming for strength athletes and combat sports.",
+      "tier": "master",
+      "city": "Columbus",
+      "state": "OH",
+      "lat": 39.9612,
+      "lng": -82.9988,
+      "certifications": [
+        { "level": 1, "courseId": 11001, "completedAt": "2021-03-15T00:00:00.000Z" },
+        { "level": 2, "courseId": 11002, "completedAt": "2021-09-22T00:00:00.000Z" },
+        { "level": 3, "courseId": 11003, "completedAt": "2022-04-10T00:00:00.000Z" }
+      ]
+    },
+    {
+      "thinkificUserId": 1002,
+      "email": "sarah.blake@example.com",
+      "firstName": "Sarah",
+      "lastName": "Blake",
+      "fullName": "Sarah Blake",
+      "avatarUrl": null,
+      "bio": "Competitive powerlifter and WSBB seminar instructor. Coaches online and in-person clients in the Columbus, OH area.",
+      "tier": "master",
+      "city": "Columbus",
+      "state": "OH",
+      "lat": 39.9800,
+      "lng": -82.9350,
+      "certifications": [
+        { "level": 1, "courseId": 11001, "completedAt": "2021-06-01T00:00:00.000Z" },
+        { "level": 2, "courseId": 11002, "completedAt": "2022-01-18T00:00:00.000Z" },
+        { "level": 3, "courseId": 11003, "completedAt": "2023-02-05T00:00:00.000Z" }
+      ]
+    },
+    {
+      "thinkificUserId": 1003,
+      "email": "derek.moss@example.com",
+      "firstName": "Derek",
+      "lastName": "Moss",
+      "fullName": "Derek Moss",
+      "avatarUrl": null,
+      "bio": "Former collegiate lineman turned strength coach. Runs the conjugate method for high school and collegiate athletes.",
+      "tier": "instructor",
+      "city": "Chicago",
+      "state": "IL",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "certifications": [
+        { "level": 1, "courseId": 11001, "completedAt": "2022-05-10T00:00:00.000Z" },
+        { "level": 2, "courseId": 11002, "completedAt": "2023-03-22T00:00:00.000Z" }
+      ]
+    },
+    {
+      "thinkificUserId": 1004,
+      "email": "angela.tran@example.com",
+      "firstName": "Angela",
+      "lastName": "Tran",
+      "fullName": "Angela Tran",
+      "avatarUrl": null,
+      "bio": "USAPL competitor and coach focused on the conjugate method for raw powerlifting. Based in Austin, TX.",
+      "tier": "instructor",
+      "city": "Austin",
+      "state": "TX",
+      "lat": 30.2672,
+      "lng": -97.7431,
+      "certifications": [
+        { "level": 1, "courseId": 11001, "completedAt": "2022-08-14T00:00:00.000Z" },
+        { "level": 2, "courseId": 11002, "completedAt": "2023-07-05T00:00:00.000Z" }
+      ]
+    },
+    {
+      "thinkificUserId": 1005,
+      "email": "marcus.hill@example.com",
+      "firstName": "Marcus",
+      "lastName": "Hill",
+      "fullName": "Marcus Hill",
+      "avatarUrl": null,
+      "bio": "Strength and conditioning coach with 10 years experience. Specializes in MMA athletes and general population strength.",
+      "tier": "instructor",
+      "city": "Los Angeles",
+      "state": "CA",
+      "lat": 34.0522,
+      "lng": -118.2437,
+      "certifications": [
+        { "level": 1, "courseId": 11001, "completedAt": "2023-01-30T00:00:00.000Z" },
+        { "level": 2, "courseId": 11002, "completedAt": "2023-11-15T00:00:00.000Z" }
+      ]
+    },
+    {
+      "thinkificUserId": 1006,
+      "email": "tyler.reed@example.com",
+      "firstName": "Tyler",
+      "lastName": "Reed",
+      "fullName": "Tyler Reed",
+      "avatarUrl": null,
+      "bio": "Gym owner and coach in Denver, CO. Completed the Level 1 Conjugate pathway in 2024.",
+      "tier": "certified",
+      "city": "Denver",
+      "state": "CO",
+      "lat": 39.7392,
+      "lng": -104.9903,
+      "certifications": [
+        { "level": 1, "courseId": 11001, "completedAt": "2024-02-11T00:00:00.000Z" }
+      ]
+    },
+    {
+      "thinkificUserId": 1007,
+      "email": "jessica.park@example.com",
+      "firstName": "Jessica",
+      "lastName": "Park",
+      "fullName": "Jessica Park",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "city": "Seattle",
+      "state": "WA",
+      "lat": 47.6062,
+      "lng": -122.3321,
+      "certifications": [
+        { "level": 1, "courseId": 11001, "completedAt": "2024-03-20T00:00:00.000Z" }
+      ]
+    },
+    {
+      "thinkificUserId": 1008,
+      "email": "carlos.vega@example.com",
+      "firstName": "Carlos",
+      "lastName": "Vega",
+      "fullName": "Carlos Vega",
+      "avatarUrl": null,
+      "bio": "Powerlifting coach in Miami, FL. Training conjugate for 6 years before pursuing formal certification.",
+      "tier": "certified",
+      "city": "Miami",
+      "state": "FL",
+      "lat": 25.7617,
+      "lng": -80.1918,
+      "certifications": [
+        { "level": 1, "courseId": 11001, "completedAt": "2024-05-02T00:00:00.000Z" }
+      ]
+    },
+    {
+      "thinkificUserId": 1009,
+      "email": "kate.morrison@example.com",
+      "firstName": "Kate",
+      "lastName": "Morrison",
+      "fullName": "Kate Morrison",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "city": "New York",
+      "state": "NY",
+      "lat": 40.7128,
+      "lng": -74.0060,
+      "certifications": [
+        { "level": 1, "courseId": 11001, "completedAt": "2024-06-18T00:00:00.000Z" }
+      ]
+    },
+    {
+      "thinkificUserId": 1010,
+      "email": "brian.fox@example.com",
+      "firstName": "Brian",
+      "lastName": "Fox",
+      "fullName": "Brian Fox",
+      "avatarUrl": null,
+      "bio": "WSBB-certified coach training out of a private garage gym in Nashville, TN. Focus on raw equipped powerlifting.",
+      "tier": "certified",
+      "city": "Nashville",
+      "state": "TN",
+      "lat": 36.1627,
+      "lng": -86.7816,
+      "certifications": [
+        { "level": 1, "courseId": 11001, "completedAt": "2024-09-09T00:00:00.000Z" }
+      ]
+    }
+  ]
+}
