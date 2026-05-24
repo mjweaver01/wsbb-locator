@@ -24,7 +24,7 @@ import type { Coach as RawCoach } from "../lib/thinkific";
 // ---------------------------------------------------------------------------
 
 const DRY_RUN = process.argv.includes("--dry-run");
-const INPUT_FILE = "apps/web/public/coaches-raw.json";
+const INPUT_FILE = "apps/api/data/coaches-raw.json";
 
 if (DRY_RUN) {
   console.log("🔍  DRY RUN — no database writes will occur\n");

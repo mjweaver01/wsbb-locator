@@ -21,10 +21,7 @@ function isCacheStale() {
 
 /** Load the static fallback JSON bundled with the web app. */
 function loadStaticFallback(): CoachesPayload {
-  const staticPath = resolve(
-    import.meta.dir,
-    "../../web/public/coaches-raw.json"
-  );
+  const staticPath = resolve(import.meta.dir, "../data/coaches-raw.json");
   const raw = readFileSync(staticPath, "utf8");
   return JSON.parse(raw) as CoachesPayload;
 }

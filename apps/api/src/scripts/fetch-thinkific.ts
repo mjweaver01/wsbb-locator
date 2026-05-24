@@ -17,7 +17,7 @@
 import { writeFileSync } from "fs";
 import { fetchCoachesFromThinkific } from "../lib/thinkific";
 
-const OUT_FILE = "apps/web/public/coaches-raw.json";
+const OUT_FILE = "apps/api/data/coaches-raw.json";
 
 try {
   console.log("Fetching coaches from Thinkific...\n");

@@ -77,7 +77,7 @@ export function App() {
           <AlertTriangle size={20} strokeWidth={1.5} />
           <span>{error}</span>
           <span style={{ fontSize: 12 }}>
-            Make sure coaches-raw.json is in apps/web/public/
+            Check the API service logs and VITE_API_URL.
           </span>
         </div>
       </>
