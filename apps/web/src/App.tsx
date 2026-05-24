@@ -8,7 +8,8 @@ import { CoachMap } from '@/components/CoachMap'
 import { FilterBar } from '@/components/FilterBar'
 import { CoachGrid } from '@/components/CoachGrid'
 
-const DATA_URL = '/api/coaches'
+const API_BASE = import.meta.env.VITE_API_URL ?? ''
+const DATA_URL = `${API_BASE}/api/coaches`
 
 const DEFAULT_FILTERS: FilterState = { tier: 'all', search: '' }
 
