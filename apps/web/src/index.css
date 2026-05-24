@@ -194,9 +194,15 @@ input {
 .coach-map-wrapper {
   position: relative;
   border-bottom: 1px solid var(--divider);
+  /* Contain Leaflet's internal z-indices (controls hit z-index 1000) and our
+     own overlay so they can never paint over the sticky filter bar or the
+     grid below. */
+  isolation: isolate;
+  overflow: hidden;
 }
 
 .coach-map {
+  position: relative;
   height: 480px;
   width: 100%;
   background: #0d0d0d;
@@ -302,20 +308,23 @@ input {
   margin-top: 4px;
 }
 
-/* ── Map Placeholder ─────────────────────────────────── */
+/* ── Map "no locations" overlay ──────────────────────── */
 
-.map-placeholder {
+/* Rendered on top of the live map when the current filter has zero coaches
+   with coordinates. Keeping the map mounted underneath avoids the
+   tear-down / detached-DOM bug we used to hit when swapping return branches. */
+.coach-map-empty {
+  position: absolute;
+  inset: 0;
+  z-index: 1100;
   background: #0d0d0d;
-  border-bottom: 1px solid var(--divider);
-  height: 480px;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
   overflow: hidden;
 }
 
-.map-placeholder::before {
+.coach-map-empty::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -325,20 +334,20 @@ input {
   opacity: 0.5;
 }
 
-.map-placeholder__content {
+.coach-map-empty__content {
   position: relative;
   z-index: 1;
   text-align: center;
   padding: 24px;
 }
 
-.map-placeholder__icon {
+.coach-map-empty__icon {
   font-size: 32px;
   margin-bottom: 12px;
   opacity: 0.5;
 }
 
-.map-placeholder__heading {
+.coach-map-empty__heading {
   font-family: var(--font-label);
   font-size: 15px;
   font-weight: 600;
@@ -348,7 +357,7 @@ input {
   margin-bottom: 8px;
 }
 
-.map-placeholder__note {
+.coach-map-empty__note {
   font-family: var(--font-body);
   font-size: 13px;
   color: #5a5854;

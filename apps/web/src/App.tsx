@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, useDeferredValue } from 'react'
 import 'leaflet/dist/leaflet.css'
 import { AlertTriangle } from 'lucide-react'
 import type { CoachesRawJson, FilterState, RawCoach } from '@/lib/types'
@@ -46,6 +46,10 @@ export function App() {
     return result
   }, [coaches, filters])
 
+  // Defer the coach set passed to the map so rapid typing doesn't block on
+  // marker rebuilds — the input + grid update immediately, the map catches up.
+  const mapCoaches = useDeferredValue(filtered)
+
   function handlePinClick(id: number) {
     const el = cardRefs.current.get(id)
     if (el) {
@@ -83,7 +87,7 @@ export function App() {
     <>
       <HeroSection />
       <TierLegend />
-      <CoachMap coaches={filtered} onPinClick={handlePinClick} />
+      <CoachMap coaches={mapCoaches} onPinClick={handlePinClick} />
       <FilterBar
         filters={filters}
         onFiltersChange={setFilters}
