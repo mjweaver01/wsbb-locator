@@ -13,6 +13,7 @@ import {
   upsertCoachOverride,
   type CoachOverride,
 } from "./lib/overrides-db";
+import { loadThinkificCache, saveThinkificCache } from "./lib/thinkific-cache-db";
 
 const app = new Hono();
 const PORT = env.port;
@@ -63,13 +64,28 @@ async function getCoaches(): Promise<{ data: CoachesPayload; source: string }> {
     return { data: cache!, source: "cache" };
   }
 
-  const hasThinkificCreds =
-    env.thinkificApiKey && env.thinkificSubdomain;
+  // DB-backed cache (primary durable source between re-syncs)
+  try {
+    const cached = loadThinkificCache();
+    if (cached) {
+      const data = mergeCoachOverrides(cached);
+      cache = data;
+      cacheSetAt = Date.now();
+      console.log(`[db-cache] loaded ${data.totalCoaches} coaches from thinkific cache table`);
+      return { data, source: "db-cache" };
+    }
+  } catch (err) {
+    console.error("[db-cache] load failed, trying thinkific/static fallback:", (err as Error).message);
+  }
+
+  const hasThinkificCreds = env.thinkificApiKey && env.thinkificSubdomain;
 
   if (hasThinkificCreds) {
     try {
-      console.log("[thinkific] fetching live data...");
-      const data = mergeCoachOverrides(await fetchCoachesFromThinkific());
+      console.log("[thinkific] db cache empty, fetching live data...");
+      const thinkificData = await fetchCoachesFromThinkific();
+      saveThinkificCache(thinkificData);
+      const data = mergeCoachOverrides(thinkificData);
       cache = data;
       cacheSetAt = Date.now();
       console.log(`[thinkific] cached ${data.totalCoaches} coaches`);
@@ -110,13 +126,39 @@ app.get("/api/coaches", async (c) => {
   }
 });
 
-/** Force a cache refresh (useful after running the seed script). */
+/** Force in-memory cache refresh from the configured source order. */
 app.post("/api/coaches/refresh", async (c) => {
   cache = null;
   cacheSetAt = 0;
   try {
     const { data, source } = await getCoaches();
     return c.json({ refreshed: true, totalCoaches: data.totalCoaches, source });
+  } catch (err) {
+    return c.json({ error: (err as Error).message }, 503);
+  }
+});
+
+/** Force a live Thinkific re-sync and rewrite DB cache tables. */
+app.post("/api/coaches/resync", async (c) => {
+  if (!env.thinkificApiKey || !env.thinkificSubdomain) {
+    return c.json(
+      { error: "THINKIFIC_API_KEY and THINKIFIC_SUBDOMAIN are required for resync." },
+      400
+    );
+  }
+
+  try {
+    const thinkificData = await fetchCoachesFromThinkific();
+    saveThinkificCache(thinkificData);
+    const data = mergeCoachOverrides(thinkificData);
+    cache = data;
+    cacheSetAt = Date.now();
+    return c.json({
+      resynced: true,
+      source: "thinkific",
+      totalCoaches: data.totalCoaches,
+      fetchedAt: data.fetchedAt,
+    });
   } catch (err) {
     return c.json({ error: (err as Error).message }, 503);
   }

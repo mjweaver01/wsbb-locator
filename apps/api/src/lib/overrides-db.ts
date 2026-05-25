@@ -1,6 +1,5 @@
-import { Database } from "bun:sqlite";
-import { env } from "./env";
 import type { Coach } from "./thinkific";
+import { db } from "./db";
 
 export type CoachOverride = Partial<
   Pick<Coach, "bio" | "avatarUrl" | "city" | "state" | "lat" | "lng">
@@ -15,8 +14,6 @@ interface CoachOverrideRow {
   lat: number | null;
   lng: number | null;
 }
-
-const db = new Database(env.coachOverridesDbPath, { create: true });
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS coach_overrides (

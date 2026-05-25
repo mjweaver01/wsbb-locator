@@ -24,8 +24,10 @@ function readIntEnvWithDefault(name: string, fallback: number): number {
 export const env = {
   port: readIntEnvWithDefault("PORT", 3001),
   coachCacheTtlMs: readIntEnvWithDefault("COACH_CACHE_TTL_MS", 60 * 60 * 1000),
-  coachOverridesDbPath:
-    readEnv("COACH_OVERRIDES_DB_PATH") ?? `${import.meta.dir}/../../data/coach-overrides.sqlite`,
+  coachDataDbPath:
+    readEnv("COACH_DATA_DB_PATH") ??
+    readEnv("COACH_OVERRIDES_DB_PATH") ??
+    `${import.meta.dir}/../../data/coach-data.sqlite`,
   thinkificApiKey: readEnv("THINKIFIC_API_KEY"),
   thinkificSubdomain: readEnv("THINKIFIC_SUBDOMAIN"),
   thinkificLevel1Id: readIntEnv("THINKIFIC_LEVEL1_ID"),
