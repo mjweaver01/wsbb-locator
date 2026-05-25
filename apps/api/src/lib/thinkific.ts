@@ -18,7 +18,16 @@ import { env } from "./env";
 
 const BASE_URL = "https://api.thinkific.com/api/public/v1";
 const PAGE_LIMIT = 250;
-const RATE_LIMIT_MS = 300;
+
+export function recalculateTierBreakdown(
+  coaches: Coach[],
+): CoachesPayload["tierBreakdown"] {
+  return {
+    master: coaches.filter((c) => c.tier === "master").length,
+    instructor: coaches.filter((c) => c.tier === "instructor").length,
+    certified: coaches.filter((c) => c.tier === "certified").length,
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -142,7 +151,7 @@ async function fetchAllPages<T>(
     results.push(...data.items);
     totalPages = data.meta.pagination.total_pages;
     page++;
-    if (page <= totalPages) await sleep(RATE_LIMIT_MS);
+    if (page <= totalPages) await sleep(env.thinkificRateLimitMs);
   } while (page <= totalPages);
 
   return results;
@@ -233,11 +242,12 @@ export async function fetchCoachesFromThinkific(): Promise<CoachesPayload> {
   }
 
   const coaches: Coach[] = [];
-  const userIds = [...userMap.keys()];
+  const userEntries = [...userMap.entries()];
 
-  for (let i = 0; i < userIds.length; i++) {
-    const userId = userIds[i];
-    const { tier, certifications } = userMap.get(userId)!;
+  for (let i = 0; i < userEntries.length; i++) {
+    const entry = userEntries[i];
+    if (!entry) continue;
+    const [userId, { tier, certifications }] = entry;
     try {
       const user = await thinkificGet<ThinkificUser>(
         `/users/${userId}`,
@@ -257,18 +267,14 @@ export async function fetchCoachesFromThinkific(): Promise<CoachesPayload> {
     } catch {
       // Skip users we can't load
     }
-    if (i < userIds.length - 1) await sleep(RATE_LIMIT_MS);
+    if (i < userEntries.length - 1) await sleep(env.thinkificRateLimitMs);
   }
 
   return {
     fetchedAt: new Date().toISOString(),
     subdomain,
     totalCoaches: coaches.length,
-    tierBreakdown: {
-      master: coaches.filter((c) => c.tier === "master").length,
-      instructor: coaches.filter((c) => c.tier === "instructor").length,
-      certified: coaches.filter((c) => c.tier === "certified").length,
-    },
+    tierBreakdown: recalculateTierBreakdown(coaches),
     coaches,
   };
 }

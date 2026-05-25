@@ -66,37 +66,38 @@ export function listCoachOverrides(): Record<string, CoachOverride> {
   return out;
 }
 
+/**
+ * Full-replace upsert. The override row mirrors exactly what was passed in —
+ * any field not supplied becomes NULL in the row.
+ */
 export function upsertCoachOverride(
   thinkificUserId: number,
-  patch: CoachOverride,
+  override: CoachOverride,
 ): CoachOverride {
-  const existing = getCoachOverride(thinkificUserId) ?? {};
-  const merged: CoachOverride = { ...existing, ...patch };
-
   db.run(
     `INSERT INTO coach_overrides (
       thinkific_user_id, bio, avatar_url, city, state, lat, lng, updated_at
     ) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
     ON CONFLICT(thinkific_user_id) DO UPDATE SET
-      bio = excluded.bio,
+      bio        = excluded.bio,
       avatar_url = excluded.avatar_url,
-      city = excluded.city,
-      state = excluded.state,
-      lat = excluded.lat,
-      lng = excluded.lng,
+      city       = excluded.city,
+      state      = excluded.state,
+      lat        = excluded.lat,
+      lng        = excluded.lng,
       updated_at = CURRENT_TIMESTAMP`,
     [
       thinkificUserId,
-      merged.bio ?? null,
-      merged.avatarUrl ?? null,
-      merged.city ?? null,
-      merged.state ?? null,
-      merged.lat ?? null,
-      merged.lng ?? null,
+      override.bio ?? null,
+      override.avatarUrl ?? null,
+      override.city ?? null,
+      override.state ?? null,
+      override.lat ?? null,
+      override.lng ?? null,
     ],
   );
 
-  return merged;
+  return override;
 }
 
 export function deleteCoachOverride(thinkificUserId: number): void {

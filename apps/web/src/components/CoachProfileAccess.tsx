@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 import type { RawCoach } from "@/lib/types";
 
 interface CoachEmailLink {
@@ -40,6 +40,16 @@ export function CoachProfileAccess({
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
 
+  const hydrateProfile = useCallback((data: MeResponse) => {
+    setMe(data);
+    setBio(data.coach.bio ?? "");
+    setAvatarUrl(data.coach.avatarUrl ?? "");
+    setCity(data.coach.city ?? "");
+    setState(data.coach.state ?? "");
+    setLat(data.coach.lat !== undefined ? String(data.coach.lat) : "");
+    setLng(data.coach.lng !== undefined ? String(data.coach.lng) : "");
+  }, []);
+
   useEffect(() => {
     fetch(apiUrl(apiBase, "/api/coach-auth/me"), { credentials: "include" })
       .then(async (response) => {
@@ -53,20 +63,9 @@ export function CoachProfileAccess({
         hydrateProfile(data);
       })
       .catch(() => {
-        // Silent on initial load: unauthenticated is an expected state.
+        // Unauthenticated is an expected initial state.
       });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apiBase]);
-
-  function hydrateProfile(data: MeResponse) {
-    setMe(data);
-    setBio(data.coach.bio ?? "");
-    setAvatarUrl(data.coach.avatarUrl ?? "");
-    setCity(data.coach.city ?? "");
-    setState(data.coach.state ?? "");
-    setLat(data.coach.lat !== undefined ? String(data.coach.lat) : "");
-    setLng(data.coach.lng !== undefined ? String(data.coach.lng) : "");
-  }
+  }, [apiBase, hydrateProfile]);
 
   async function requestCode(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -148,7 +147,7 @@ export function CoachProfileAccess({
 
     try {
       const response = await fetch(apiUrl(apiBase, "/api/coach-auth/me"), {
-        method: "PATCH",
+        method: "PUT",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

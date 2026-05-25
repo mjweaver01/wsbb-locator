@@ -16,14 +16,10 @@ db.exec(`
     used_at TEXT,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
-`);
 
-db.exec(`
   CREATE INDEX IF NOT EXISTS idx_coach_login_codes_lookup
   ON coach_login_codes(thinkific_user_id, email, created_at DESC);
-`);
 
-db.exec(`
   CREATE TABLE IF NOT EXISTS coach_sessions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     thinkific_user_id INTEGER NOT NULL,
@@ -97,11 +93,10 @@ export function verifyAndConsumeLoginCode(
   if (Date.parse(row.expires_at) <= nowMs()) return false;
 
   const submittedHash = hashString(submittedCode.trim());
-  const ok = timingSafeEqual(
-    Buffer.from(submittedHash, "utf8"),
-    Buffer.from(row.code_hash, "utf8"),
-  );
-  if (!ok) return false;
+  const submittedBuf = Buffer.from(submittedHash, "utf8");
+  const storedBuf = Buffer.from(row.code_hash, "utf8");
+  if (submittedBuf.length !== storedBuf.length) return false;
+  if (!timingSafeEqual(submittedBuf, storedBuf)) return false;
 
   db.run(
     `UPDATE coach_login_codes

@@ -12,6 +12,8 @@
     "d": "bun run dev:all",
     "build": "bun run --cwd apps/web build",
     "preview": "bun run --cwd apps/web preview",
+    "start": "bun run build && SERVE_STATIC=true bun run --cwd apps/api start",
+    "test": "bun run --cwd apps/api test",
     "fetch": "bun run apps/api/src/scripts/fetch-thinkific.ts",
     "format": "prettier . --write"
   },

@@ -103,7 +103,7 @@ export const env = {
     isProduction,
   ),
   coachAdminApiKey: readEnv("COACH_ADMIN_API_KEY"),
-  emailProvider: readEnv("EMAIL_PROVIDER") ?? "console",
+  emailProvider: (readEnv("EMAIL_PROVIDER") ?? "console").toLowerCase(),
   emailFrom: readEnv("EMAIL_FROM"),
   resendApiKey: readEnv("RESEND_API_KEY"),
   thinkificApiKey: readEnv("THINKIFIC_API_KEY"),
@@ -111,4 +111,8 @@ export const env = {
   thinkificLevel1Id: readOptionalIntEnv("THINKIFIC_LEVEL1_ID"),
   thinkificLevel2Id: readOptionalIntEnv("THINKIFIC_LEVEL2_ID"),
   thinkificLevel3Id: readOptionalIntEnv("THINKIFIC_LEVEL3_ID"),
+  thinkificRateLimitMs: readIntEnvWithDefault("THINKIFIC_RATE_LIMIT_MS", 500),
+  webDistPath:
+    readEnv("WEB_DIST_PATH") ?? `${import.meta.dir}/../../../web/dist`,
+  serveStatic: readBoolEnvWithDefault("SERVE_STATIC", isProduction),
 } as const;

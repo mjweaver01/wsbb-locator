@@ -1,4 +1,5 @@
 import { Search } from "lucide-react";
+import { Link } from "react-router-dom";
 import type { FilterState, TierFilter } from "@/lib/types";
 
 interface FilterBarProps {
@@ -73,12 +74,12 @@ export function FilterBar({
           <strong>{visibleCount}</strong> / {totalCount} coaches
         </span>
 
-        <a
-          href="/coach-access"
+        <Link
+          to="/coach-access"
           className="filter-bar__cta filter-bar__cta--muted"
         >
           Update Listing
-        </a>
+        </Link>
 
         <a
           href={level1Url}

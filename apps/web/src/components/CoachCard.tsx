@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { MapPin, Mail } from "lucide-react";
 import type { RawCoach } from "@/lib/types";
 
@@ -40,6 +41,8 @@ export function CoachCard({
 }: CoachCardProps) {
   const { fullName, avatarUrl, bio, tier, certifications, email, city, state } =
     coach;
+  const [avatarFailed, setAvatarFailed] = useState(false);
+  const showAvatar = Boolean(avatarUrl) && !avatarFailed;
 
   return (
     <article
@@ -48,26 +51,22 @@ export function CoachCard({
       className={`coach-card coach-card--${tier}`}
     >
       <div className="coach-card__header">
-        {avatarUrl ? (
+        {showAvatar ? (
           <img
-            src={avatarUrl}
+            src={avatarUrl ?? undefined}
             alt={fullName}
             className="coach-avatar"
             loading="lazy"
-            onError={(e) => {
-              const el = e.currentTarget;
-              el.style.display = "none";
-              el.nextElementSibling?.removeAttribute("style");
-            }}
+            onError={() => setAvatarFailed(true)}
           />
-        ) : null}
-        <div
-          className={`coach-avatar--initials coach-avatar--initials-${tier}`}
-          aria-hidden={!!avatarUrl}
-          style={avatarUrl ? { display: "none" } : undefined}
-        >
-          {getInitials(fullName)}
-        </div>
+        ) : (
+          <div
+            className={`coach-avatar--initials coach-avatar--initials-${tier}`}
+            aria-hidden="false"
+          >
+            {getInitials(fullName)}
+          </div>
+        )}
 
         <div className="coach-card__identity">
           <p className="coach-card__name">{fullName}</p>

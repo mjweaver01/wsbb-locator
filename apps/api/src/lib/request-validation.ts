@@ -61,27 +61,27 @@ function isFiniteNumber(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value);
 }
 
-export function parseCoachOverridePatch(body: JsonRecord): {
-  patch?: CoachOverride;
+/**
+ * Validate and shape an incoming coach override body. Any field not present
+ * (or explicitly null) is dropped — the caller writes a full row, so missing
+ * fields become NULL in the DB.
+ */
+export function parseCoachOverride(body: JsonRecord): {
+  override?: CoachOverride;
   error?: string;
 } {
-  const patch: CoachOverride = {};
-  let hasKnownField = false;
+  const override: CoachOverride = {};
 
-  const bio = body.bio;
-  if (bio !== undefined) {
-    hasKnownField = true;
-    if (typeof bio !== "string") return { error: "bio must be a string" };
-    patch.bio = bio;
+  if (body.bio !== undefined && body.bio !== null) {
+    if (typeof body.bio !== "string") return { error: "bio must be a string" };
+    override.bio = body.bio;
   }
 
-  const avatarUrl = body.avatarUrl;
-  if (avatarUrl !== undefined) {
-    hasKnownField = true;
-    if (typeof avatarUrl !== "string") {
+  if (body.avatarUrl !== undefined && body.avatarUrl !== null) {
+    if (typeof body.avatarUrl !== "string") {
       return { error: "avatarUrl must be a string" };
     }
-    const trimmed = avatarUrl.trim();
+    const trimmed = body.avatarUrl.trim();
     if (trimmed !== "") {
       try {
         const url = new URL(trimmed);
@@ -92,46 +92,38 @@ export function parseCoachOverridePatch(body: JsonRecord): {
         return { error: "avatarUrl must be a valid URL" };
       }
     }
-    patch.avatarUrl = avatarUrl;
+    override.avatarUrl = body.avatarUrl;
   }
 
-  const city = body.city;
-  if (city !== undefined) {
-    hasKnownField = true;
-    if (typeof city !== "string") return { error: "city must be a string" };
-    patch.city = city;
+  if (body.city !== undefined && body.city !== null) {
+    if (typeof body.city !== "string") {
+      return { error: "city must be a string" };
+    }
+    override.city = body.city;
   }
 
-  const state = body.state;
-  if (state !== undefined) {
-    hasKnownField = true;
-    if (typeof state !== "string") return { error: "state must be a string" };
-    patch.state = state;
+  if (body.state !== undefined && body.state !== null) {
+    if (typeof body.state !== "string") {
+      return { error: "state must be a string" };
+    }
+    override.state = body.state;
   }
 
-  const lat = body.lat;
-  if (lat !== undefined) {
-    hasKnownField = true;
-    if (!isFiniteNumber(lat)) return { error: "lat must be a number" };
-    if (lat < -90 || lat > 90) {
+  if (body.lat !== undefined && body.lat !== null) {
+    if (!isFiniteNumber(body.lat)) return { error: "lat must be a number" };
+    if (body.lat < -90 || body.lat > 90) {
       return { error: "lat must be between -90 and 90" };
     }
-    patch.lat = lat;
+    override.lat = body.lat;
   }
 
-  const lng = body.lng;
-  if (lng !== undefined) {
-    hasKnownField = true;
-    if (!isFiniteNumber(lng)) return { error: "lng must be a number" };
-    if (lng < -180 || lng > 180) {
+  if (body.lng !== undefined && body.lng !== null) {
+    if (!isFiniteNumber(body.lng)) return { error: "lng must be a number" };
+    if (body.lng < -180 || body.lng > 180) {
       return { error: "lng must be between -180 and 180" };
     }
-    patch.lng = lng;
+    override.lng = body.lng;
   }
 
-  if (!hasKnownField) {
-    return { error: "No valid override fields provided" };
-  }
-
-  return { patch };
+  return { override };
 }

@@ -22,9 +22,7 @@ db.exec(`
     source TEXT NOT NULL DEFAULT 'manual',
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
-`);
 
-db.exec(`
   CREATE INDEX IF NOT EXISTS idx_coach_email_links_thinkific_user_id
   ON coach_email_links(thinkific_user_id);
 `);

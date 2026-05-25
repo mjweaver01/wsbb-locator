@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { CoachProfileAccess } from "@/components/CoachProfileAccess";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "";
@@ -7,9 +8,9 @@ export function CoachAccessPage() {
     <main className="coach-access-page">
       <header className="coach-access-page-header">
         <div className="coach-access-page-header__inner">
-          <a href="/" className="coach-access-page-header__back">
+          <Link to="/" className="coach-access-page-header__back">
             ← Back to directory
-          </a>
+          </Link>
           <p className="coach-access-page-header__eyebrow">WSBB Coach Portal</p>
           <h1 className="coach-access-page-header__title">
             Coach Listing Access

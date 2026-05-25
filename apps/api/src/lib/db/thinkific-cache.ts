@@ -1,4 +1,8 @@
-import type { Coach, CoachesPayload } from "../thinkific";
+import {
+  recalculateTierBreakdown,
+  type Coach,
+  type CoachesPayload,
+} from "../thinkific";
 import { db } from "./db";
 
 interface ThinkificCacheCoachRow {
@@ -29,9 +33,7 @@ db.exec(`
     subdomain TEXT NOT NULL,
     synced_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
-`);
 
-db.exec(`
   CREATE TABLE IF NOT EXISTS thinkific_coaches_cache (
     thinkific_user_id INTEGER PRIMARY KEY,
     email TEXT NOT NULL,
@@ -48,16 +50,6 @@ db.exec(`
     certifications_json TEXT NOT NULL
   );
 `);
-
-function recalculateTierBreakdown(
-  coaches: Coach[],
-): CoachesPayload["tierBreakdown"] {
-  return {
-    master: coaches.filter((c) => c.tier === "master").length,
-    instructor: coaches.filter((c) => c.tier === "instructor").length,
-    certified: coaches.filter((c) => c.tier === "certified").length,
-  };
-}
 
 export function saveThinkificCache(payload: CoachesPayload): void {
   const write = db.transaction((data: CoachesPayload) => {

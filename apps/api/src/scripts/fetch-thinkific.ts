@@ -15,9 +15,10 @@
  */
 
 import { writeFileSync } from "fs";
+import { resolve } from "path";
 import { fetchCoachesFromThinkific } from "../lib/thinkific";
 
-const OUT_FILE = "apps/api/data/coaches-raw.json";
+const OUT_FILE = resolve(import.meta.dir, "../../data/coaches-raw.json");
 
 try {
   console.log("Fetching coaches from Thinkific...\n");

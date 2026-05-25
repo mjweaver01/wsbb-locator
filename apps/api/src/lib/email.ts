@@ -5,6 +5,20 @@ export interface SendCoachLoginCodeInput {
   code: string;
 }
 
+/**
+ * Escape any string before interpolating into HTML email bodies. Login codes
+ * are digit-only today, but future templates that interpolate coach names,
+ * aliases, or any user-controlled text MUST go through this.
+ */
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 async function sendWithResend({
   toEmail,
   code,
@@ -27,7 +41,7 @@ async function sendWithResend({
       to: [toEmail],
       subject: "Your WSBB coach login code",
       text: `Your WSBB coach login code is ${code}. It expires in ${env.coachAuthCodeTtlMinutes} minutes.`,
-      html: `<p>Your WSBB coach login code is <strong>${code}</strong>.</p><p>This code expires in ${env.coachAuthCodeTtlMinutes} minutes.</p>`,
+      html: `<p>Your WSBB coach login code is <strong>${escapeHtml(code)}</strong>.</p><p>This code expires in ${env.coachAuthCodeTtlMinutes} minutes.</p>`,
     }),
   });
 
@@ -40,14 +54,12 @@ async function sendWithResend({
 export async function sendCoachLoginCode(
   input: SendCoachLoginCodeInput,
 ): Promise<void> {
-  const provider = env.emailProvider.toLowerCase();
-
-  if (provider === "resend") {
+  if (env.emailProvider === "resend") {
     await sendWithResend(input);
     return;
   }
 
-  if (provider !== "console") {
+  if (env.emailProvider !== "console") {
     throw new Error(
       `Unsupported EMAIL_PROVIDER "${env.emailProvider}". Use "console" or "resend".`,
     );
