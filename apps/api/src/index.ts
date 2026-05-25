@@ -1,4 +1,4 @@
-import { Hono, type Context } from "hono";
+import { Hono, type Context, type Next } from "hono";
 import { cors } from "hono/cors";
 import { resolve } from "path";
 import {
@@ -91,6 +91,31 @@ function getClientIp(c: Context): string {
     return forwarded.split(",")[0]?.trim() || "unknown";
   }
   return c.req.header("x-real-ip") ?? "unknown";
+}
+
+function getAdminApiKeyFromRequest(c: Context): string | null {
+  const bearer = c.req.header("authorization");
+  if (bearer?.startsWith("Bearer ")) {
+    return bearer.slice("Bearer ".length).trim();
+  }
+  const headerKey = c.req.header("x-admin-api-key");
+  return headerKey?.trim() || null;
+}
+
+async function requireAdminApiKey(c: Context, next: Next) {
+  if (!env.coachAdminApiKey) {
+    return c.json(
+      { error: "Admin API key is not configured on this server." },
+      503,
+    );
+  }
+
+  const provided = getAdminApiKeyFromRequest(c);
+  if (!provided || provided !== env.coachAdminApiKey) {
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+
+  await next();
 }
 
 function isRateLimited(
@@ -270,6 +295,12 @@ app.use(
     credentials: true,
   }),
 );
+
+app.use("/api/coaches/refresh", requireAdminApiKey);
+app.use("/api/coaches/resync", requireAdminApiKey);
+app.use("/api/coaches/resolve-user", requireAdminApiKey);
+app.use("/api/coaches/:thinkificUserId/email-links", requireAdminApiKey);
+app.use("/api/coaches/:thinkificUserId/override", requireAdminApiKey);
 
 // ---------------------------------------------------------------------------
 // Routes

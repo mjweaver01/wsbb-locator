@@ -1,4 +1,4 @@
-import { createHash, randomBytes, timingSafeEqual } from "crypto";
+import { createHash, randomBytes, randomInt, timingSafeEqual } from "crypto";
 import { db } from "./db";
 
 interface CoachSessionRow {
@@ -60,7 +60,7 @@ export function createLoginCode(
   ttlMinutes: number,
 ): string {
   const normalizedEmail = normalizeEmail(email);
-  const code = String(Math.floor(100000 + Math.random() * 900000));
+  const code = String(randomInt(100000, 1000000));
   const codeHash = hashString(code);
   const expiresAt = addMinutes(nowMs(), ttlMinutes);
 

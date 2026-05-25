@@ -60,6 +60,15 @@ function formatTierLabel(tier: string): string {
   return tier.charAt(0).toUpperCase() + tier.slice(1);
 }
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 export function CoachMap({ coaches, hasLocationHint = false }: CoachMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Leaflet.Map | null>(null);
@@ -149,12 +158,23 @@ export function CoachMap({ coaches, hasLocationHint = false }: CoachMapProps) {
           icon: getIcon(L, coach.tier),
         });
         const listingHref = `#coach-${coach.thinkificUserId}`;
+        const tierClass =
+          coach.tier === "master" ||
+          coach.tier === "instructor" ||
+          coach.tier === "certified"
+            ? coach.tier
+            : "certified";
+        const fullNameHtml = escapeHtml(coach.fullName);
+        const tierLabelHtml = escapeHtml(formatTierLabel(coach.tier));
+        const locationHtml = coach.city
+          ? `<p class="map-popup__loc">${escapeHtml(coach.city)}${coach.state ? `, ${escapeHtml(coach.state)}` : ""}</p>`
+          : "";
         marker.bindPopup(
           `
             <div class="map-popup">
-              <p class="map-popup__name">${coach.fullName}</p>
-              <span class="map-popup__tier map-popup__tier--${coach.tier}">${formatTierLabel(coach.tier)}</span>
-              ${coach.city ? `<p class="map-popup__loc">${coach.city}, ${coach.state ?? ""}</p>` : ""}
+              <p class="map-popup__name">${fullNameHtml}</p>
+              <span class="map-popup__tier map-popup__tier--${tierClass}">${tierLabelHtml}</span>
+              ${locationHtml}
               <a class="map-popup__listing-link" href="${listingHref}">
                 View Listing
               </a>

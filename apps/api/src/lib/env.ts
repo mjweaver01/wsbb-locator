@@ -57,6 +57,7 @@ function readCsvEnv(name: string): string[] {
 }
 
 const configuredCorsOrigins = readCsvEnv("CORS_ALLOWED_ORIGINS");
+const isProduction = readEnv("NODE_ENV") === "production";
 
 export const env = {
   port: readIntEnvWithDefault("PORT", 3001),
@@ -74,7 +75,7 @@ export const env = {
     readEnv("COACH_AUTH_COOKIE_NAME") ?? "wsbb_coach_session",
   coachAuthCookieSecure: readBoolEnvWithDefault(
     "COACH_AUTH_COOKIE_SECURE",
-    false,
+    isProduction,
   ),
   coachAuthRequestRateLimitMax: readIntEnvWithDefault(
     "COACH_AUTH_REQUEST_RATE_LIMIT_MAX",
@@ -97,7 +98,11 @@ export const env = {
     false,
   ),
   corsAllowedOrigins: configuredCorsOrigins,
-  corsEnforceAllowlist: readBoolEnvWithDefault("CORS_ENFORCE_ALLOWLIST", false),
+  corsEnforceAllowlist: readBoolEnvWithDefault(
+    "CORS_ENFORCE_ALLOWLIST",
+    isProduction,
+  ),
+  coachAdminApiKey: readEnv("COACH_ADMIN_API_KEY"),
   emailProvider: readEnv("EMAIL_PROVIDER") ?? "console",
   emailFrom: readEnv("EMAIL_FROM"),
   resendApiKey: readEnv("RESEND_API_KEY"),
