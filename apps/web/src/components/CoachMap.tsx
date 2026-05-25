@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type * as Leaflet from "leaflet";
 import { createRoot, type Root } from "react-dom/client";
 import { MapPin } from "lucide-react";
-import type { RawCoach } from "@/lib/types";
+import type { CoachTier, RawCoach } from "@/lib/types";
 import { CoachCard } from "./CoachCard";
 
 interface CoachMapProps {
@@ -14,6 +14,13 @@ const TIER_COLORS: Record<string, string> = {
   master: "#c8a96e",
   instructor: "#c0bdb8",
   certified: "#a8a49c",
+};
+
+// Higher tiers paint above lower ones when pins overlap.
+const TIER_Z_INDEX: Record<CoachTier, number> = {
+  certified: 0,
+  instructor: 100,
+  master: 200,
 };
 
 // Cache the leaflet module so we only pay the dynamic-import cost once,
@@ -143,9 +150,14 @@ export function CoachMap({ coaches, hasLocationHint = false }: CoachMapProps) {
 
       group.clearLayers();
 
-      for (const coach of coachesWithLocation) {
+      const sortedCoaches = [...coachesWithLocation].sort(
+        (a, b) => TIER_Z_INDEX[a.tier] - TIER_Z_INDEX[b.tier],
+      );
+
+      for (const coach of sortedCoaches) {
         const marker = L.marker([coach.lat, coach.lng], {
           icon: getIcon(L, coach.tier),
+          zIndexOffset: TIER_Z_INDEX[coach.tier],
         });
         const popupContainer = document.createElement("div");
         popupContainer.className = "coach-map-popup-card";
