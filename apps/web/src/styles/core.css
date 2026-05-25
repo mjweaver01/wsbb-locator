@@ -241,6 +241,25 @@
   color: var(--text-muted-strong) !important;
 }
 
+.coach-map .leaflet-div-icon.coach-map-pin-icon {
+  background: none;
+  border: 0;
+}
+
+.coach-map-pin {
+  width: 44px;
+  height: 52px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  cursor: pointer;
+}
+
+.coach-map-pin svg {
+  display: block;
+  pointer-events: none;
+}
+
 .leaflet-popup-content-wrapper.coach-map-popup,
 .coach-map .leaflet-popup-content-wrapper {
   background: var(--surface-floating);
@@ -248,10 +267,12 @@
   border-radius: var(--radius-md);
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.65);
   padding: 0;
+  overflow: hidden;
 }
 
 .coach-map .leaflet-popup-content {
   margin: 0;
+  overflow: hidden;
 }
 
 .coach-map .leaflet-popup-tip {
@@ -264,7 +285,7 @@
 
 .coach-map-popup-card .coach-card {
   border: 0;
-  border-radius: 0;
+  border-radius: var(--radius-md);
   box-shadow: none;
 }
 

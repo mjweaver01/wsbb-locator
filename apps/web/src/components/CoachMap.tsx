@@ -31,28 +31,37 @@ function loadLeaflet() {
   return leafletPromise;
 }
 
-function makePinSvg(color: string): string {
-  return encodeURIComponent(`
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 32" width="24" height="32">
+const PIN_WIDTH = 24;
+const PIN_HEIGHT = 32;
+// Invisible padding around the pin so clicks match the pointer hover area.
+const PIN_HIT_WIDTH = 44;
+const PIN_HIT_HEIGHT = 52;
+
+function makePinSvgMarkup(color: string): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 32" width="${PIN_WIDTH}" height="${PIN_HEIGHT}" aria-hidden="true">
       <path d="M12 0C5.37 0 0 5.37 0 12c0 9 12 20 12 20S24 21 24 12C24 5.37 18.63 0 12 0z"
         fill="${color}" stroke="#0a0a0a" stroke-width="1.5"/>
       <circle cx="12" cy="12" r="4.5" fill="#0a0a0a" opacity="0.6"/>
-    </svg>
-  `);
+    </svg>`;
+}
+
+function makePinHtml(color: string): string {
+  return `<div class="coach-map-pin">${makePinSvgMarkup(color)}</div>`;
 }
 
 // Cache one icon per tier — every marker of the same tier shares one icon
-// instead of allocating a fresh L.Icon (and SVG data URL) per pin.
-const iconCache = new Map<string, Leaflet.Icon>();
-function getIcon(L: typeof Leaflet, tier: string): Leaflet.Icon {
+// instead of allocating a fresh L.DivIcon (and SVG markup) per pin.
+const iconCache = new Map<string, Leaflet.DivIcon>();
+function getIcon(L: typeof Leaflet, tier: string): Leaflet.DivIcon {
   const cached = iconCache.get(tier);
   if (cached) return cached;
   const color = TIER_COLORS[tier] ?? "#a8a49c";
-  const icon = L.icon({
-    iconUrl: `data:image/svg+xml,${makePinSvg(color)}`,
-    iconSize: [24, 32],
-    iconAnchor: [12, 32],
-    popupAnchor: [0, -34],
+  const icon = L.divIcon({
+    className: "coach-map-pin-icon",
+    html: makePinHtml(color),
+    iconSize: [PIN_HIT_WIDTH, PIN_HIT_HEIGHT],
+    iconAnchor: [PIN_HIT_WIDTH / 2, PIN_HIT_HEIGHT],
+    popupAnchor: [0, -(PIN_HIT_HEIGHT + 2)],
   });
   iconCache.set(tier, icon);
   return icon;
@@ -158,6 +167,7 @@ export function CoachMap({ coaches, hasLocationHint = false }: CoachMapProps) {
         const marker = L.marker([coach.lat, coach.lng], {
           icon: getIcon(L, coach.tier),
           zIndexOffset: TIER_Z_INDEX[coach.tier],
+          riseOnHover: true,
         });
         const popupContainer = document.createElement("div");
         popupContainer.className = "coach-map-popup-card";
