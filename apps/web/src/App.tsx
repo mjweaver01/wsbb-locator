@@ -7,7 +7,6 @@ import { TierLegend } from '@/components/TierLegend'
 import { CoachMap } from '@/components/CoachMap'
 import { FilterBar } from '@/components/FilterBar'
 import { CoachGrid } from '@/components/CoachGrid'
-import { CoachProfileAccess } from '@/components/CoachProfileAccess'
 
 const API_BASE = import.meta.env.VITE_API_URL ?? ''
 const DATA_URL = `${API_BASE}/api/coaches`
@@ -109,7 +108,6 @@ export function App() {
         totalCount={coaches.length}
       />
       <CoachGrid coaches={filtered} activeTier={filters.tier} cardRefs={cardRefs.current} />
-      <CoachProfileAccess apiBase={API_BASE} />
       <FooterCta />
     </>
   )

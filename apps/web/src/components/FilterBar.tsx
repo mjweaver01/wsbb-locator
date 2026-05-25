@@ -64,6 +64,13 @@ export function FilterBar({
         </span>
 
         <a
+          href="/coach-access"
+          className="filter-bar__cta filter-bar__cta--muted"
+        >
+          Update Listing
+        </a>
+
+        <a
           href={level1Url}
           target="_blank"
           rel="noopener noreferrer"

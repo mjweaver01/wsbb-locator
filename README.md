@@ -45,7 +45,7 @@ apps/
    - interactive map
    - filter/search controls
    - coach card grid
-   - coach profile access panel (request code, verify, update profile)
+3. Coach self-service profile access lives on a dedicated page at `/coach-access`.
 3. Filters are client-side (`tier` + name search).
 
 ### Backend (`apps/api`)

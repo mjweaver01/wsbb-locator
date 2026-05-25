@@ -14,13 +14,14 @@ interface MeResponse {
 
 interface CoachProfileAccessProps {
   apiBase: string
+  showIntro?: boolean
 }
 
 function apiUrl(apiBase: string, path: string) {
   return `${apiBase}${path}`
 }
 
-export function CoachProfileAccess({ apiBase }: CoachProfileAccessProps) {
+export function CoachProfileAccess({ apiBase, showIntro = true }: CoachProfileAccessProps) {
   const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
   const [requestStatus, setRequestStatus] = useState<string | null>(null)
@@ -103,10 +104,10 @@ export function CoachProfileAccess({ apiBase }: CoachProfileAccessProps) {
       const meResponse = await fetch(apiUrl(apiBase, '/api/coach-auth/me'), {
         credentials: 'include',
       })
-      if (!meResponse.ok) throw new Error('Logged in but failed to load profile')
+      if (!meResponse.ok) throw new Error('Verified, but failed to load profile')
       const meData = (await meResponse.json()) as MeResponse
       hydrateProfile(meData)
-      setRequestStatus('You are signed in.')
+      setRequestStatus('Email verified. You can now edit your listing.')
     } catch (err) {
       setError((err as Error).message)
     } finally {
@@ -181,11 +182,15 @@ export function CoachProfileAccess({ apiBase }: CoachProfileAccessProps) {
   return (
     <section className="coach-access">
       <div className="coach-access__inner">
-        <p className="coach-access__eyebrow">Coach Profile Access</p>
-        <h2 className="coach-access__heading">Update Your Listing</h2>
-        <p className="coach-access__sub">
-          Use your email to request a one-time code and edit your public coach profile.
-        </p>
+        {showIntro && (
+          <>
+            <p className="coach-access__eyebrow">Coach Profile Access</p>
+            <h2 className="coach-access__heading">Update Your Listing</h2>
+            <p className="coach-access__sub">
+              Use your email to request a one-time code and edit your public coach profile.
+            </p>
+          </>
+        )}
 
         {!me ? (
           <div className="coach-access__auth-grid">
@@ -222,7 +227,7 @@ export function CoachProfileAccess({ apiBase }: CoachProfileAccessProps) {
           </div>
         ) : (
           <form className="coach-access__panel coach-access__panel--full" onSubmit={saveProfile}>
-            <h3>Logged in as {me.coach.fullName}</h3>
+            <h3>Verified profile: {me.coach.fullName}</h3>
             <p className="coach-access__meta">
               Thinkific email: <strong>{me.coach.email}</strong>
             </p>
