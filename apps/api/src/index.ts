@@ -1,4 +1,4 @@
-import { Hono, type Context, type Next } from "hono";
+import { Hono, type Context } from "hono";
 import { cors } from "hono/cors";
 import { resolve } from "path";
 import {
@@ -11,7 +11,6 @@ import {
   deleteCoachOverride,
   listCoachOverrides,
   upsertCoachOverride,
-  type CoachOverride,
 } from "./lib/overrides-db";
 import {
   loadThinkificCache,
@@ -31,6 +30,15 @@ import {
   verifyAndConsumeLoginCode,
 } from "./lib/auth-db";
 import { sendCoachLoginCode } from "./lib/email";
+import { requireAdminApiKey } from "./lib/admin-auth";
+import {
+  type JsonRecord,
+  parseCoachOverridePatch,
+  readJsonBody,
+  readOptionalStringField,
+  readRequiredCodeField,
+  readRequiredEmailField,
+} from "./lib/request-validation";
 
 const app = new Hono();
 const PORT = env.port;
@@ -85,37 +93,13 @@ function normalizeEmail(value: string): string {
   return value.trim().toLowerCase();
 }
 
+
 function getClientIp(c: Context): string {
   const forwarded = c.req.header("x-forwarded-for");
   if (forwarded) {
     return forwarded.split(",")[0]?.trim() || "unknown";
   }
   return c.req.header("x-real-ip") ?? "unknown";
-}
-
-function getAdminApiKeyFromRequest(c: Context): string | null {
-  const bearer = c.req.header("authorization");
-  if (bearer?.startsWith("Bearer ")) {
-    return bearer.slice("Bearer ".length).trim();
-  }
-  const headerKey = c.req.header("x-admin-api-key");
-  return headerKey?.trim() || null;
-}
-
-async function requireAdminApiKey(c: Context, next: Next) {
-  if (!env.coachAdminApiKey) {
-    return c.json(
-      { error: "Admin API key is not configured on this server." },
-      503,
-    );
-  }
-
-  const provided = getAdminApiKeyFromRequest(c);
-  if (!provided || provided !== env.coachAdminApiKey) {
-    return c.json({ error: "Unauthorized" }, 401);
-  }
-
-  await next();
 }
 
 function isRateLimited(
@@ -361,18 +345,18 @@ app.post("/api/coaches/resync", async (c) => {
  * Always returns a generic success response to avoid leaking user existence.
  */
 app.post("/api/coach-auth/request", async (c) => {
-  let body: { email?: string };
+  let body: JsonRecord;
   try {
-    body = await c.req.json<{ email?: string }>();
+    body = await readJsonBody(c);
   } catch {
     return c.json({ error: "Invalid JSON body" }, 400);
   }
 
-  const email =
-    typeof body.email === "string" ? normalizeEmail(body.email) : "";
-  if (!email) {
-    return c.json({ error: "email is required" }, 400);
+  const parsedEmail = readRequiredEmailField(body, "email");
+  if (!parsedEmail.email) {
+    return c.json({ error: parsedEmail.error ?? "email is required" }, 400);
   }
+  const email = parsedEmail.email;
 
   const requestRateKey = `auth:request:${getClientIp(c)}:${email}`;
   const requestRateLimit = isRateLimited(
@@ -417,19 +401,23 @@ app.post("/api/coach-auth/request", async (c) => {
 });
 
 app.post("/api/coach-auth/verify", async (c) => {
-  let body: { email?: string; code?: string };
+  let body: JsonRecord;
   try {
-    body = await c.req.json<{ email?: string; code?: string }>();
+    body = await readJsonBody(c);
   } catch {
     return c.json({ error: "Invalid JSON body" }, 400);
   }
 
-  const email =
-    typeof body.email === "string" ? normalizeEmail(body.email) : "";
-  const code = typeof body.code === "string" ? body.code.trim() : "";
-  if (!email || !code) {
-    return c.json({ error: "email and code are required" }, 400);
+  const parsedEmail = readRequiredEmailField(body, "email");
+  if (!parsedEmail.email) {
+    return c.json({ error: parsedEmail.error ?? "email is required" }, 400);
   }
+  const parsedCode = readRequiredCodeField(body, "code");
+  if (!parsedCode.code) {
+    return c.json({ error: parsedCode.error ?? "code is required" }, 400);
+  }
+  const email = parsedEmail.email;
+  const code = parsedCode.code;
 
   const verifyRateKey = `auth:verify:${getClientIp(c)}:${email}`;
   const verifyRateLimit = isRateLimited(
@@ -519,37 +507,21 @@ app.patch("/api/coach-auth/me", async (c) => {
     return c.json({ error: "Unauthorized" }, 401);
   }
 
-  let body: CoachOverride;
+  let body: JsonRecord;
   try {
-    body = await c.req.json<CoachOverride>();
+    body = await readJsonBody(c);
   } catch {
     return c.json({ error: "Invalid JSON body" }, 400);
   }
 
-  const patch: CoachOverride = {
-    ...(typeof body.bio === "string" || body.bio === undefined
-      ? { bio: body.bio }
-      : {}),
-    ...(typeof body.avatarUrl === "string" || body.avatarUrl === undefined
-      ? { avatarUrl: body.avatarUrl }
-      : {}),
-    ...(typeof body.city === "string" || body.city === undefined
-      ? { city: body.city }
-      : {}),
-    ...(typeof body.state === "string" || body.state === undefined
-      ? { state: body.state }
-      : {}),
-    ...(typeof body.lat === "number" || body.lat === undefined
-      ? { lat: body.lat }
-      : {}),
-    ...(typeof body.lng === "number" || body.lng === undefined
-      ? { lng: body.lng }
-      : {}),
-  };
-
-  if (Object.keys(patch).length === 0) {
-    return c.json({ error: "No valid override fields provided" }, 400);
+  const parsedPatch = parseCoachOverridePatch(body);
+  if (!parsedPatch.patch) {
+    return c.json(
+      { error: parsedPatch.error ?? "No valid override fields provided" },
+      400,
+    );
   }
+  const patch = parsedPatch.patch;
 
   const saved = upsertCoachOverride(thinkificUserId, patch);
   cache = null;
@@ -600,19 +572,24 @@ app.put("/api/coaches/:thinkificUserId/email-links", async (c) => {
     return c.json({ error: "thinkificUserId must be an integer" }, 400);
   }
 
-  let body: { email?: string; source?: string };
+  let body: JsonRecord;
   try {
-    body = await c.req.json<{ email?: string; source?: string }>();
+    body = await readJsonBody(c);
   } catch {
     return c.json({ error: "Invalid JSON body" }, 400);
   }
 
-  const email = typeof body.email === "string" ? body.email.trim() : "";
-  if (!email) {
-    return c.json({ error: "email is required" }, 400);
+  const parsedEmail = readRequiredEmailField(body, "email");
+  if (!parsedEmail.email) {
+    return c.json({ error: parsedEmail.error ?? "email is required" }, 400);
   }
 
-  const link = upsertCoachEmailLink(thinkificUserId, email, body.source);
+  const source = readOptionalStringField(body, "source");
+  if (source !== undefined && source.trim() === "") {
+    return c.json({ error: "source must not be empty when provided" }, 400);
+  }
+
+  const link = upsertCoachEmailLink(thinkificUserId, parsedEmail.email, source);
   return c.json({ ok: true, link });
 });
 
@@ -622,19 +599,19 @@ app.delete("/api/coaches/:thinkificUserId/email-links", async (c) => {
     return c.json({ error: "thinkificUserId must be an integer" }, 400);
   }
 
-  let body: { email?: string };
+  let body: JsonRecord;
   try {
-    body = await c.req.json<{ email?: string }>();
+    body = await readJsonBody(c);
   } catch {
     return c.json({ error: "Invalid JSON body" }, 400);
   }
 
-  const email = typeof body.email === "string" ? body.email.trim() : "";
-  if (!email) {
-    return c.json({ error: "email is required" }, 400);
+  const parsedEmail = readRequiredEmailField(body, "email");
+  if (!parsedEmail.email) {
+    return c.json({ error: parsedEmail.error ?? "email is required" }, 400);
   }
 
-  const removed = deleteCoachEmailLink(thinkificUserId, email);
+  const removed = deleteCoachEmailLink(thinkificUserId, parsedEmail.email);
   return c.json({ ok: true, removed });
 });
 
@@ -644,37 +621,21 @@ app.put("/api/coaches/:thinkificUserId/override", async (c) => {
     return c.json({ error: "thinkificUserId must be an integer" }, 400);
   }
 
-  let body: CoachOverride;
+  let body: JsonRecord;
   try {
-    body = await c.req.json<CoachOverride>();
+    body = await readJsonBody(c);
   } catch {
     return c.json({ error: "Invalid JSON body" }, 400);
   }
 
-  const patch: CoachOverride = {
-    ...(typeof body.bio === "string" || body.bio === undefined
-      ? { bio: body.bio }
-      : {}),
-    ...(typeof body.avatarUrl === "string" || body.avatarUrl === undefined
-      ? { avatarUrl: body.avatarUrl }
-      : {}),
-    ...(typeof body.city === "string" || body.city === undefined
-      ? { city: body.city }
-      : {}),
-    ...(typeof body.state === "string" || body.state === undefined
-      ? { state: body.state }
-      : {}),
-    ...(typeof body.lat === "number" || body.lat === undefined
-      ? { lat: body.lat }
-      : {}),
-    ...(typeof body.lng === "number" || body.lng === undefined
-      ? { lng: body.lng }
-      : {}),
-  };
-
-  if (Object.keys(patch).length === 0) {
-    return c.json({ error: "No valid override fields provided" }, 400);
+  const parsedPatch = parseCoachOverridePatch(body);
+  if (!parsedPatch.patch) {
+    return c.json(
+      { error: parsedPatch.error ?? "No valid override fields provided" },
+      400,
+    );
   }
+  const patch = parsedPatch.patch;
 
   upsertCoachOverride(thinkificUserId, patch);
   cache = null;
