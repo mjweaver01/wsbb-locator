@@ -1,15 +1,19 @@
 import { useState, useEffect, useMemo, useRef, useDeferredValue } from 'react'
 import 'leaflet/dist/leaflet.css'
-import { AlertTriangle } from 'lucide-react'
 import type { CoachesRawJson, FilterState, RawCoach } from '@/lib/types'
 import { HeroSection } from '@/components/HeroSection'
 import { TierLegend } from '@/components/TierLegend'
 import { CoachMap } from '@/components/CoachMap'
 import { FilterBar } from '@/components/FilterBar'
 import { CoachGrid } from '@/components/CoachGrid'
+import { FooterCta } from '@/components/FooterCta'
+import { ErrorState, LoadingState } from '@/components/AppState'
 
 const API_BASE = import.meta.env.VITE_API_URL ?? ''
 const DATA_URL = `${API_BASE}/api/coaches`
+const COACH_PATHWAY_URL =
+  import.meta.env.VITE_COACH_PATHWAY_URL ??
+  'https://www.westside-barbell.com/pages/conjugate-coach-certification'
 
 const DEFAULT_FILTERS: FilterState = { tier: 'all', search: '' }
 
@@ -21,12 +25,13 @@ function hasLocation(c: RawCoach) {
   return typeof c.lat === 'number' && typeof c.lng === 'number'
 }
 
-export function App() {
+export function LandingPage() {
   const [coaches, setCoaches] = useState<RawCoach[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS)
   const cardRefs = useRef<Map<number, HTMLElement>>(new Map())
+
   useEffect(() => {
     fetch(DATA_URL)
       .then(r => {
@@ -59,27 +64,11 @@ export function App() {
   )
 
   if (loading) {
-    return (
-      <>
-        <HeroSection />
-        <div className="loading-state">Loading coaches…</div>
-      </>
-    )
+    return <LoadingState />
   }
 
   if (error) {
-    return (
-      <>
-        <HeroSection />
-        <div className="error-state">
-          <AlertTriangle size={20} strokeWidth={1.5} />
-          <span>{error}</span>
-          <span style={{ fontSize: 12 }}>
-            Check the API service logs and VITE_API_URL.
-          </span>
-        </div>
-      </>
-    )
+    return <ErrorState message={error} />
   }
 
   return (
@@ -95,34 +84,10 @@ export function App() {
         onFiltersChange={setFilters}
         visibleCount={filtered.length}
         totalCount={coaches.length}
+        level1Url={COACH_PATHWAY_URL}
       />
       <CoachGrid coaches={filtered} activeTier={filters.tier} cardRefs={cardRefs.current} />
-      <FooterCta />
+      <FooterCta pathwayUrl={COACH_PATHWAY_URL} />
     </>
-  )
-}
-
-function FooterCta() {
-  return (
-    <footer className="footer-cta">
-      <p className="footer-cta__eyebrow">Join the Directory</p>
-      <h2 className="footer-cta__heading">
-        Complete the
-        <br />
-        Pathway
-      </h2>
-      <p className="footer-cta__sub">
-        Earn your WSBB certification and get listed alongside the world's top
-        conjugate coaches.
-      </p>
-      <a
-        href="https://westsidebarbell.thinkific.com"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="footer-cta__btn"
-      >
-        Start Level 1 →
-      </a>
-    </footer>
   )
 }

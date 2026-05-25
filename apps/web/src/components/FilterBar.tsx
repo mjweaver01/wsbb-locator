@@ -6,7 +6,7 @@ interface FilterBarProps {
   onFiltersChange: (f: FilterState) => void
   visibleCount: number
   totalCount: number
-  level1Url?: string
+  level1Url: string
 }
 
 const TIER_BUTTONS: { value: TierFilter; label: string }[] = [
@@ -21,7 +21,7 @@ export function FilterBar({
   onFiltersChange,
   visibleCount,
   totalCount,
-  level1Url = 'https://westsidebarbell.thinkific.com',
+  level1Url,
 }: FilterBarProps) {
   return (
     <nav className="filter-bar" aria-label="Coach filters">
