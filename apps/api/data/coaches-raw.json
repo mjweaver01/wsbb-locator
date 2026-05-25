@@ -1,11 +1,11 @@
 {
   "fetchedAt": "2026-05-23T16:00:00.000Z",
   "subdomain": "westsidebarbell",
-  "totalCoaches": 10,
+  "totalCoaches": 11,
   "tierBreakdown": {
     "master": 2,
     "instructor": 3,
-    "certified": 5
+    "certified": 6
   },
   "coaches": [
     {
@@ -250,6 +250,27 @@
           "level": 1,
           "courseId": 11001,
           "completedAt": "2024-09-09T00:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 1011,
+      "email": "mjweaver01@gmail.com",
+      "firstName": "Mike",
+      "lastName": "Weaver",
+      "fullName": "Mike Weaver",
+      "avatarUrl": null,
+      "bio": "Novice powerlifter learning from the strongest men in the sport",
+      "tier": "certified",
+      "city": "Columbus",
+      "state": "Ohio",
+      "lat": 39.9612,
+      "lng": -82.9988,
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 11001,
+          "completedAt": "2026-05-25T00:00:00.000Z"
         }
       ]
     }

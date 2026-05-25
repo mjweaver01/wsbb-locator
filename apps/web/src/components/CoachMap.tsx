@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type * as Leaflet from "leaflet";
+import { createRoot, type Root } from "react-dom/client";
 import { MapPin } from "lucide-react";
 import type { RawCoach } from "@/lib/types";
+import { CoachCard } from "./CoachCard";
 
 interface CoachMapProps {
   coaches: RawCoach[];
@@ -55,25 +57,12 @@ function hasLocation(c: RawCoach): c is LocatedCoach {
   return typeof c.lat === "number" && typeof c.lng === "number";
 }
 
-function formatTierLabel(tier: string): string {
-  if (!tier) return "";
-  return tier.charAt(0).toUpperCase() + tier.slice(1);
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
-
 export function CoachMap({ coaches, hasLocationHint = false }: CoachMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Leaflet.Map | null>(null);
   const markerLayerRef = useRef<Leaflet.LayerGroup | null>(null);
   const [active, setActive] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
 
   const coachesWithLocation = useMemo(
@@ -144,6 +133,7 @@ export function CoachMap({ coaches, hasLocationHint = false }: CoachMapProps) {
   // eachLayer + instanceof + N individual removeLayer calls.
   useEffect(() => {
     let cancelled = false;
+    const popupRoots: Root[] = [];
 
     loadLeaflet().then((L) => {
       if (cancelled) return;
@@ -157,31 +147,17 @@ export function CoachMap({ coaches, hasLocationHint = false }: CoachMapProps) {
         const marker = L.marker([coach.lat, coach.lng], {
           icon: getIcon(L, coach.tier),
         });
-        const listingHref = `#coach-${coach.thinkificUserId}`;
-        const tierClass =
-          coach.tier === "master" ||
-          coach.tier === "instructor" ||
-          coach.tier === "certified"
-            ? coach.tier
-            : "certified";
-        const fullNameHtml = escapeHtml(coach.fullName);
-        const tierLabelHtml = escapeHtml(formatTierLabel(coach.tier));
-        const locationHtml = coach.city
-          ? `<p class="map-popup__loc">${escapeHtml(coach.city)}${coach.state ? `, ${escapeHtml(coach.state)}` : ""}</p>`
-          : "";
-        marker.bindPopup(
-          `
-            <div class="map-popup">
-              <p class="map-popup__name">${fullNameHtml}</p>
-              <span class="map-popup__tier map-popup__tier--${tierClass}">${tierLabelHtml}</span>
-              ${locationHtml}
-              <a class="map-popup__listing-link" href="${listingHref}">
-                View Listing
-              </a>
-            </div>
-          `,
-          { className: "coach-map-popup", closeButton: false, maxWidth: 240 },
-        );
+        const popupContainer = document.createElement("div");
+        popupContainer.className = "coach-map-popup-card";
+        const popupRoot = createRoot(popupContainer);
+        popupRoot.render(<CoachCard coach={coach} includeAnchorId={false} />);
+        popupRoots.push(popupRoot);
+
+        marker.bindPopup(popupContainer, {
+          className: "coach-map-popup coach-map-popup--card",
+          closeButton: false,
+          maxWidth: 360,
+        });
         group.addLayer(marker);
       }
 
@@ -192,6 +168,9 @@ export function CoachMap({ coaches, hasLocationHint = false }: CoachMapProps) {
 
     return () => {
       cancelled = true;
+      for (const popupRoot of popupRoots) {
+        popupRoot.unmount();
+      }
     };
   }, [coachesWithLocation]);
 
@@ -235,8 +214,14 @@ export function CoachMap({ coaches, hasLocationHint = false }: CoachMapProps) {
         </div>
       )}
 
-      {hasLocations && !active && (
-        <div className="coach-map-overlay" onClick={() => setActive(true)}>
+      {hasLocations && !active && !hasInteracted && (
+        <div
+          className="coach-map-overlay"
+          onClick={() => {
+            setActive(true);
+            setHasInteracted(true);
+          }}
+        >
           <span className="coach-map-overlay__hint">
             Click to interact with map
           </span>

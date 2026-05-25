@@ -4,6 +4,7 @@ import type { RawCoach } from "@/lib/types";
 interface CoachCardProps {
   coach: RawCoach;
   cardRef?: (el: HTMLElement | null) => void;
+  includeAnchorId?: boolean;
 }
 
 const TIER_LABEL: Record<string, string> = {
@@ -32,13 +33,17 @@ function formatYear(iso: string | null): string {
   return new Date(iso).getFullYear().toString();
 }
 
-export function CoachCard({ coach, cardRef }: CoachCardProps) {
+export function CoachCard({
+  coach,
+  cardRef,
+  includeAnchorId = true,
+}: CoachCardProps) {
   const { fullName, avatarUrl, bio, tier, certifications, email, city, state } =
     coach;
 
   return (
     <article
-      id={`coach-${coach.thinkificUserId}`}
+      id={includeAnchorId ? `coach-${coach.thinkificUserId}` : undefined}
       ref={cardRef}
       className={`coach-card coach-card--${tier}`}
     >

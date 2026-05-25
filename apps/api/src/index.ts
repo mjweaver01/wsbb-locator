@@ -93,7 +93,6 @@ function normalizeEmail(value: string): string {
   return value.trim().toLowerCase();
 }
 
-
 function getClientIp(c: Context): string {
   const forwarded = c.req.header("x-forwarded-for");
   if (forwarded) {
