@@ -1,6 +1,6 @@
 /**
- * Step 1 of 2: Pull completed pathway enrollments from Thinkific
- * and save the results to coaches-raw.json for inspection / seeding.
+ * Pull completed pathway enrollments from Thinkific and
+ * save the results to coaches-raw.json as a static fallback cache.
  *
  * Run:  bun run fetch
  *
@@ -29,7 +29,7 @@ try {
   console.log(`  Master:     ${data.tierBreakdown.master}`);
   console.log(`  Instructor: ${data.tierBreakdown.instructor}`);
   console.log(`  Certified:  ${data.tierBreakdown.certified}`);
-  console.log("\nNext: bun run seed");
+  console.log("\nNext: restart the API or call POST /api/coaches/refresh");
 } catch (err) {
   console.error("\nError:", (err as Error).message);
   process.exit(1);

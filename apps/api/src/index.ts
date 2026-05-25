@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { existsSync, readFileSync } from "fs";
 import { resolve } from "path";
 import {
   fetchCoachesFromThinkific,
@@ -8,13 +7,16 @@ import {
   type CoachesPayload,
 } from "./lib/thinkific";
 import { env } from "./lib/env";
+import {
+  deleteCoachOverride,
+  listCoachOverrides,
+  upsertCoachOverride,
+  type CoachOverride,
+} from "./lib/overrides-db";
 
 const app = new Hono();
 const PORT = env.port;
 const CACHE_TTL_MS = env.coachCacheTtlMs;
-const OVERRIDES_PATH = resolve(import.meta.dir, "../data/coach-overrides.json");
-
-type CoachOverride = Partial<Omit<Coach, "thinkificUserId">>;
 
 // ---------------------------------------------------------------------------
 // In-memory cache
@@ -28,33 +30,9 @@ function isCacheStale() {
 }
 
 /** Load the static fallback JSON bundled with the web app. */
-function loadStaticFallback(): CoachesPayload {
+function loadStaticFallback(): Promise<CoachesPayload> {
   const staticPath = resolve(import.meta.dir, "../data/coaches-raw.json");
-  const raw = readFileSync(staticPath, "utf8");
-  return JSON.parse(raw) as CoachesPayload;
-}
-
-/**
- * Optional local overrides keyed by Thinkific user ID.
- * Example:
- * {
- *   "1001": { "city": "Columbus", "bio": "Updated coach bio" }
- * }
- */
-function loadCoachOverrides(): Record<string, CoachOverride> {
-  if (!existsSync(OVERRIDES_PATH)) return {};
-
-  try {
-    const raw = readFileSync(OVERRIDES_PATH, "utf8");
-    const parsed = JSON.parse(raw) as unknown;
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-      throw new Error("coach-overrides.json must be an object keyed by Thinkific user ID");
-    }
-    return parsed as Record<string, CoachOverride>;
-  } catch (err) {
-    console.error("[overrides] failed to parse coach-overrides.json:", (err as Error).message);
-    return {};
-  }
+  return Bun.file(staticPath).json() as Promise<CoachesPayload>;
 }
 
 function recalculateTierBreakdown(coaches: Coach[]): CoachesPayload["tierBreakdown"] {
@@ -66,7 +44,7 @@ function recalculateTierBreakdown(coaches: Coach[]): CoachesPayload["tierBreakdo
 }
 
 function mergeCoachOverrides(data: CoachesPayload): CoachesPayload {
-  const overridesById = loadCoachOverrides();
+  const overridesById = listCoachOverrides();
   const coaches = data.coaches.map((coach) => {
     const override = overridesById[String(coach.thinkificUserId)];
     return override ? { ...coach, ...override, thinkificUserId: coach.thinkificUserId } : coach;
@@ -103,7 +81,7 @@ async function getCoaches(): Promise<{ data: CoachesPayload; source: string }> {
 
   // Static fallback — demo mode
   try {
-    const data = mergeCoachOverrides(loadStaticFallback());
+    const data = mergeCoachOverrides(await loadStaticFallback());
     cache = data;
     cacheSetAt = Date.now();
     console.log(`[static] loaded ${data.totalCoaches} coaches from coaches-raw.json`);
@@ -142,6 +120,53 @@ app.post("/api/coaches/refresh", async (c) => {
   } catch (err) {
     return c.json({ error: (err as Error).message }, 503);
   }
+});
+
+app.put("/api/coaches/:thinkificUserId/override", async (c) => {
+  const thinkificUserId = Number(c.req.param("thinkificUserId"));
+  if (!Number.isInteger(thinkificUserId)) {
+    return c.json({ error: "thinkificUserId must be an integer" }, 400);
+  }
+
+  let body: CoachOverride;
+  try {
+    body = await c.req.json<CoachOverride>();
+  } catch {
+    return c.json({ error: "Invalid JSON body" }, 400);
+  }
+
+  const patch: CoachOverride = {
+    ...(typeof body.bio === "string" || body.bio === undefined ? { bio: body.bio } : {}),
+    ...(typeof body.avatarUrl === "string" || body.avatarUrl === undefined
+      ? { avatarUrl: body.avatarUrl }
+      : {}),
+    ...(typeof body.city === "string" || body.city === undefined ? { city: body.city } : {}),
+    ...(typeof body.state === "string" || body.state === undefined ? { state: body.state } : {}),
+    ...(typeof body.lat === "number" || body.lat === undefined ? { lat: body.lat } : {}),
+    ...(typeof body.lng === "number" || body.lng === undefined ? { lng: body.lng } : {}),
+  };
+
+  if (Object.keys(patch).length === 0) {
+    return c.json({ error: "No valid override fields provided" }, 400);
+  }
+
+  upsertCoachOverride(thinkificUserId, patch);
+  cache = null;
+  cacheSetAt = 0;
+
+  return c.json({ ok: true, thinkificUserId, override: patch });
+});
+
+app.delete("/api/coaches/:thinkificUserId/override", (c) => {
+  const thinkificUserId = Number(c.req.param("thinkificUserId"));
+  if (!Number.isInteger(thinkificUserId)) {
+    return c.json({ error: "thinkificUserId must be an integer" }, 400);
+  }
+
+  deleteCoachOverride(thinkificUserId);
+  cache = null;
+  cacheSetAt = 0;
+  return c.json({ ok: true, thinkificUserId });
 });
 
 app.get("/api/health", (c) =>
