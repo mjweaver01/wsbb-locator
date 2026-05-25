@@ -241,7 +241,8 @@ app.use(
   "*",
   cors({
     origin: (origin) => {
-      if (!origin) return env.corsAllowedOrigins[0] ?? "";
+      if (!origin) return "*";
+      if (!env.corsEnforceAllowlist) return origin;
       return env.corsAllowedOrigins.includes(origin) ? origin : "";
     },
     credentials: true,

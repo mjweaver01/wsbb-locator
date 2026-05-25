@@ -80,7 +80,8 @@ export const env = {
     10 * 60 * 1000
   ),
   coachAuthDebugExposeCode: readBoolEnvWithDefault("COACH_AUTH_DEBUG_EXPOSE_CODE", false),
-  corsAllowedOrigins: configuredCorsOrigins.length > 0 ? configuredCorsOrigins : ["http://localhost:5173"],
+  corsAllowedOrigins: configuredCorsOrigins,
+  corsEnforceAllowlist: readBoolEnvWithDefault("CORS_ENFORCE_ALLOWLIST", false),
   emailProvider: readEnv("EMAIL_PROVIDER") ?? "console",
   emailFrom: readEnv("EMAIL_FROM"),
   resendApiKey: readEnv("RESEND_API_KEY"),
