@@ -52,6 +52,16 @@ export const env = {
   coachSessionTtlDays: readIntEnvWithDefault("COACH_SESSION_TTL_DAYS", 30),
   coachAuthCookieName: readEnv("COACH_AUTH_COOKIE_NAME") ?? "wsbb_coach_session",
   coachAuthCookieSecure: readBoolEnvWithDefault("COACH_AUTH_COOKIE_SECURE", false),
+  coachAuthRequestRateLimitMax: readIntEnvWithDefault("COACH_AUTH_REQUEST_RATE_LIMIT_MAX", 10),
+  coachAuthRequestRateLimitWindowMs: readIntEnvWithDefault(
+    "COACH_AUTH_REQUEST_RATE_LIMIT_WINDOW_MS",
+    10 * 60 * 1000
+  ),
+  coachAuthVerifyRateLimitMax: readIntEnvWithDefault("COACH_AUTH_VERIFY_RATE_LIMIT_MAX", 20),
+  coachAuthVerifyRateLimitWindowMs: readIntEnvWithDefault(
+    "COACH_AUTH_VERIFY_RATE_LIMIT_WINDOW_MS",
+    10 * 60 * 1000
+  ),
   coachAuthDebugExposeCode: readBoolEnvWithDefault("COACH_AUTH_DEBUG_EXPOSE_CODE", false),
   corsAllowedOrigins: configuredCorsOrigins.length > 0 ? configuredCorsOrigins : ["http://localhost:5173"],
   emailProvider: readEnv("EMAIL_PROVIDER") ?? "console",

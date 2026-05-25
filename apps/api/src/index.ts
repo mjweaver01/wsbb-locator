@@ -39,6 +39,7 @@ const CACHE_TTL_MS = env.coachCacheTtlMs;
 
 let cache: CoachesPayload | null = null;
 let cacheSetAt = 0;
+const authRateLimitStore = new Map<string, number[]>();
 
 function isCacheStale() {
   return !cache || Date.now() - cacheSetAt > CACHE_TTL_MS;
@@ -75,6 +76,36 @@ function mergeCoachOverrides(data: CoachesPayload): CoachesPayload {
 
 function normalizeEmail(value: string): string {
   return value.trim().toLowerCase();
+}
+
+function getClientIp(c: Context): string {
+  const forwarded = c.req.header("x-forwarded-for");
+  if (forwarded) {
+    return forwarded.split(",")[0]?.trim() || "unknown";
+  }
+  return c.req.header("x-real-ip") ?? "unknown";
+}
+
+function isRateLimited(
+  key: string,
+  maxAttempts: number,
+  windowMs: number
+): { limited: boolean; retryAfterSeconds: number } {
+  const now = Date.now();
+  const cutoff = now - windowMs;
+  const attempts = authRateLimitStore.get(key) ?? [];
+  const recentAttempts = attempts.filter((ts) => ts >= cutoff);
+
+  if (recentAttempts.length >= maxAttempts) {
+    const oldestRelevant = recentAttempts[0];
+    const retryAfterMs = Math.max(0, oldestRelevant + windowMs - now);
+    authRateLimitStore.set(key, recentAttempts);
+    return { limited: true, retryAfterSeconds: Math.ceil(retryAfterMs / 1000) };
+  }
+
+  recentAttempts.push(now);
+  authRateLimitStore.set(key, recentAttempts);
+  return { limited: false, retryAfterSeconds: 0 };
 }
 
 function parseCookies(cookieHeader: string | undefined): Record<string, string> {
@@ -285,6 +316,20 @@ app.post("/api/coach-auth/request", async (c) => {
     return c.json({ error: "email is required" }, 400);
   }
 
+  const requestRateKey = `auth:request:${getClientIp(c)}:${email}`;
+  const requestRateLimit = isRateLimited(
+    requestRateKey,
+    env.coachAuthRequestRateLimitMax,
+    env.coachAuthRequestRateLimitWindowMs
+  );
+  if (requestRateLimit.limited) {
+    return c.json(
+      { error: "Too many code requests. Please try again shortly." },
+      429,
+      { "Retry-After": String(requestRateLimit.retryAfterSeconds) }
+    );
+  }
+
   let debugCode: string | undefined;
   try {
     const resolved = await resolveCoachByEmail(email);
@@ -323,6 +368,20 @@ app.post("/api/coach-auth/verify", async (c) => {
   const code = typeof body.code === "string" ? body.code.trim() : "";
   if (!email || !code) {
     return c.json({ error: "email and code are required" }, 400);
+  }
+
+  const verifyRateKey = `auth:verify:${getClientIp(c)}:${email}`;
+  const verifyRateLimit = isRateLimited(
+    verifyRateKey,
+    env.coachAuthVerifyRateLimitMax,
+    env.coachAuthVerifyRateLimitWindowMs
+  );
+  if (verifyRateLimit.limited) {
+    return c.json(
+      { error: "Too many verification attempts. Please try again shortly." },
+      429,
+      { "Retry-After": String(verifyRateLimit.retryAfterSeconds) }
+    );
   }
 
   try {

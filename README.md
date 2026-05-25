@@ -178,6 +178,10 @@ Optional runtime settings:
 - `COACH_AUTH_COOKIE_NAME` (default `wsbb_coach_session`)
 - `COACH_AUTH_COOKIE_SECURE` (default `false`)
 - `COACH_AUTH_DEBUG_EXPOSE_CODE` (default `false`, dev only)
+- `COACH_AUTH_REQUEST_RATE_LIMIT_MAX` (default `10`)
+- `COACH_AUTH_REQUEST_RATE_LIMIT_WINDOW_MS` (default `600000`)
+- `COACH_AUTH_VERIFY_RATE_LIMIT_MAX` (default `20`)
+- `COACH_AUTH_VERIFY_RATE_LIMIT_WINDOW_MS` (default `600000`)
 - `CORS_ALLOWED_ORIGINS` (comma-separated frontend origins)
 - `EMAIL_PROVIDER` (`console` or `resend`, default `console`)
 - `EMAIL_FROM` (required for `resend`)
@@ -227,6 +231,6 @@ This writes `apps/api/data/coaches-raw.json`. The API only uses this when local 
 
 ## Current Gaps / Next Steps
 
-- Add rate limits / abuse protection to auth endpoints.
+- Move auth rate limits to shared infra (Redis/edge) if deploying multiple API instances.
 - Protect admin/internal `/api/coaches/:thinkificUserId/*` routes with admin auth.
 - Add admin/internal trigger for scheduled `resync`.
