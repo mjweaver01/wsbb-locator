@@ -1,0 +1,49 @@
+:root {
+  --bg: #0a0a0a;
+  --bg-raised: #111111;
+  --gold: #c8a96e;
+  --gold-dim: #9e7e4c;
+  --silver: #c0bdb8;
+  --text: #e8e4dc;
+  --muted: #a8a49c;
+  --card: #151515;
+  --card-border: #222222;
+  --card-border-hover: #333333;
+  --input-bg: #181818;
+  --divider: #1e1e1e;
+
+  --font-heading: 'Bebas Neue', sans-serif;
+  --font-label: 'Barlow Condensed', sans-serif;
+  --font-body: 'Barlow', sans-serif;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  --tier-master-color: #c8a96e;
+  --tier-instructor-color: #c0bdb8;
+  --tier-certified-color: #a8a49c;
+  --tier-master-border: #3a2e1a;
+  --tier-master-bg: #1c160a;
+  --tier-instructor-border: #2e2d2b;
+  --tier-instructor-bg: #161615;
+  --tier-certified-border: #282725;
+  --tier-certified-bg: #141412;
+  --map-surface: #0d0d0d;
+  --overlay-scrim: rgba(10, 10, 10, 0.75);
+  --overlay-attribution-bg: rgba(10, 10, 10, 0.92);
+  --overlay-shimmer-strong: rgba(255, 255, 255, 0.03);
+  --overlay-shimmer-soft: rgba(255, 255, 255, 0.02);
+  --text-muted-strong: #7b7974;
+  --text-muted-medium: #666666;
+  --text-muted-low: #5a5854;
+  --text-muted-soft: #7d786f;
+  --muted-placeholder: #555555;
+  --surface-interactive: #1a1a1a;
+  --surface-floating: #111111;
+  --border-floating: #2a2a2a;
+  --border-control: #1f1f1f;
+  --feedback-success: #8ca986;
+  --feedback-danger: #c87070;
+  --accent-hover: #d4b87a;
+}
