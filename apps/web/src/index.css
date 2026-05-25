@@ -793,6 +793,159 @@ input {
   text-decoration: none;
 }
 
+/* ── Coach Access ────────────────────────────────────── */
+
+.coach-access {
+  border-top: 1px solid var(--divider);
+  border-bottom: 1px solid var(--divider);
+  background: var(--bg-raised);
+  padding: 40px 24px;
+}
+
+.coach-access__inner {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.coach-access__eyebrow {
+  font-family: var(--font-label);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+
+.coach-access__heading {
+  font-family: var(--font-label);
+  font-size: 28px;
+  letter-spacing: 0.03em;
+  margin-bottom: 8px;
+}
+
+.coach-access__sub {
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+
+.coach-access__auth-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.coach-access__panel {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.coach-access__panel--full {
+  max-width: 760px;
+}
+
+.coach-access__panel h3 {
+  font-family: var(--font-label);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.coach-access__panel label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.coach-access__panel input,
+.coach-access__panel textarea {
+  background: var(--input-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: 8px 10px;
+}
+
+.coach-access__row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.coach-access__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.coach-access__panel button {
+  background: var(--gold);
+  color: #0a0a0a;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.coach-access__panel button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.coach-access__ghost {
+  background: transparent !important;
+  border: 1px solid var(--card-border) !important;
+  color: var(--muted) !important;
+}
+
+.coach-access__meta {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.coach-access__links {
+  border-top: 1px solid var(--divider);
+  padding-top: 10px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.coach-access__links ul {
+  margin-top: 6px;
+  padding-left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.coach-access__links span {
+  color: #7d786f;
+}
+
+.coach-access__status,
+.coach-access__error {
+  margin-top: 10px;
+  font-size: 13px;
+}
+
+.coach-access__status {
+  color: #8ca986;
+}
+
+.coach-access__error {
+  color: #c87070;
+}
+
 /* ── Loading / Error ─────────────────────────────────── */
 
 .loading-state, .error-state {
@@ -826,4 +979,7 @@ input {
   .filter-bar__inner { gap: 8px; }
   .filter-bar__count { display: none; }
   .coach-grid { grid-template-columns: 1fr; }
+  .coach-access { padding: 28px 16px; }
+  .coach-access__auth-grid,
+  .coach-access__row { grid-template-columns: 1fr; }
 }

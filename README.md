@@ -45,6 +45,7 @@ apps/
    - interactive map
    - filter/search controls
    - coach card grid
+   - coach profile access panel (request code, verify, update profile)
 3. Filters are client-side (`tier` + name search).
 
 ### Backend (`apps/api`)
@@ -120,7 +121,7 @@ This allows resolving a coach even when upstream systems use different emails.
 - `POST /api/coach-auth/request`
   - Body: `{ "email": "..." }`
   - Resolves by Thinkific email or linked alias
-  - Creates one-time code and logs delivery placeholder on API server
+  - Creates one-time code and sends via configured email provider
   - Returns a generic success response to avoid account enumeration
 - `POST /api/coach-auth/verify`
   - Body: `{ "email": "...", "code": "123456" }`
@@ -175,7 +176,12 @@ Optional runtime settings:
 - `COACH_AUTH_CODE_TTL_MINUTES` (default `15`)
 - `COACH_SESSION_TTL_DAYS` (default `30`)
 - `COACH_AUTH_COOKIE_NAME` (default `wsbb_coach_session`)
+- `COACH_AUTH_COOKIE_SECURE` (default `false`)
 - `COACH_AUTH_DEBUG_EXPOSE_CODE` (default `false`, dev only)
+- `CORS_ALLOWED_ORIGINS` (comma-separated frontend origins)
+- `EMAIL_PROVIDER` (`console` or `resend`, default `console`)
+- `EMAIL_FROM` (required for `resend`)
+- `RESEND_API_KEY` (required for `resend`)
 
 ## Local Development
 
@@ -221,5 +227,6 @@ This writes `apps/api/data/coaches-raw.json`. The API only uses this when local 
 
 ## Current Gaps / Next Steps
 
-- Wire real email delivery provider for login codes (currently console placeholder).
+- Add rate limits / abuse protection to auth endpoints.
+- Protect admin/internal `/api/coaches/:thinkificUserId/*` routes with admin auth.
 - Add admin/internal trigger for scheduled `resync`.

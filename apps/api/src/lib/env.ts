@@ -30,6 +30,17 @@ function readBoolEnvWithDefault(name: string, fallback: boolean): boolean {
   throw new Error(`${name} must be a boolean (true/false). Received "${raw}".`);
 }
 
+function readCsvEnv(name: string): string[] {
+  const raw = readEnv(name);
+  if (!raw) return [];
+  return raw
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
+const configuredCorsOrigins = readCsvEnv("CORS_ALLOWED_ORIGINS");
+
 export const env = {
   port: readIntEnvWithDefault("PORT", 3001),
   coachCacheTtlMs: readIntEnvWithDefault("COACH_CACHE_TTL_MS", 60 * 60 * 1000),
@@ -40,7 +51,12 @@ export const env = {
   coachAuthCodeTtlMinutes: readIntEnvWithDefault("COACH_AUTH_CODE_TTL_MINUTES", 15),
   coachSessionTtlDays: readIntEnvWithDefault("COACH_SESSION_TTL_DAYS", 30),
   coachAuthCookieName: readEnv("COACH_AUTH_COOKIE_NAME") ?? "wsbb_coach_session",
+  coachAuthCookieSecure: readBoolEnvWithDefault("COACH_AUTH_COOKIE_SECURE", false),
   coachAuthDebugExposeCode: readBoolEnvWithDefault("COACH_AUTH_DEBUG_EXPOSE_CODE", false),
+  corsAllowedOrigins: configuredCorsOrigins.length > 0 ? configuredCorsOrigins : ["http://localhost:5173"],
+  emailProvider: readEnv("EMAIL_PROVIDER") ?? "console",
+  emailFrom: readEnv("EMAIL_FROM"),
+  resendApiKey: readEnv("RESEND_API_KEY"),
   thinkificApiKey: readEnv("THINKIFIC_API_KEY"),
   thinkificSubdomain: readEnv("THINKIFIC_SUBDOMAIN"),
   thinkificLevel1Id: readIntEnv("THINKIFIC_LEVEL1_ID"),

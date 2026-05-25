@@ -27,6 +27,7 @@ import {
   getCoachSession,
   verifyAndConsumeLoginCode,
 } from "./lib/auth-db";
+import { sendCoachLoginCode } from "./lib/email";
 
 const app = new Hono();
 const PORT = env.port;
@@ -104,6 +105,7 @@ function buildSessionCookie(token: string, expiresAt: string): string {
     "HttpOnly",
     "SameSite=Lax",
     `Max-Age=${maxAgeSeconds}`,
+    ...(env.coachAuthCookieSecure ? ["Secure"] : []),
   ].join("; ");
 }
 
@@ -114,6 +116,7 @@ function buildExpiredSessionCookie(): string {
     "HttpOnly",
     "SameSite=Lax",
     "Max-Age=0",
+    ...(env.coachAuthCookieSecure ? ["Secure"] : []),
   ].join("; ");
 }
 
@@ -203,7 +206,16 @@ async function getCoaches(): Promise<{ data: CoachesPayload; source: string }> {
 // Middleware
 // ---------------------------------------------------------------------------
 
-app.use("*", cors());
+app.use(
+  "*",
+  cors({
+    origin: (origin) => {
+      if (!origin) return env.corsAllowedOrigins[0] ?? "";
+      return env.corsAllowedOrigins.includes(origin) ? origin : "";
+    },
+    credentials: true,
+  })
+);
 
 // ---------------------------------------------------------------------------
 // Routes
@@ -282,15 +294,13 @@ app.post("/api/coach-auth/request", async (c) => {
       env.coachAuthCodeTtlMinutes
     );
 
-    // Placeholder delivery until provider wiring.
-    console.log(
-      `[coach-auth] code for ${email} (thinkificUserId=${resolved.thinkificUserId}, source=${resolved.source}): ${code}`
-    );
+    await sendCoachLoginCode({ toEmail: email, code });
 
     if (env.coachAuthDebugExposeCode) {
       debugCode = code;
     }
-  } catch {
+  } catch (err) {
+    console.error(`[coach-auth] request failed for ${email}: ${(err as Error).message}`);
     // Intentionally ignored to prevent account enumeration.
   }
 
