@@ -17,6 +17,23 @@ function readIntEnv(name: string): number | undefined {
   return parsed;
 }
 
+function readOptionalIntEnv(name: string): number | undefined {
+  const raw = readEnv(name);
+  if (!raw) return undefined;
+
+  // Treat placeholder-looking values as unset, so deployment doesn't crash.
+  if (raw.startsWith("<") && raw.endsWith(">")) {
+    return undefined;
+  }
+
+  const parsed = Number(raw);
+  if (!Number.isInteger(parsed)) {
+    return undefined;
+  }
+
+  return parsed;
+}
+
 function readIntEnvWithDefault(name: string, fallback: number): number {
   return readIntEnv(name) ?? fallback;
 }
@@ -69,7 +86,7 @@ export const env = {
   resendApiKey: readEnv("RESEND_API_KEY"),
   thinkificApiKey: readEnv("THINKIFIC_API_KEY"),
   thinkificSubdomain: readEnv("THINKIFIC_SUBDOMAIN"),
-  thinkificLevel1Id: readIntEnv("THINKIFIC_LEVEL1_ID"),
-  thinkificLevel2Id: readIntEnv("THINKIFIC_LEVEL2_ID"),
-  thinkificLevel3Id: readIntEnv("THINKIFIC_LEVEL3_ID"),
+  thinkificLevel1Id: readOptionalIntEnv("THINKIFIC_LEVEL1_ID"),
+  thinkificLevel2Id: readOptionalIntEnv("THINKIFIC_LEVEL2_ID"),
+  thinkificLevel3Id: readOptionalIntEnv("THINKIFIC_LEVEL3_ID"),
 } as const;
