@@ -21,6 +21,15 @@ function readIntEnvWithDefault(name: string, fallback: number): number {
   return readIntEnv(name) ?? fallback;
 }
 
+function readBoolEnvWithDefault(name: string, fallback: boolean): boolean {
+  const raw = readEnv(name);
+  if (!raw) return fallback;
+  const v = raw.toLowerCase();
+  if (v === "true" || v === "1" || v === "yes" || v === "on") return true;
+  if (v === "false" || v === "0" || v === "no" || v === "off") return false;
+  throw new Error(`${name} must be a boolean (true/false). Received "${raw}".`);
+}
+
 export const env = {
   port: readIntEnvWithDefault("PORT", 3001),
   coachCacheTtlMs: readIntEnvWithDefault("COACH_CACHE_TTL_MS", 60 * 60 * 1000),
@@ -28,6 +37,10 @@ export const env = {
     readEnv("COACH_DATA_DB_PATH") ??
     readEnv("COACH_OVERRIDES_DB_PATH") ??
     `${import.meta.dir}/../../data/coach-data.sqlite`,
+  coachAuthCodeTtlMinutes: readIntEnvWithDefault("COACH_AUTH_CODE_TTL_MINUTES", 15),
+  coachSessionTtlDays: readIntEnvWithDefault("COACH_SESSION_TTL_DAYS", 30),
+  coachAuthCookieName: readEnv("COACH_AUTH_COOKIE_NAME") ?? "wsbb_coach_session",
+  coachAuthDebugExposeCode: readBoolEnvWithDefault("COACH_AUTH_DEBUG_EXPOSE_CODE", false),
   thinkificApiKey: readEnv("THINKIFIC_API_KEY"),
   thinkificSubdomain: readEnv("THINKIFIC_SUBDOMAIN"),
   thinkificLevel1Id: readIntEnv("THINKIFIC_LEVEL1_ID"),

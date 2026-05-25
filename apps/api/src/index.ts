@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
 import { cors } from "hono/cors";
 import { resolve } from "path";
 import {
@@ -14,6 +14,19 @@ import {
   type CoachOverride,
 } from "./lib/overrides-db";
 import { loadThinkificCache, saveThinkificCache } from "./lib/thinkific-cache-db";
+import {
+  deleteCoachEmailLink,
+  findThinkificUserIdByLinkedEmail,
+  listCoachEmailLinks,
+  upsertCoachEmailLink,
+} from "./lib/email-links-db";
+import {
+  createCoachSession,
+  createLoginCode,
+  deleteCoachSession,
+  getCoachSession,
+  verifyAndConsumeLoginCode,
+} from "./lib/auth-db";
 
 const app = new Hono();
 const PORT = env.port;
@@ -57,6 +70,85 @@ function mergeCoachOverrides(data: CoachesPayload): CoachesPayload {
     totalCoaches: coaches.length,
     tierBreakdown: recalculateTierBreakdown(coaches),
   };
+}
+
+function normalizeEmail(value: string): string {
+  return value.trim().toLowerCase();
+}
+
+function parseCookies(cookieHeader: string | undefined): Record<string, string> {
+  if (!cookieHeader) return {};
+  const out: Record<string, string> = {};
+  for (const part of cookieHeader.split(";")) {
+    const trimmed = part.trim();
+    if (!trimmed) continue;
+    const index = trimmed.indexOf("=");
+    if (index < 0) continue;
+    const key = trimmed.slice(0, index).trim();
+    const value = trimmed.slice(index + 1).trim();
+    out[key] = decodeURIComponent(value);
+  }
+  return out;
+}
+
+function buildSessionCookie(token: string, expiresAt: string): string {
+  const encoded = encodeURIComponent(token);
+  const maxAgeSeconds = Math.max(
+    0,
+    Math.floor((Date.parse(expiresAt) - Date.now()) / 1000)
+  );
+
+  return [
+    `${env.coachAuthCookieName}=${encoded}`,
+    "Path=/",
+    "HttpOnly",
+    "SameSite=Lax",
+    `Max-Age=${maxAgeSeconds}`,
+  ].join("; ");
+}
+
+function buildExpiredSessionCookie(): string {
+  return [
+    `${env.coachAuthCookieName}=`,
+    "Path=/",
+    "HttpOnly",
+    "SameSite=Lax",
+    "Max-Age=0",
+  ].join("; ");
+}
+
+function getSessionTokenFromRequest(c: Context): string | null {
+  const cookies = parseCookies(c.req.header("cookie"));
+  return cookies[env.coachAuthCookieName] ?? null;
+}
+
+function getAuthenticatedThinkificUserId(c: Context): number | null {
+  const token = getSessionTokenFromRequest(c);
+  if (!token) return null;
+  const session = getCoachSession(token);
+  return session?.thinkificUserId ?? null;
+}
+
+async function resolveCoachByEmail(email: string): Promise<{
+  thinkificUserId: number;
+  source: "thinkific-email" | "linked-email";
+}> {
+  const normalizedEmail = normalizeEmail(email);
+  const { data } = await getCoaches();
+
+  const direct = data.coaches.find(
+    (coach) => normalizeEmail(coach.email) === normalizedEmail
+  );
+  if (direct) {
+    return { thinkificUserId: direct.thinkificUserId, source: "thinkific-email" };
+  }
+
+  const linkedId = findThinkificUserIdByLinkedEmail(normalizedEmail);
+  if (linkedId) {
+    return { thinkificUserId: linkedId, source: "linked-email" };
+  }
+
+  throw new Error("Coach not found");
 }
 
 async function getCoaches(): Promise<{ data: CoachesPayload; source: string }> {
@@ -162,6 +254,248 @@ app.post("/api/coaches/resync", async (c) => {
   } catch (err) {
     return c.json({ error: (err as Error).message }, 503);
   }
+});
+
+/**
+ * Request a one-time login code.
+ * Always returns a generic success response to avoid leaking user existence.
+ */
+app.post("/api/coach-auth/request", async (c) => {
+  let body: { email?: string };
+  try {
+    body = await c.req.json<{ email?: string }>();
+  } catch {
+    return c.json({ error: "Invalid JSON body" }, 400);
+  }
+
+  const email = typeof body.email === "string" ? normalizeEmail(body.email) : "";
+  if (!email) {
+    return c.json({ error: "email is required" }, 400);
+  }
+
+  let debugCode: string | undefined;
+  try {
+    const resolved = await resolveCoachByEmail(email);
+    const code = createLoginCode(
+      resolved.thinkificUserId,
+      email,
+      env.coachAuthCodeTtlMinutes
+    );
+
+    // Placeholder delivery until provider wiring.
+    console.log(
+      `[coach-auth] code for ${email} (thinkificUserId=${resolved.thinkificUserId}, source=${resolved.source}): ${code}`
+    );
+
+    if (env.coachAuthDebugExposeCode) {
+      debugCode = code;
+    }
+  } catch {
+    // Intentionally ignored to prevent account enumeration.
+  }
+
+  return c.json({
+    ok: true,
+    message: "If this email is eligible, a login code has been sent.",
+    ...(debugCode ? { debugCode } : {}),
+  });
+});
+
+app.post("/api/coach-auth/verify", async (c) => {
+  let body: { email?: string; code?: string };
+  try {
+    body = await c.req.json<{ email?: string; code?: string }>();
+  } catch {
+    return c.json({ error: "Invalid JSON body" }, 400);
+  }
+
+  const email = typeof body.email === "string" ? normalizeEmail(body.email) : "";
+  const code = typeof body.code === "string" ? body.code.trim() : "";
+  if (!email || !code) {
+    return c.json({ error: "email and code are required" }, 400);
+  }
+
+  try {
+    const resolved = await resolveCoachByEmail(email);
+    const ok = verifyAndConsumeLoginCode(resolved.thinkificUserId, email, code);
+    if (!ok) {
+      return c.json({ error: "Invalid or expired code" }, 401);
+    }
+
+    const session = createCoachSession(
+      resolved.thinkificUserId,
+      env.coachSessionTtlDays
+    );
+    const { data } = await getCoaches();
+    const coach = data.coaches.find(
+      (item) => item.thinkificUserId === resolved.thinkificUserId
+    );
+
+    return c.json(
+      {
+        ok: true,
+        coach: coach
+          ? {
+              thinkificUserId: coach.thinkificUserId,
+              email: coach.email,
+              fullName: coach.fullName,
+              tier: coach.tier,
+            }
+          : { thinkificUserId: resolved.thinkificUserId },
+      },
+      200,
+      { "Set-Cookie": buildSessionCookie(session.token, session.expiresAt) }
+    );
+  } catch {
+    return c.json({ error: "Invalid or expired code" }, 401);
+  }
+});
+
+app.post("/api/coach-auth/logout", (c) => {
+  const token = getSessionTokenFromRequest(c);
+  if (token) {
+    deleteCoachSession(token);
+  }
+
+  return c.json(
+    { ok: true },
+    200,
+    { "Set-Cookie": buildExpiredSessionCookie() }
+  );
+});
+
+app.get("/api/coach-auth/me", async (c) => {
+  const thinkificUserId = getAuthenticatedThinkificUserId(c);
+  if (!thinkificUserId) {
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+
+  const { data } = await getCoaches();
+  const coach = data.coaches.find((item) => item.thinkificUserId === thinkificUserId);
+  if (!coach) {
+    return c.json({ error: "Coach not found" }, 404);
+  }
+
+  const emailLinks = listCoachEmailLinks(thinkificUserId);
+  return c.json({
+    coach,
+    emailLinks,
+  });
+});
+
+app.patch("/api/coach-auth/me", async (c) => {
+  const thinkificUserId = getAuthenticatedThinkificUserId(c);
+  if (!thinkificUserId) {
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+
+  let body: CoachOverride;
+  try {
+    body = await c.req.json<CoachOverride>();
+  } catch {
+    return c.json({ error: "Invalid JSON body" }, 400);
+  }
+
+  const patch: CoachOverride = {
+    ...(typeof body.bio === "string" || body.bio === undefined ? { bio: body.bio } : {}),
+    ...(typeof body.avatarUrl === "string" || body.avatarUrl === undefined
+      ? { avatarUrl: body.avatarUrl }
+      : {}),
+    ...(typeof body.city === "string" || body.city === undefined ? { city: body.city } : {}),
+    ...(typeof body.state === "string" || body.state === undefined ? { state: body.state } : {}),
+    ...(typeof body.lat === "number" || body.lat === undefined ? { lat: body.lat } : {}),
+    ...(typeof body.lng === "number" || body.lng === undefined ? { lng: body.lng } : {}),
+  };
+
+  if (Object.keys(patch).length === 0) {
+    return c.json({ error: "No valid override fields provided" }, 400);
+  }
+
+  const saved = upsertCoachOverride(thinkificUserId, patch);
+  cache = null;
+  cacheSetAt = 0;
+
+  return c.json({
+    ok: true,
+    thinkificUserId,
+    override: saved,
+  });
+});
+
+/**
+ * Resolve coach identity by any known email.
+ * Checks Thinkific primary email first, then linked aliases.
+ */
+app.get("/api/coaches/resolve-user", async (c) => {
+  const email = c.req.query("email");
+  if (!email) {
+    return c.json({ error: "email query param is required" }, 400);
+  }
+
+  try {
+    const resolved = await resolveCoachByEmail(email);
+    return c.json({
+      found: true,
+      thinkificUserId: resolved.thinkificUserId,
+      source: resolved.source,
+    });
+  } catch {
+    return c.json({ found: false });
+  }
+});
+
+app.get("/api/coaches/:thinkificUserId/email-links", (c) => {
+  const thinkificUserId = Number(c.req.param("thinkificUserId"));
+  if (!Number.isInteger(thinkificUserId)) {
+    return c.json({ error: "thinkificUserId must be an integer" }, 400);
+  }
+
+  const links = listCoachEmailLinks(thinkificUserId);
+  return c.json({ thinkificUserId, links });
+});
+
+app.put("/api/coaches/:thinkificUserId/email-links", async (c) => {
+  const thinkificUserId = Number(c.req.param("thinkificUserId"));
+  if (!Number.isInteger(thinkificUserId)) {
+    return c.json({ error: "thinkificUserId must be an integer" }, 400);
+  }
+
+  let body: { email?: string; source?: string };
+  try {
+    body = await c.req.json<{ email?: string; source?: string }>();
+  } catch {
+    return c.json({ error: "Invalid JSON body" }, 400);
+  }
+
+  const email = typeof body.email === "string" ? body.email.trim() : "";
+  if (!email) {
+    return c.json({ error: "email is required" }, 400);
+  }
+
+  const link = upsertCoachEmailLink(thinkificUserId, email, body.source);
+  return c.json({ ok: true, link });
+});
+
+app.delete("/api/coaches/:thinkificUserId/email-links", async (c) => {
+  const thinkificUserId = Number(c.req.param("thinkificUserId"));
+  if (!Number.isInteger(thinkificUserId)) {
+    return c.json({ error: "thinkificUserId must be an integer" }, 400);
+  }
+
+  let body: { email?: string };
+  try {
+    body = await c.req.json<{ email?: string }>();
+  } catch {
+    return c.json({ error: "Invalid JSON body" }, 400);
+  }
+
+  const email = typeof body.email === "string" ? body.email.trim() : "";
+  if (!email) {
+    return c.json({ error: "email is required" }, 400);
+  }
+
+  const removed = deleteCoachEmailLink(thinkificUserId, email);
+  return c.json({ ok: true, removed });
 });
 
 app.put("/api/coaches/:thinkificUserId/override", async (c) => {
