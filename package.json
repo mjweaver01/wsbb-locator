@@ -12,5 +12,8 @@
     "preview": "bun run --cwd apps/web preview",
     "fetch": "bun run apps/api/src/scripts/fetch-thinkific.ts",
     "seed": "bun run apps/api/src/scripts/seed-db.ts"
+  },
+  "devDependencies": {
+    "bun-types": "^1.3.14"
   }
 }

@@ -18,6 +18,7 @@
 
 import { readFileSync } from "fs";
 import type { Coach as RawCoach } from "../lib/thinkific";
+import { env } from "../lib/env";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -43,7 +44,7 @@ if (DRY_RUN) {
 // We do a dynamic import so the right driver is selected at runtime.
 
 async function getDb() {
-  const url = process.env.DATABASE_URL ?? "file:./dev.db";
+  const url = env.databaseUrl;
 
   if (url.startsWith("file:")) {
     const { drizzle } = await import("drizzle-orm/better-sqlite3");
@@ -190,7 +191,7 @@ async function main() {
 
   console.log("🔌  Connecting to database...");
   const db = await getDb();
-  console.log(`    DATABASE_URL: ${process.env.DATABASE_URL ?? "file:./dev.db"}\n`);
+  console.log(`    DATABASE_URL: ${env.databaseUrl}\n`);
 
   // ------------------------------------------------------------------
   // Upsert loop

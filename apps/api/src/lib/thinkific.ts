@@ -14,6 +14,8 @@
  *   THINKIFIC_LEVEL3_ID  – course ID for Level 3 pathway
  */
 
+import { env } from "./env";
+
 const BASE_URL = "https://api.thinkific.com/api/public/v1";
 const PAGE_LIMIT = 250;
 const RATE_LIMIT_MS = 300;
@@ -155,8 +157,8 @@ async function fetchAllPages<T>(
  * Throws if THINKIFIC_API_KEY or THINKIFIC_SUBDOMAIN are not set.
  */
 export async function fetchCoachesFromThinkific(): Promise<CoachesPayload> {
-  const apiKey = process.env.THINKIFIC_API_KEY;
-  const subdomain = process.env.THINKIFIC_SUBDOMAIN;
+  const apiKey = env.thinkificApiKey;
+  const subdomain = env.thinkificSubdomain;
 
   if (!apiKey || !subdomain) {
     throw new Error(
@@ -166,19 +168,13 @@ export async function fetchCoachesFromThinkific(): Promise<CoachesPayload> {
 
   const headers = makeHeaders(apiKey, subdomain);
 
-  const pathwayCourses: Record<string, { level: number; tier: CoachTier }> = {
-    ...(process.env.THINKIFIC_LEVEL1_ID && {
-      [process.env.THINKIFIC_LEVEL1_ID]: { level: 1, tier: "certified" },
-    }),
-    ...(process.env.THINKIFIC_LEVEL2_ID && {
-      [process.env.THINKIFIC_LEVEL2_ID]: { level: 2, tier: "instructor" },
-    }),
-    ...(process.env.THINKIFIC_LEVEL3_ID && {
-      [process.env.THINKIFIC_LEVEL3_ID]: { level: 3, tier: "master" },
-    }),
-  };
+  const pathwayCourses = [
+    env.thinkificLevel1Id && { courseId: env.thinkificLevel1Id, level: 1, tier: "certified" as const },
+    env.thinkificLevel2Id && { courseId: env.thinkificLevel2Id, level: 2, tier: "instructor" as const },
+    env.thinkificLevel3Id && { courseId: env.thinkificLevel3Id, level: 3, tier: "master" as const },
+  ].filter((course): course is { courseId: number; level: number; tier: CoachTier } => Boolean(course));
 
-  if (Object.keys(pathwayCourses).length === 0) {
+  if (pathwayCourses.length === 0) {
     // No course IDs configured — list all courses and throw so the caller can surface this
     const courses = await fetchAllPages<ThinkificCourse>("/courses", headers);
     const list = courses.map((c) => `  ${c.id}  ${c.name}`).join("\n");
@@ -198,8 +194,7 @@ export async function fetchCoachesFromThinkific(): Promise<CoachesPayload> {
     { tier: CoachTier; certifications: RawCertification[] }
   >();
 
-  for (const [courseIdStr, { level, tier }] of Object.entries(pathwayCourses)) {
-    const courseId = parseInt(courseIdStr);
+  for (const { courseId, level, tier } of pathwayCourses) {
     const enrollments = await fetchAllPages<ThinkificEnrollment>(
       "/enrollments",
       headers,

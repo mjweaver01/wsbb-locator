@@ -1,12 +1,20 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { readFileSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { resolve } from "path";
-import { fetchCoachesFromThinkific, type CoachesPayload } from "./lib/thinkific";
+import {
+  fetchCoachesFromThinkific,
+  type Coach,
+  type CoachesPayload,
+} from "./lib/thinkific";
+import { env } from "./lib/env";
 
 const app = new Hono();
-const PORT = Number(process.env.PORT ?? 3001);
-const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+const PORT = env.port;
+const CACHE_TTL_MS = env.coachCacheTtlMs;
+const OVERRIDES_PATH = resolve(import.meta.dir, "../data/coach-overrides.json");
+
+type CoachOverride = Partial<Omit<Coach, "thinkificUserId">>;
 
 // ---------------------------------------------------------------------------
 // In-memory cache
@@ -26,18 +34,64 @@ function loadStaticFallback(): CoachesPayload {
   return JSON.parse(raw) as CoachesPayload;
 }
 
+/**
+ * Optional local overrides keyed by Thinkific user ID.
+ * Example:
+ * {
+ *   "1001": { "city": "Columbus", "bio": "Updated coach bio" }
+ * }
+ */
+function loadCoachOverrides(): Record<string, CoachOverride> {
+  if (!existsSync(OVERRIDES_PATH)) return {};
+
+  try {
+    const raw = readFileSync(OVERRIDES_PATH, "utf8");
+    const parsed = JSON.parse(raw) as unknown;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      throw new Error("coach-overrides.json must be an object keyed by Thinkific user ID");
+    }
+    return parsed as Record<string, CoachOverride>;
+  } catch (err) {
+    console.error("[overrides] failed to parse coach-overrides.json:", (err as Error).message);
+    return {};
+  }
+}
+
+function recalculateTierBreakdown(coaches: Coach[]): CoachesPayload["tierBreakdown"] {
+  return {
+    master: coaches.filter((c) => c.tier === "master").length,
+    instructor: coaches.filter((c) => c.tier === "instructor").length,
+    certified: coaches.filter((c) => c.tier === "certified").length,
+  };
+}
+
+function mergeCoachOverrides(data: CoachesPayload): CoachesPayload {
+  const overridesById = loadCoachOverrides();
+  const coaches = data.coaches.map((coach) => {
+    const override = overridesById[String(coach.thinkificUserId)];
+    return override ? { ...coach, ...override, thinkificUserId: coach.thinkificUserId } : coach;
+  });
+
+  return {
+    ...data,
+    coaches,
+    totalCoaches: coaches.length,
+    tierBreakdown: recalculateTierBreakdown(coaches),
+  };
+}
+
 async function getCoaches(): Promise<{ data: CoachesPayload; source: string }> {
   if (!isCacheStale()) {
     return { data: cache!, source: "cache" };
   }
 
   const hasThinkificCreds =
-    process.env.THINKIFIC_API_KEY && process.env.THINKIFIC_SUBDOMAIN;
+    env.thinkificApiKey && env.thinkificSubdomain;
 
   if (hasThinkificCreds) {
     try {
       console.log("[thinkific] fetching live data...");
-      const data = await fetchCoachesFromThinkific();
+      const data = mergeCoachOverrides(await fetchCoachesFromThinkific());
       cache = data;
       cacheSetAt = Date.now();
       console.log(`[thinkific] cached ${data.totalCoaches} coaches`);
@@ -49,7 +103,7 @@ async function getCoaches(): Promise<{ data: CoachesPayload; source: string }> {
 
   // Static fallback — demo mode
   try {
-    const data = loadStaticFallback();
+    const data = mergeCoachOverrides(loadStaticFallback());
     cache = data;
     cacheSetAt = Date.now();
     console.log(`[static] loaded ${data.totalCoaches} coaches from coaches-raw.json`);
