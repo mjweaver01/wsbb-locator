@@ -36,7 +36,11 @@ export function CoachCard({ coach, cardRef }: CoachCardProps) {
   const { fullName, avatarUrl, bio, tier, certifications, email, city, state } = coach
 
   return (
-    <article ref={cardRef} className={`coach-card coach-card--${tier}`}>
+    <article
+      id={`coach-${coach.thinkificUserId}`}
+      ref={cardRef}
+      className={`coach-card coach-card--${tier}`}
+    >
       <div className="coach-card__header">
         {avatarUrl ? (
           <img

@@ -29,6 +29,12 @@ export function FilterBar({
         <div className="filter-bar__tiers" role="group" aria-label="Filter by tier">
           {TIER_BUTTONS.map(({ value, label }) => {
             const isActive = filters.tier === value
+            const nextTier: TierFilter =
+              value === 'all'
+                ? 'all'
+                : isActive
+                  ? 'all'
+                  : value
             return (
               <button
                 key={value}
@@ -38,7 +44,7 @@ export function FilterBar({
                   isActive ? 'filter-btn--active' : '',
                 ].join(' ')}
                 aria-pressed={isActive}
-                onClick={() => onFiltersChange({ ...filters, tier: value })}
+                onClick={() => onFiltersChange({ ...filters, tier: nextTier })}
               >
                 {label}
               </button>

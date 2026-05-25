@@ -5,7 +5,6 @@ import type { RawCoach } from '@/lib/types'
 
 interface CoachMapProps {
   coaches: RawCoach[]
-  onPinClick?: (id: number) => void
   hasLocationHint?: boolean
 }
 
@@ -56,18 +55,17 @@ function hasLocation(c: RawCoach): c is LocatedCoach {
   return typeof c.lat === 'number' && typeof c.lng === 'number'
 }
 
-export function CoachMap({ coaches, onPinClick, hasLocationHint = false }: CoachMapProps) {
+function formatTierLabel(tier: string): string {
+  if (!tier) return ''
+  return tier.charAt(0).toUpperCase() + tier.slice(1)
+}
+
+export function CoachMap({ coaches, hasLocationHint = false }: CoachMapProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<Leaflet.Map | null>(null)
   const markerLayerRef = useRef<Leaflet.LayerGroup | null>(null)
-  const onPinClickRef = useRef(onPinClick)
   const [active, setActive] = useState(false)
   const [mapLoaded, setMapLoaded] = useState(false)
-
-  // Keep the latest pin-click handler reachable without re-running effects.
-  useEffect(() => {
-    onPinClickRef.current = onPinClick
-  }, [onPinClick])
 
   const coachesWithLocation = useMemo(
     () => coaches.filter(hasLocation),
@@ -150,17 +148,20 @@ export function CoachMap({ coaches, onPinClick, hasLocationHint = false }: Coach
         const marker = L.marker([coach.lat, coach.lng], {
           icon: getIcon(L, coach.tier),
         })
+        const listingHref = `#coach-${coach.thinkificUserId}`
         marker.bindPopup(
           `
             <div class="map-popup">
               <p class="map-popup__name">${coach.fullName}</p>
-              <span class="map-popup__tier map-popup__tier--${coach.tier}">${coach.tier}</span>
+              <span class="map-popup__tier map-popup__tier--${coach.tier}">${formatTierLabel(coach.tier)}</span>
               ${coach.city ? `<p class="map-popup__loc">${coach.city}, ${coach.state ?? ''}</p>` : ''}
+              <a class="map-popup__listing-link" href="${listingHref}">
+                View Listing
+              </a>
             </div>
           `,
-          { className: 'coach-map-popup', closeButton: false, maxWidth: 220 },
+          { className: 'coach-map-popup', closeButton: false, maxWidth: 240 },
         )
-        marker.on('click', () => onPinClickRef.current?.(coach.thinkificUserId))
         group.addLayer(marker)
       }
 

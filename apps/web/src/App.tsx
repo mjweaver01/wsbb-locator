@@ -27,7 +27,6 @@ export function App() {
   const [error, setError] = useState<string | null>(null)
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS)
   const cardRefs = useRef<Map<number, HTMLElement>>(new Map())
-
   useEffect(() => {
     fetch(DATA_URL)
       .then(r => {
@@ -59,15 +58,6 @@ export function App() {
     [filtered],
   )
 
-  function handlePinClick(id: number) {
-    const el = cardRefs.current.get(id)
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      el.classList.add('coach-card--highlight')
-      setTimeout(() => el.classList.remove('coach-card--highlight'), 1200)
-    }
-  }
-
   if (loading) {
     return (
       <>
@@ -98,7 +88,6 @@ export function App() {
       <TierLegend />
       <CoachMap
         coaches={mapCoaches}
-        onPinClick={handlePinClick}
         hasLocationHint={filteredHasLocation}
       />
       <FilterBar
