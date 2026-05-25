@@ -1,4 +1,4 @@
-import type { Coach } from "./thinkific";
+import type { Coach } from "../thinkific";
 import { db } from "./db";
 
 export type CoachOverride = Partial<

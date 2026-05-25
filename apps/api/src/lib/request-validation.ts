@@ -1,5 +1,5 @@
 import type { Context } from "hono";
-import type { CoachOverride } from "./overrides-db";
+import type { CoachOverride } from "./db/overrides";
 
 export type JsonRecord = Record<string, unknown>;
 

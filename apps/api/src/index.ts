@@ -11,24 +11,24 @@ import {
   deleteCoachOverride,
   listCoachOverrides,
   upsertCoachOverride,
-} from "./lib/overrides-db";
+} from "./lib/db/overrides";
 import {
   loadThinkificCache,
   saveThinkificCache,
-} from "./lib/thinkific-cache-db";
+} from "./lib/db/thinkific-cache";
 import {
   deleteCoachEmailLink,
   findThinkificUserIdByLinkedEmail,
   listCoachEmailLinks,
   upsertCoachEmailLink,
-} from "./lib/email-links-db";
+} from "./lib/db/email-links";
 import {
   createCoachSession,
   createLoginCode,
   deleteCoachSession,
   getCoachSession,
   verifyAndConsumeLoginCode,
-} from "./lib/auth-db";
+} from "./lib/db/auth";
 import { sendCoachLoginCode } from "./lib/email";
 import { requireAdminApiKey } from "./lib/admin-auth";
 import {

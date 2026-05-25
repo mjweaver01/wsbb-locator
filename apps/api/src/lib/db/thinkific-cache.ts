@@ -1,4 +1,4 @@
-import type { Coach, CoachesPayload } from "./thinkific";
+import type { Coach, CoachesPayload } from "../thinkific";
 import { db } from "./db";
 
 interface ThinkificCacheCoachRow {
