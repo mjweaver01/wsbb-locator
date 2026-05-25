@@ -48,7 +48,7 @@ export function listCoachEmailLinks(thinkificUserId: number): CoachEmailLink[] {
       `SELECT thinkific_user_id, email, source, created_at
        FROM coach_email_links
        WHERE thinkific_user_id = ?
-       ORDER BY created_at DESC`
+       ORDER BY created_at DESC`,
     )
     .all(thinkificUserId);
 
@@ -58,7 +58,7 @@ export function listCoachEmailLinks(thinkificUserId: number): CoachEmailLink[] {
 export function upsertCoachEmailLink(
   thinkificUserId: number,
   email: string,
-  source = "manual"
+  source = "manual",
 ): CoachEmailLink {
   const normalizedEmail = normalizeEmail(email);
   const normalizedSource = source.trim() || "manual";
@@ -69,14 +69,14 @@ export function upsertCoachEmailLink(
      ON CONFLICT(email) DO UPDATE SET
        thinkific_user_id = excluded.thinkific_user_id,
        source = excluded.source`,
-    [thinkificUserId, normalizedEmail, normalizedSource]
+    [thinkificUserId, normalizedEmail, normalizedSource],
   );
 
   const row = db
     .query<CoachEmailLinkRow, [string]>(
       `SELECT thinkific_user_id, email, source, created_at
        FROM coach_email_links
-       WHERE email = ?`
+       WHERE email = ?`,
     )
     .get(normalizedEmail);
 
@@ -89,13 +89,13 @@ export function upsertCoachEmailLink(
 
 export function deleteCoachEmailLink(
   thinkificUserId: number,
-  email: string
+  email: string,
 ): boolean {
   const normalizedEmail = normalizeEmail(email);
   const result = db.run(
     `DELETE FROM coach_email_links
      WHERE thinkific_user_id = ? AND email = ?`,
-    [thinkificUserId, normalizedEmail]
+    [thinkificUserId, normalizedEmail],
   );
   return result.changes > 0;
 }
@@ -107,7 +107,7 @@ export function findThinkificUserIdByLinkedEmail(email: string): number | null {
       `SELECT thinkific_user_id
        FROM coach_email_links
        WHERE email = ?
-       LIMIT 1`
+       LIMIT 1`,
     )
     .get(normalizedEmail);
 

@@ -1,10 +1,10 @@
-import type { CoachTier } from '@/lib/types'
+import type { CoachTier } from "@/lib/types";
 
 const TIERS: { tier: CoachTier; label: string }[] = [
-  { tier: 'master',     label: 'Master Instructor' },
-  { tier: 'instructor', label: 'Instructor' },
-  { tier: 'certified',  label: 'Certified Coach' },
-]
+  { tier: "master", label: "Master Instructor" },
+  { tier: "instructor", label: "Instructor" },
+  { tier: "certified", label: "Certified Coach" },
+];
 
 export function TierLegend() {
   return (
@@ -21,5 +21,5 @@ export function TierLegend() {
         </div>
       </div>
     </div>
-  )
+  );
 }

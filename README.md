@@ -46,7 +46,7 @@ apps/
    - filter/search controls
    - coach card grid
 3. Coach self-service profile access lives on a dedicated page at `/coach-access`.
-3. Filters are client-side (`tier` + name search).
+4. Filters are client-side (`tier` + name search).
 
 ### Backend (`apps/api`)
 
@@ -144,8 +144,8 @@ This allows resolving a coach even when upstream systems use different emails.
 
 - `GET /api/coaches/resolve-user?email=...`
   - Resolves coach by email using:
-    1) Thinkific primary email, then
-    2) linked alias table
+    1. Thinkific primary email, then
+    2. linked alias table
 - `GET /api/coaches/:thinkificUserId/email-links`
   - Lists linked emails for a coach
 - `PUT /api/coaches/:thinkificUserId/email-links`

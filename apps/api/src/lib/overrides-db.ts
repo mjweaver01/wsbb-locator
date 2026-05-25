@@ -44,7 +44,7 @@ function getCoachOverride(thinkificUserId: number): CoachOverride | null {
     .query<CoachOverrideRow, [number]>(
       `SELECT thinkific_user_id, bio, avatar_url, city, state, lat, lng
        FROM coach_overrides
-       WHERE thinkific_user_id = ?`
+       WHERE thinkific_user_id = ?`,
     )
     .get(thinkificUserId);
 
@@ -55,7 +55,7 @@ export function listCoachOverrides(): Record<string, CoachOverride> {
   const rows = db
     .query<CoachOverrideRow, []>(
       `SELECT thinkific_user_id, bio, avatar_url, city, state, lat, lng
-       FROM coach_overrides`
+       FROM coach_overrides`,
     )
     .all();
 
@@ -68,7 +68,7 @@ export function listCoachOverrides(): Record<string, CoachOverride> {
 
 export function upsertCoachOverride(
   thinkificUserId: number,
-  patch: CoachOverride
+  patch: CoachOverride,
 ): CoachOverride {
   const existing = getCoachOverride(thinkificUserId) ?? {};
   const merged: CoachOverride = { ...existing, ...patch };
@@ -93,12 +93,14 @@ export function upsertCoachOverride(
       merged.state ?? null,
       merged.lat ?? null,
       merged.lng ?? null,
-    ]
+    ],
   );
 
   return merged;
 }
 
 export function deleteCoachOverride(thinkificUserId: number): void {
-  db.run(`DELETE FROM coach_overrides WHERE thinkific_user_id = ?`, [thinkificUserId]);
+  db.run(`DELETE FROM coach_overrides WHERE thinkific_user_id = ?`, [
+    thinkificUserId,
+  ]);
 }

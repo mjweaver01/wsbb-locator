@@ -1,5 +1,5 @@
-import { AlertTriangle } from 'lucide-react'
-import { HeroSection } from '@/components/HeroSection'
+import { AlertTriangle } from "lucide-react";
+import { HeroSection } from "@/components/HeroSection";
 
 export function LoadingState() {
   return (
@@ -7,11 +7,11 @@ export function LoadingState() {
       <HeroSection />
       <div className="loading-state">Loading coaches…</div>
     </>
-  )
+  );
 }
 
 interface ErrorStateProps {
-  message: string
+  message: string;
 }
 
 export function ErrorState({ message }: ErrorStateProps) {
@@ -26,5 +26,5 @@ export function ErrorState({ message }: ErrorStateProps) {
         </span>
       </div>
     </>
-  )
+  );
 }

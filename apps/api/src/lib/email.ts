@@ -5,7 +5,10 @@ export interface SendCoachLoginCodeInput {
   code: string;
 }
 
-async function sendWithResend({ toEmail, code }: SendCoachLoginCodeInput): Promise<void> {
+async function sendWithResend({
+  toEmail,
+  code,
+}: SendCoachLoginCodeInput): Promise<void> {
   if (!env.resendApiKey) {
     throw new Error("RESEND_API_KEY is required when EMAIL_PROVIDER=resend");
   }
@@ -34,7 +37,9 @@ async function sendWithResend({ toEmail, code }: SendCoachLoginCodeInput): Promi
   }
 }
 
-export async function sendCoachLoginCode(input: SendCoachLoginCodeInput): Promise<void> {
+export async function sendCoachLoginCode(
+  input: SendCoachLoginCodeInput,
+): Promise<void> {
   const provider = env.emailProvider.toLowerCase();
 
   if (provider === "resend") {
@@ -43,10 +48,12 @@ export async function sendCoachLoginCode(input: SendCoachLoginCodeInput): Promis
   }
 
   if (provider !== "console") {
-    throw new Error(`Unsupported EMAIL_PROVIDER "${env.emailProvider}". Use "console" or "resend".`);
+    throw new Error(
+      `Unsupported EMAIL_PROVIDER "${env.emailProvider}". Use "console" or "resend".`,
+    );
   }
 
   console.log(
-    `[coach-auth] code for ${input.toEmail}: ${input.code} (EMAIL_PROVIDER=console)`
+    `[coach-auth] code for ${input.toEmail}: ${input.code} (EMAIL_PROVIDER=console)`,
   );
 }

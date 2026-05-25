@@ -22,9 +22,21 @@
       "lat": 39.9612,
       "lng": -82.9988,
       "certifications": [
-        { "level": 1, "courseId": 11001, "completedAt": "2021-03-15T00:00:00.000Z" },
-        { "level": 2, "courseId": 11002, "completedAt": "2021-09-22T00:00:00.000Z" },
-        { "level": 3, "courseId": 11003, "completedAt": "2022-04-10T00:00:00.000Z" }
+        {
+          "level": 1,
+          "courseId": 11001,
+          "completedAt": "2021-03-15T00:00:00.000Z"
+        },
+        {
+          "level": 2,
+          "courseId": 11002,
+          "completedAt": "2021-09-22T00:00:00.000Z"
+        },
+        {
+          "level": 3,
+          "courseId": 11003,
+          "completedAt": "2022-04-10T00:00:00.000Z"
+        }
       ]
     },
     {
@@ -38,12 +50,24 @@
       "tier": "master",
       "city": "Columbus",
       "state": "OH",
-      "lat": 39.9800,
-      "lng": -82.9350,
+      "lat": 39.98,
+      "lng": -82.935,
       "certifications": [
-        { "level": 1, "courseId": 11001, "completedAt": "2021-06-01T00:00:00.000Z" },
-        { "level": 2, "courseId": 11002, "completedAt": "2022-01-18T00:00:00.000Z" },
-        { "level": 3, "courseId": 11003, "completedAt": "2023-02-05T00:00:00.000Z" }
+        {
+          "level": 1,
+          "courseId": 11001,
+          "completedAt": "2021-06-01T00:00:00.000Z"
+        },
+        {
+          "level": 2,
+          "courseId": 11002,
+          "completedAt": "2022-01-18T00:00:00.000Z"
+        },
+        {
+          "level": 3,
+          "courseId": 11003,
+          "completedAt": "2023-02-05T00:00:00.000Z"
+        }
       ]
     },
     {
@@ -60,8 +84,16 @@
       "lat": 41.8781,
       "lng": -87.6298,
       "certifications": [
-        { "level": 1, "courseId": 11001, "completedAt": "2022-05-10T00:00:00.000Z" },
-        { "level": 2, "courseId": 11002, "completedAt": "2023-03-22T00:00:00.000Z" }
+        {
+          "level": 1,
+          "courseId": 11001,
+          "completedAt": "2022-05-10T00:00:00.000Z"
+        },
+        {
+          "level": 2,
+          "courseId": 11002,
+          "completedAt": "2023-03-22T00:00:00.000Z"
+        }
       ]
     },
     {
@@ -78,8 +110,16 @@
       "lat": 30.2672,
       "lng": -97.7431,
       "certifications": [
-        { "level": 1, "courseId": 11001, "completedAt": "2022-08-14T00:00:00.000Z" },
-        { "level": 2, "courseId": 11002, "completedAt": "2023-07-05T00:00:00.000Z" }
+        {
+          "level": 1,
+          "courseId": 11001,
+          "completedAt": "2022-08-14T00:00:00.000Z"
+        },
+        {
+          "level": 2,
+          "courseId": 11002,
+          "completedAt": "2023-07-05T00:00:00.000Z"
+        }
       ]
     },
     {
@@ -96,8 +136,16 @@
       "lat": 34.0522,
       "lng": -118.2437,
       "certifications": [
-        { "level": 1, "courseId": 11001, "completedAt": "2023-01-30T00:00:00.000Z" },
-        { "level": 2, "courseId": 11002, "completedAt": "2023-11-15T00:00:00.000Z" }
+        {
+          "level": 1,
+          "courseId": 11001,
+          "completedAt": "2023-01-30T00:00:00.000Z"
+        },
+        {
+          "level": 2,
+          "courseId": 11002,
+          "completedAt": "2023-11-15T00:00:00.000Z"
+        }
       ]
     },
     {
@@ -114,7 +162,11 @@
       "lat": 39.7392,
       "lng": -104.9903,
       "certifications": [
-        { "level": 1, "courseId": 11001, "completedAt": "2024-02-11T00:00:00.000Z" }
+        {
+          "level": 1,
+          "courseId": 11001,
+          "completedAt": "2024-02-11T00:00:00.000Z"
+        }
       ]
     },
     {
@@ -131,7 +183,11 @@
       "lat": 47.6062,
       "lng": -122.3321,
       "certifications": [
-        { "level": 1, "courseId": 11001, "completedAt": "2024-03-20T00:00:00.000Z" }
+        {
+          "level": 1,
+          "courseId": 11001,
+          "completedAt": "2024-03-20T00:00:00.000Z"
+        }
       ]
     },
     {
@@ -148,7 +204,11 @@
       "lat": 25.7617,
       "lng": -80.1918,
       "certifications": [
-        { "level": 1, "courseId": 11001, "completedAt": "2024-05-02T00:00:00.000Z" }
+        {
+          "level": 1,
+          "courseId": 11001,
+          "completedAt": "2024-05-02T00:00:00.000Z"
+        }
       ]
     },
     {
@@ -163,9 +223,13 @@
       "city": "New York",
       "state": "NY",
       "lat": 40.7128,
-      "lng": -74.0060,
+      "lng": -74.006,
       "certifications": [
-        { "level": 1, "courseId": 11001, "completedAt": "2024-06-18T00:00:00.000Z" }
+        {
+          "level": 1,
+          "courseId": 11001,
+          "completedAt": "2024-06-18T00:00:00.000Z"
+        }
       ]
     },
     {
@@ -182,7 +246,11 @@
       "lat": 36.1627,
       "lng": -86.7816,
       "certifications": [
-        { "level": 1, "courseId": 11001, "completedAt": "2024-09-09T00:00:00.000Z" }
+        {
+          "level": 1,
+          "courseId": 11001,
+          "completedAt": "2024-09-09T00:00:00.000Z"
+        }
       ]
     }
   ]

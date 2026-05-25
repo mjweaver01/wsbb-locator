@@ -13,7 +13,10 @@ import {
   upsertCoachOverride,
   type CoachOverride,
 } from "./lib/overrides-db";
-import { loadThinkificCache, saveThinkificCache } from "./lib/thinkific-cache-db";
+import {
+  loadThinkificCache,
+  saveThinkificCache,
+} from "./lib/thinkific-cache-db";
 import {
   deleteCoachEmailLink,
   findThinkificUserIdByLinkedEmail,
@@ -51,7 +54,9 @@ function loadStaticFallback(): Promise<CoachesPayload> {
   return Bun.file(staticPath).json() as Promise<CoachesPayload>;
 }
 
-function recalculateTierBreakdown(coaches: Coach[]): CoachesPayload["tierBreakdown"] {
+function recalculateTierBreakdown(
+  coaches: Coach[],
+): CoachesPayload["tierBreakdown"] {
   return {
     master: coaches.filter((c) => c.tier === "master").length,
     instructor: coaches.filter((c) => c.tier === "instructor").length,
@@ -63,7 +68,9 @@ function mergeCoachOverrides(data: CoachesPayload): CoachesPayload {
   const overridesById = listCoachOverrides();
   const coaches = data.coaches.map((coach) => {
     const override = overridesById[String(coach.thinkificUserId)];
-    return override ? { ...coach, ...override, thinkificUserId: coach.thinkificUserId } : coach;
+    return override
+      ? { ...coach, ...override, thinkificUserId: coach.thinkificUserId }
+      : coach;
   });
 
   return {
@@ -89,7 +96,7 @@ function getClientIp(c: Context): string {
 function isRateLimited(
   key: string,
   maxAttempts: number,
-  windowMs: number
+  windowMs: number,
 ): { limited: boolean; retryAfterSeconds: number } {
   const now = Date.now();
   const cutoff = now - windowMs;
@@ -108,7 +115,9 @@ function isRateLimited(
   return { limited: false, retryAfterSeconds: 0 };
 }
 
-function parseCookies(cookieHeader: string | undefined): Record<string, string> {
+function parseCookies(
+  cookieHeader: string | undefined,
+): Record<string, string> {
   if (!cookieHeader) return {};
   const out: Record<string, string> = {};
   for (const part of cookieHeader.split(";")) {
@@ -127,7 +136,7 @@ function buildSessionCookie(token: string, expiresAt: string): string {
   const encoded = encodeURIComponent(token);
   const maxAgeSeconds = Math.max(
     0,
-    Math.floor((Date.parse(expiresAt) - Date.now()) / 1000)
+    Math.floor((Date.parse(expiresAt) - Date.now()) / 1000),
   );
 
   return [
@@ -171,10 +180,13 @@ async function resolveCoachByEmail(email: string): Promise<{
   const { data } = await getCoaches();
 
   const direct = data.coaches.find(
-    (coach) => normalizeEmail(coach.email) === normalizedEmail
+    (coach) => normalizeEmail(coach.email) === normalizedEmail,
   );
   if (direct) {
-    return { thinkificUserId: direct.thinkificUserId, source: "thinkific-email" };
+    return {
+      thinkificUserId: direct.thinkificUserId,
+      source: "thinkific-email",
+    };
   }
 
   const linkedId = findThinkificUserIdByLinkedEmail(normalizedEmail);
@@ -197,11 +209,16 @@ async function getCoaches(): Promise<{ data: CoachesPayload; source: string }> {
       const data = mergeCoachOverrides(cached);
       cache = data;
       cacheSetAt = Date.now();
-      console.log(`[db-cache] loaded ${data.totalCoaches} coaches from thinkific cache table`);
+      console.log(
+        `[db-cache] loaded ${data.totalCoaches} coaches from thinkific cache table`,
+      );
       return { data, source: "db-cache" };
     }
   } catch (err) {
-    console.error("[db-cache] load failed, trying thinkific/static fallback:", (err as Error).message);
+    console.error(
+      "[db-cache] load failed, trying thinkific/static fallback:",
+      (err as Error).message,
+    );
   }
 
   const hasThinkificCreds = env.thinkificApiKey && env.thinkificSubdomain;
@@ -217,7 +234,10 @@ async function getCoaches(): Promise<{ data: CoachesPayload; source: string }> {
       console.log(`[thinkific] cached ${data.totalCoaches} coaches`);
       return { data, source: "thinkific" };
     } catch (err) {
-      console.error("[thinkific] fetch failed, falling back to static JSON:", (err as Error).message);
+      console.error(
+        "[thinkific] fetch failed, falling back to static JSON:",
+        (err as Error).message,
+      );
     }
   }
 
@@ -226,7 +246,9 @@ async function getCoaches(): Promise<{ data: CoachesPayload; source: string }> {
     const data = mergeCoachOverrides(await loadStaticFallback());
     cache = data;
     cacheSetAt = Date.now();
-    console.log(`[static] loaded ${data.totalCoaches} coaches from coaches-raw.json`);
+    console.log(
+      `[static] loaded ${data.totalCoaches} coaches from coaches-raw.json`,
+    );
     return { data, source: "static" };
   } catch (err) {
     throw new Error(`No coach data available: ${(err as Error).message}`);
@@ -246,7 +268,7 @@ app.use(
       return env.corsAllowedOrigins.includes(origin) ? origin : "";
     },
     credentials: true,
-  })
+  }),
 );
 
 // ---------------------------------------------------------------------------
@@ -278,8 +300,11 @@ app.post("/api/coaches/refresh", async (c) => {
 app.post("/api/coaches/resync", async (c) => {
   if (!env.thinkificApiKey || !env.thinkificSubdomain) {
     return c.json(
-      { error: "THINKIFIC_API_KEY and THINKIFIC_SUBDOMAIN are required for resync." },
-      400
+      {
+        error:
+          "THINKIFIC_API_KEY and THINKIFIC_SUBDOMAIN are required for resync.",
+      },
+      400,
     );
   }
 
@@ -312,7 +337,8 @@ app.post("/api/coach-auth/request", async (c) => {
     return c.json({ error: "Invalid JSON body" }, 400);
   }
 
-  const email = typeof body.email === "string" ? normalizeEmail(body.email) : "";
+  const email =
+    typeof body.email === "string" ? normalizeEmail(body.email) : "";
   if (!email) {
     return c.json({ error: "email is required" }, 400);
   }
@@ -321,13 +347,13 @@ app.post("/api/coach-auth/request", async (c) => {
   const requestRateLimit = isRateLimited(
     requestRateKey,
     env.coachAuthRequestRateLimitMax,
-    env.coachAuthRequestRateLimitWindowMs
+    env.coachAuthRequestRateLimitWindowMs,
   );
   if (requestRateLimit.limited) {
     return c.json(
       { error: "Too many code requests. Please try again shortly." },
       429,
-      { "Retry-After": String(requestRateLimit.retryAfterSeconds) }
+      { "Retry-After": String(requestRateLimit.retryAfterSeconds) },
     );
   }
 
@@ -337,7 +363,7 @@ app.post("/api/coach-auth/request", async (c) => {
     const code = createLoginCode(
       resolved.thinkificUserId,
       email,
-      env.coachAuthCodeTtlMinutes
+      env.coachAuthCodeTtlMinutes,
     );
 
     await sendCoachLoginCode({ toEmail: email, code });
@@ -346,7 +372,9 @@ app.post("/api/coach-auth/request", async (c) => {
       debugCode = code;
     }
   } catch (err) {
-    console.error(`[coach-auth] request failed for ${email}: ${(err as Error).message}`);
+    console.error(
+      `[coach-auth] request failed for ${email}: ${(err as Error).message}`,
+    );
     // Intentionally ignored to prevent account enumeration.
   }
 
@@ -365,7 +393,8 @@ app.post("/api/coach-auth/verify", async (c) => {
     return c.json({ error: "Invalid JSON body" }, 400);
   }
 
-  const email = typeof body.email === "string" ? normalizeEmail(body.email) : "";
+  const email =
+    typeof body.email === "string" ? normalizeEmail(body.email) : "";
   const code = typeof body.code === "string" ? body.code.trim() : "";
   if (!email || !code) {
     return c.json({ error: "email and code are required" }, 400);
@@ -375,13 +404,13 @@ app.post("/api/coach-auth/verify", async (c) => {
   const verifyRateLimit = isRateLimited(
     verifyRateKey,
     env.coachAuthVerifyRateLimitMax,
-    env.coachAuthVerifyRateLimitWindowMs
+    env.coachAuthVerifyRateLimitWindowMs,
   );
   if (verifyRateLimit.limited) {
     return c.json(
       { error: "Too many verification attempts. Please try again shortly." },
       429,
-      { "Retry-After": String(verifyRateLimit.retryAfterSeconds) }
+      { "Retry-After": String(verifyRateLimit.retryAfterSeconds) },
     );
   }
 
@@ -394,11 +423,11 @@ app.post("/api/coach-auth/verify", async (c) => {
 
     const session = createCoachSession(
       resolved.thinkificUserId,
-      env.coachSessionTtlDays
+      env.coachSessionTtlDays,
     );
     const { data } = await getCoaches();
     const coach = data.coaches.find(
-      (item) => item.thinkificUserId === resolved.thinkificUserId
+      (item) => item.thinkificUserId === resolved.thinkificUserId,
     );
 
     return c.json(
@@ -414,7 +443,7 @@ app.post("/api/coach-auth/verify", async (c) => {
           : { thinkificUserId: resolved.thinkificUserId },
       },
       200,
-      { "Set-Cookie": buildSessionCookie(session.token, session.expiresAt) }
+      { "Set-Cookie": buildSessionCookie(session.token, session.expiresAt) },
     );
   } catch {
     return c.json({ error: "Invalid or expired code" }, 401);
@@ -427,11 +456,9 @@ app.post("/api/coach-auth/logout", (c) => {
     deleteCoachSession(token);
   }
 
-  return c.json(
-    { ok: true },
-    200,
-    { "Set-Cookie": buildExpiredSessionCookie() }
-  );
+  return c.json({ ok: true }, 200, {
+    "Set-Cookie": buildExpiredSessionCookie(),
+  });
 });
 
 app.get("/api/coach-auth/me", async (c) => {
@@ -441,7 +468,9 @@ app.get("/api/coach-auth/me", async (c) => {
   }
 
   const { data } = await getCoaches();
-  const coach = data.coaches.find((item) => item.thinkificUserId === thinkificUserId);
+  const coach = data.coaches.find(
+    (item) => item.thinkificUserId === thinkificUserId,
+  );
   if (!coach) {
     return c.json({ error: "Coach not found" }, 404);
   }
@@ -467,14 +496,24 @@ app.patch("/api/coach-auth/me", async (c) => {
   }
 
   const patch: CoachOverride = {
-    ...(typeof body.bio === "string" || body.bio === undefined ? { bio: body.bio } : {}),
+    ...(typeof body.bio === "string" || body.bio === undefined
+      ? { bio: body.bio }
+      : {}),
     ...(typeof body.avatarUrl === "string" || body.avatarUrl === undefined
       ? { avatarUrl: body.avatarUrl }
       : {}),
-    ...(typeof body.city === "string" || body.city === undefined ? { city: body.city } : {}),
-    ...(typeof body.state === "string" || body.state === undefined ? { state: body.state } : {}),
-    ...(typeof body.lat === "number" || body.lat === undefined ? { lat: body.lat } : {}),
-    ...(typeof body.lng === "number" || body.lng === undefined ? { lng: body.lng } : {}),
+    ...(typeof body.city === "string" || body.city === undefined
+      ? { city: body.city }
+      : {}),
+    ...(typeof body.state === "string" || body.state === undefined
+      ? { state: body.state }
+      : {}),
+    ...(typeof body.lat === "number" || body.lat === undefined
+      ? { lat: body.lat }
+      : {}),
+    ...(typeof body.lng === "number" || body.lng === undefined
+      ? { lng: body.lng }
+      : {}),
   };
 
   if (Object.keys(patch).length === 0) {
@@ -582,14 +621,24 @@ app.put("/api/coaches/:thinkificUserId/override", async (c) => {
   }
 
   const patch: CoachOverride = {
-    ...(typeof body.bio === "string" || body.bio === undefined ? { bio: body.bio } : {}),
+    ...(typeof body.bio === "string" || body.bio === undefined
+      ? { bio: body.bio }
+      : {}),
     ...(typeof body.avatarUrl === "string" || body.avatarUrl === undefined
       ? { avatarUrl: body.avatarUrl }
       : {}),
-    ...(typeof body.city === "string" || body.city === undefined ? { city: body.city } : {}),
-    ...(typeof body.state === "string" || body.state === undefined ? { state: body.state } : {}),
-    ...(typeof body.lat === "number" || body.lat === undefined ? { lat: body.lat } : {}),
-    ...(typeof body.lng === "number" || body.lng === undefined ? { lng: body.lng } : {}),
+    ...(typeof body.city === "string" || body.city === undefined
+      ? { city: body.city }
+      : {}),
+    ...(typeof body.state === "string" || body.state === undefined
+      ? { state: body.state }
+      : {}),
+    ...(typeof body.lat === "number" || body.lat === undefined
+      ? { lat: body.lat }
+      : {}),
+    ...(typeof body.lng === "number" || body.lng === undefined
+      ? { lng: body.lng }
+      : {}),
   };
 
   if (Object.keys(patch).length === 0) {
@@ -620,7 +669,7 @@ app.get("/api/health", (c) =>
     ok: true,
     cachedAt: cache ? new Date(cacheSetAt).toISOString() : null,
     totalCoaches: cache?.totalCoaches ?? 0,
-  })
+  }),
 );
 
 // ---------------------------------------------------------------------------
@@ -631,7 +680,7 @@ console.log(`[api] starting on http://localhost:${PORT}`);
 
 // Warm the cache in the background so the first request is instant
 getCoaches().catch((err) =>
-  console.error("[api] startup cache warm failed:", err.message)
+  console.error("[api] startup cache warm failed:", err.message),
 );
 
 export default { port: PORT, fetch: app.fetch };

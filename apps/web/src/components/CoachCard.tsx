@@ -1,39 +1,40 @@
-import { MapPin, Mail } from 'lucide-react'
-import type { RawCoach } from '@/lib/types'
+import { MapPin, Mail } from "lucide-react";
+import type { RawCoach } from "@/lib/types";
 
 interface CoachCardProps {
-  coach: RawCoach
-  cardRef?: (el: HTMLElement | null) => void
+  coach: RawCoach;
+  cardRef?: (el: HTMLElement | null) => void;
 }
 
 const TIER_LABEL: Record<string, string> = {
-  master:     'Master Instructor',
-  instructor: 'Instructor',
-  certified:  'Certified Coach',
-}
+  master: "Master Instructor",
+  instructor: "Instructor",
+  certified: "Certified Coach",
+};
 
 const LEVEL_LABEL: Record<number, string> = {
-  1: 'Level 1',
-  2: 'Level 2',
-  3: 'Level 3',
-}
+  1: "Level 1",
+  2: "Level 2",
+  3: "Level 3",
+};
 
 function getInitials(fullName: string): string {
   return fullName
-    .split(' ')
+    .split(" ")
     .slice(0, 2)
-    .map(n => n[0])
-    .join('')
-    .toUpperCase()
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase();
 }
 
 function formatYear(iso: string | null): string {
-  if (!iso) return ''
-  return new Date(iso).getFullYear().toString()
+  if (!iso) return "";
+  return new Date(iso).getFullYear().toString();
 }
 
 export function CoachCard({ coach, cardRef }: CoachCardProps) {
-  const { fullName, avatarUrl, bio, tier, certifications, email, city, state } = coach
+  const { fullName, avatarUrl, bio, tier, certifications, email, city, state } =
+    coach;
 
   return (
     <article
@@ -48,17 +49,17 @@ export function CoachCard({ coach, cardRef }: CoachCardProps) {
             alt={fullName}
             className="coach-avatar"
             loading="lazy"
-            onError={e => {
-              const el = e.currentTarget
-              el.style.display = 'none'
-              el.nextElementSibling?.removeAttribute('style')
+            onError={(e) => {
+              const el = e.currentTarget;
+              el.style.display = "none";
+              el.nextElementSibling?.removeAttribute("style");
             }}
           />
         ) : null}
         <div
           className={`coach-avatar--initials coach-avatar--initials-${tier}`}
           aria-hidden={!!avatarUrl}
-          style={avatarUrl ? { display: 'none' } : undefined}
+          style={avatarUrl ? { display: "none" } : undefined}
         >
           {getInitials(fullName)}
         </div>
@@ -72,22 +73,26 @@ export function CoachCard({ coach, cardRef }: CoachCardProps) {
           {city && (
             <p className="coach-card__location">
               <MapPin size={12} strokeWidth={2} />
-              {city}{state ? `, ${state}` : ''}
+              {city}
+              {state ? `, ${state}` : ""}
             </p>
           )}
         </div>
       </div>
 
-      <p className={`coach-card__bio${!bio ? ' coach-card__bio--empty' : ''}`}>
-        {bio ?? 'Bio not yet added.'}
+      <p className={`coach-card__bio${!bio ? " coach-card__bio--empty" : ""}`}>
+        {bio ?? "Bio not yet added."}
       </p>
 
       <div className="coach-card__certs">
-        {certifications.map(cert => (
+        {certifications.map((cert) => (
           <span key={cert.level} className="cert-badge">
             {LEVEL_LABEL[cert.level] ?? `Level ${cert.level}`}
             {cert.completedAt && (
-              <span className="cert-badge__date"> '{formatYear(cert.completedAt).slice(2)}</span>
+              <span className="cert-badge__date">
+                {" "}
+                '{formatYear(cert.completedAt).slice(2)}
+              </span>
             )}
           </span>
         ))}
@@ -104,5 +109,5 @@ export function CoachCard({ coach, cardRef }: CoachCardProps) {
         </a>
       </div>
     </article>
-  )
+  );
 }

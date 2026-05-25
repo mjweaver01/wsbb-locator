@@ -1,6 +1,6 @@
-import { CoachProfileAccess } from '@/components/CoachProfileAccess'
+import { CoachProfileAccess } from "@/components/CoachProfileAccess";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? ''
+const API_BASE = import.meta.env.VITE_API_URL ?? "";
 
 export function CoachAccessPage() {
   return (
@@ -11,7 +11,9 @@ export function CoachAccessPage() {
             ← Back to directory
           </a>
           <p className="coach-access-page-header__eyebrow">WSBB Coach Portal</p>
-          <h1 className="coach-access-page-header__title">Coach Listing Access</h1>
+          <h1 className="coach-access-page-header__title">
+            Coach Listing Access
+          </h1>
           <p className="coach-access-page-header__sub">
             Verify your email to update your public coach profile.
           </p>
@@ -20,5 +22,5 @@ export function CoachAccessPage() {
 
       <CoachProfileAccess apiBase={API_BASE} showIntro={false} />
     </main>
-  )
+  );
 }

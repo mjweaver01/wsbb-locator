@@ -12,5 +12,5 @@ export function HeroSection() {
         Find a Master Instructor, Instructor, or Certified Coach near you.
       </p>
     </header>
-  )
+  );
 }

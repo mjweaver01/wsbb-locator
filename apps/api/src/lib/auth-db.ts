@@ -57,7 +57,7 @@ function addDays(isoDateMs: number, days: number): string {
 export function createLoginCode(
   thinkificUserId: number,
   email: string,
-  ttlMinutes: number
+  ttlMinutes: number,
 ): string {
   const normalizedEmail = normalizeEmail(email);
   const code = String(Math.floor(100000 + Math.random() * 900000));
@@ -68,7 +68,7 @@ export function createLoginCode(
     `INSERT INTO coach_login_codes (
       thinkific_user_id, email, code_hash, expires_at
     ) VALUES (?, ?, ?, ?)`,
-    [thinkificUserId, normalizedEmail, codeHash, expiresAt]
+    [thinkificUserId, normalizedEmail, codeHash, expiresAt],
   );
 
   return code;
@@ -77,16 +77,19 @@ export function createLoginCode(
 export function verifyAndConsumeLoginCode(
   thinkificUserId: number,
   email: string,
-  submittedCode: string
+  submittedCode: string,
 ): boolean {
   const normalizedEmail = normalizeEmail(email);
   const row = db
-    .query<{ id: number; code_hash: string; expires_at: string }, [number, string]>(
+    .query<
+      { id: number; code_hash: string; expires_at: string },
+      [number, string]
+    >(
       `SELECT id, code_hash, expires_at
        FROM coach_login_codes
        WHERE thinkific_user_id = ? AND email = ? AND used_at IS NULL
        ORDER BY created_at DESC
-       LIMIT 1`
+       LIMIT 1`,
     )
     .get(thinkificUserId, normalizedEmail);
 
@@ -96,7 +99,7 @@ export function verifyAndConsumeLoginCode(
   const submittedHash = hashString(submittedCode.trim());
   const ok = timingSafeEqual(
     Buffer.from(submittedHash, "utf8"),
-    Buffer.from(row.code_hash, "utf8")
+    Buffer.from(row.code_hash, "utf8"),
   );
   if (!ok) return false;
 
@@ -104,14 +107,14 @@ export function verifyAndConsumeLoginCode(
     `UPDATE coach_login_codes
      SET used_at = CURRENT_TIMESTAMP
      WHERE id = ?`,
-    [row.id]
+    [row.id],
   );
   return true;
 }
 
 export function createCoachSession(
   thinkificUserId: number,
-  ttlDays: number
+  ttlDays: number,
 ): { token: string; expiresAt: string } {
   const token = randomBytes(32).toString("hex");
   const tokenHash = hashString(token);
@@ -120,20 +123,22 @@ export function createCoachSession(
   db.run(
     `INSERT INTO coach_sessions (thinkific_user_id, token_hash, expires_at)
      VALUES (?, ?, ?)`,
-    [thinkificUserId, tokenHash, expiresAt]
+    [thinkificUserId, tokenHash, expiresAt],
   );
 
   return { token, expiresAt };
 }
 
-export function getCoachSession(token: string): { thinkificUserId: number } | null {
+export function getCoachSession(
+  token: string,
+): { thinkificUserId: number } | null {
   const tokenHash = hashString(token);
   const row = db
     .query<CoachSessionRow, [string]>(
       `SELECT thinkific_user_id, expires_at
        FROM coach_sessions
        WHERE token_hash = ?
-       LIMIT 1`
+       LIMIT 1`,
     )
     .get(tokenHash);
 
@@ -144,7 +149,7 @@ export function getCoachSession(token: string): { thinkificUserId: number } | nu
     `UPDATE coach_sessions
      SET last_seen_at = CURRENT_TIMESTAMP
      WHERE token_hash = ?`,
-    [tokenHash]
+    [tokenHash],
   );
 
   return { thinkificUserId: row.thinkific_user_id };

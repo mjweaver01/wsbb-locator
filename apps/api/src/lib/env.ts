@@ -65,21 +65,37 @@ export const env = {
     readEnv("COACH_DATA_DB_PATH") ??
     readEnv("COACH_OVERRIDES_DB_PATH") ??
     `${import.meta.dir}/../../data/coach-data.sqlite`,
-  coachAuthCodeTtlMinutes: readIntEnvWithDefault("COACH_AUTH_CODE_TTL_MINUTES", 15),
+  coachAuthCodeTtlMinutes: readIntEnvWithDefault(
+    "COACH_AUTH_CODE_TTL_MINUTES",
+    15,
+  ),
   coachSessionTtlDays: readIntEnvWithDefault("COACH_SESSION_TTL_DAYS", 30),
-  coachAuthCookieName: readEnv("COACH_AUTH_COOKIE_NAME") ?? "wsbb_coach_session",
-  coachAuthCookieSecure: readBoolEnvWithDefault("COACH_AUTH_COOKIE_SECURE", false),
-  coachAuthRequestRateLimitMax: readIntEnvWithDefault("COACH_AUTH_REQUEST_RATE_LIMIT_MAX", 10),
+  coachAuthCookieName:
+    readEnv("COACH_AUTH_COOKIE_NAME") ?? "wsbb_coach_session",
+  coachAuthCookieSecure: readBoolEnvWithDefault(
+    "COACH_AUTH_COOKIE_SECURE",
+    false,
+  ),
+  coachAuthRequestRateLimitMax: readIntEnvWithDefault(
+    "COACH_AUTH_REQUEST_RATE_LIMIT_MAX",
+    10,
+  ),
   coachAuthRequestRateLimitWindowMs: readIntEnvWithDefault(
     "COACH_AUTH_REQUEST_RATE_LIMIT_WINDOW_MS",
-    10 * 60 * 1000
+    10 * 60 * 1000,
   ),
-  coachAuthVerifyRateLimitMax: readIntEnvWithDefault("COACH_AUTH_VERIFY_RATE_LIMIT_MAX", 20),
+  coachAuthVerifyRateLimitMax: readIntEnvWithDefault(
+    "COACH_AUTH_VERIFY_RATE_LIMIT_MAX",
+    20,
+  ),
   coachAuthVerifyRateLimitWindowMs: readIntEnvWithDefault(
     "COACH_AUTH_VERIFY_RATE_LIMIT_WINDOW_MS",
-    10 * 60 * 1000
+    10 * 60 * 1000,
   ),
-  coachAuthDebugExposeCode: readBoolEnvWithDefault("COACH_AUTH_DEBUG_EXPOSE_CODE", false),
+  coachAuthDebugExposeCode: readBoolEnvWithDefault(
+    "COACH_AUTH_DEBUG_EXPOSE_CODE",
+    false,
+  ),
   corsAllowedOrigins: configuredCorsOrigins,
   corsEnforceAllowlist: readBoolEnvWithDefault("CORS_ENFORCE_ALLOWLIST", false),
   emailProvider: readEnv("EMAIL_PROVIDER") ?? "console",

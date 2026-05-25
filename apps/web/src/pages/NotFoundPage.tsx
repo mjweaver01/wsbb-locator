@@ -4,5 +4,5 @@ export function NotFoundPage() {
       <span>Page not found</span>
       <a href="/">Back to directory</a>
     </main>
-  )
+  );
 }

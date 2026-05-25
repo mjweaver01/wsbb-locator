@@ -1,5 +1,5 @@
 interface FooterCtaProps {
-  pathwayUrl: string
+  pathwayUrl: string;
 }
 
 export function FooterCta({ pathwayUrl }: FooterCtaProps) {
@@ -24,5 +24,5 @@ export function FooterCta({ pathwayUrl }: FooterCtaProps) {
         Start Level 1 →
       </a>
     </footer>
-  )
+  );
 }

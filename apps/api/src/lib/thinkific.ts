@@ -110,7 +110,7 @@ function makeHeaders(apiKey: string, subdomain: string) {
 async function thinkificGet<T>(
   path: string,
   headers: Record<string, string>,
-  params: Record<string, string | number | boolean> = {}
+  params: Record<string, string | number | boolean> = {},
 ): Promise<T> {
   const url = new URL(`${BASE_URL}${path}`);
   for (const [k, v] of Object.entries(params)) {
@@ -127,7 +127,7 @@ async function thinkificGet<T>(
 async function fetchAllPages<T>(
   path: string,
   headers: Record<string, string>,
-  extraParams: Record<string, string | number | boolean> = {}
+  extraParams: Record<string, string | number | boolean> = {},
 ): Promise<T[]> {
   const results: T[] = [];
   let page = 1;
@@ -162,24 +162,39 @@ export async function fetchCoachesFromThinkific(): Promise<CoachesPayload> {
 
   if (!apiKey || !subdomain) {
     throw new Error(
-      "THINKIFIC_API_KEY and THINKIFIC_SUBDOMAIN must be set to fetch live data."
+      "THINKIFIC_API_KEY and THINKIFIC_SUBDOMAIN must be set to fetch live data.",
     );
   }
 
   const headers = makeHeaders(apiKey, subdomain);
 
   const pathwayCourses = [
-    env.thinkificLevel1Id && { courseId: env.thinkificLevel1Id, level: 1, tier: "certified" as const },
-    env.thinkificLevel2Id && { courseId: env.thinkificLevel2Id, level: 2, tier: "instructor" as const },
-    env.thinkificLevel3Id && { courseId: env.thinkificLevel3Id, level: 3, tier: "master" as const },
-  ].filter((course): course is { courseId: number; level: number; tier: CoachTier } => Boolean(course));
+    env.thinkificLevel1Id && {
+      courseId: env.thinkificLevel1Id,
+      level: 1,
+      tier: "certified" as const,
+    },
+    env.thinkificLevel2Id && {
+      courseId: env.thinkificLevel2Id,
+      level: 2,
+      tier: "instructor" as const,
+    },
+    env.thinkificLevel3Id && {
+      courseId: env.thinkificLevel3Id,
+      level: 3,
+      tier: "master" as const,
+    },
+  ].filter(
+    (course): course is { courseId: number; level: number; tier: CoachTier } =>
+      Boolean(course),
+  );
 
   if (pathwayCourses.length === 0) {
     // No course IDs configured — list all courses and throw so the caller can surface this
     const courses = await fetchAllPages<ThinkificCourse>("/courses", headers);
     const list = courses.map((c) => `  ${c.id}  ${c.name}`).join("\n");
     throw new Error(
-      `No pathway course IDs configured. Set THINKIFIC_LEVEL1_ID / _LEVEL2_ID / _LEVEL3_ID.\n\nAvailable courses:\n${list}`
+      `No pathway course IDs configured. Set THINKIFIC_LEVEL1_ID / _LEVEL2_ID / _LEVEL3_ID.\n\nAvailable courses:\n${list}`,
     );
   }
 
@@ -198,7 +213,7 @@ export async function fetchCoachesFromThinkific(): Promise<CoachesPayload> {
     const enrollments = await fetchAllPages<ThinkificEnrollment>(
       "/enrollments",
       headers,
-      { "query[course_id]": courseId, "query[completed]": true }
+      { "query[course_id]": courseId, "query[completed]": true },
     );
 
     for (const enrollment of enrollments) {
@@ -226,7 +241,7 @@ export async function fetchCoachesFromThinkific(): Promise<CoachesPayload> {
     try {
       const user = await thinkificGet<ThinkificUser>(
         `/users/${userId}`,
-        headers
+        headers,
       );
       coaches.push({
         thinkificUserId: user.id,

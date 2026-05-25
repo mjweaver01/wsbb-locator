@@ -49,7 +49,9 @@ db.exec(`
   );
 `);
 
-function recalculateTierBreakdown(coaches: Coach[]): CoachesPayload["tierBreakdown"] {
+function recalculateTierBreakdown(
+  coaches: Coach[],
+): CoachesPayload["tierBreakdown"] {
   return {
     master: coaches.filter((c) => c.tier === "master").length,
     instructor: coaches.filter((c) => c.tier === "instructor").length,
@@ -66,7 +68,7 @@ export function saveThinkificCache(payload: CoachesPayload): void {
       `INSERT INTO thinkific_coaches_cache (
         thinkific_user_id, email, first_name, last_name, full_name, avatar_url,
         bio, tier, city, state, lat, lng, certifications_json
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     );
 
     for (const coach of data.coaches) {
@@ -83,14 +85,14 @@ export function saveThinkificCache(payload: CoachesPayload): void {
         coach.state ?? null,
         coach.lat ?? null,
         coach.lng ?? null,
-        JSON.stringify(coach.certifications)
+        JSON.stringify(coach.certifications),
       );
     }
 
     db.run(
       `INSERT INTO thinkific_cache_meta (id, fetched_at, subdomain, synced_at)
        VALUES (1, ?, ?, CURRENT_TIMESTAMP)`,
-      [data.fetchedAt, data.subdomain]
+      [data.fetchedAt, data.subdomain],
     );
   });
 
@@ -99,9 +101,10 @@ export function saveThinkificCache(payload: CoachesPayload): void {
 
 export function loadThinkificCache(): CoachesPayload | null {
   const meta = db
-    .query<ThinkificCacheMetaRow, []>(
-      `SELECT fetched_at, subdomain FROM thinkific_cache_meta WHERE id = 1`
-    )
+    .query<
+      ThinkificCacheMetaRow,
+      []
+    >(`SELECT fetched_at, subdomain FROM thinkific_cache_meta WHERE id = 1`)
     .get();
 
   if (!meta) return null;
@@ -112,7 +115,7 @@ export function loadThinkificCache(): CoachesPayload | null {
         thinkific_user_id, email, first_name, last_name, full_name, avatar_url, bio, tier,
         city, state, lat, lng, certifications_json
        FROM thinkific_coaches_cache
-       ORDER BY tier DESC, full_name ASC`
+       ORDER BY tier DESC, full_name ASC`,
     )
     .all();
 
