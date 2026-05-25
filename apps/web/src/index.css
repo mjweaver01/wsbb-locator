@@ -236,7 +236,49 @@ input {
   pointer-events: none;
 }
 
+.coach-map-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 1050;
+  background: #0d0d0d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.coach-map-loading::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.03), transparent 40%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 55%);
+  pointer-events: none;
+}
+
+.coach-map-loading__label {
+  position: relative;
+  font-family: var(--font-label);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #7b7974;
+}
+
 /* Leaflet overrides — dark palette */
+/* Leaflet's default stylesheet sets .leaflet-container background to light gray.
+   Use a stronger selector + !important so the first paint stays dark. */
+.coach-map.leaflet-container {
+  background: #0d0d0d !important;
+  font-family: var(--font-body);
+}
+
+.coach-map .leaflet-pane,
+.coach-map .leaflet-tile-pane {
+  background: #0d0d0d;
+}
+
 .coach-map .leaflet-container {
   background: #0d0d0d;
   font-family: var(--font-body);

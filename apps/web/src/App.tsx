@@ -18,6 +18,10 @@ function normalise(s: string) {
   return s.toLowerCase().trim()
 }
 
+function hasLocation(c: RawCoach) {
+  return typeof c.lat === 'number' && typeof c.lng === 'number'
+}
+
 export function App() {
   const [coaches, setCoaches] = useState<RawCoach[]>([])
   const [loading, setLoading] = useState(true)
@@ -51,6 +55,10 @@ export function App() {
   // Defer the coach set passed to the map so rapid typing doesn't block on
   // marker rebuilds — the input + grid update immediately, the map catches up.
   const mapCoaches = useDeferredValue(filtered)
+  const filteredHasLocation = useMemo(
+    () => filtered.some(hasLocation),
+    [filtered],
+  )
 
   function handlePinClick(id: number) {
     const el = cardRefs.current.get(id)
@@ -89,7 +97,11 @@ export function App() {
     <>
       <HeroSection />
       <TierLegend />
-      <CoachMap coaches={mapCoaches} onPinClick={handlePinClick} />
+      <CoachMap
+        coaches={mapCoaches}
+        onPinClick={handlePinClick}
+        hasLocationHint={filteredHasLocation}
+      />
       <FilterBar
         filters={filters}
         onFiltersChange={setFilters}

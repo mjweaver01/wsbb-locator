@@ -6,6 +6,7 @@ import type { RawCoach } from '@/lib/types'
 interface CoachMapProps {
   coaches: RawCoach[]
   onPinClick?: (id: number) => void
+  hasLocationHint?: boolean
 }
 
 const TIER_COLORS: Record<string, string> = {
@@ -55,12 +56,13 @@ function hasLocation(c: RawCoach): c is LocatedCoach {
   return typeof c.lat === 'number' && typeof c.lng === 'number'
 }
 
-export function CoachMap({ coaches, onPinClick }: CoachMapProps) {
+export function CoachMap({ coaches, onPinClick, hasLocationHint = false }: CoachMapProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<Leaflet.Map | null>(null)
   const markerLayerRef = useRef<Leaflet.LayerGroup | null>(null)
   const onPinClickRef = useRef(onPinClick)
   const [active, setActive] = useState(false)
+  const [mapLoaded, setMapLoaded] = useState(false)
 
   // Keep the latest pin-click handler reachable without re-running effects.
   useEffect(() => {
@@ -72,6 +74,7 @@ export function CoachMap({ coaches, onPinClick }: CoachMapProps) {
     [coaches],
   )
   const hasLocations = coachesWithLocation.length > 0
+  const showNoLocations = !hasLocations && !hasLocationHint
 
   // Init the map once, on mount. The wrapper is always rendered (we toggle
   // the "no locations" state as an inner overlay) so containerRef stays stable
@@ -79,9 +82,12 @@ export function CoachMap({ coaches, onPinClick }: CoachMapProps) {
   useEffect(() => {
     if (!containerRef.current) return
     let cancelled = false
+    let loadFallbackTimer: ReturnType<typeof setTimeout> | null = null
 
     loadLeaflet().then(L => {
       if (cancelled || !containerRef.current) return
+
+      setMapLoaded(false)
 
       const map = L.map(containerRef.current, {
         center: [38.5, -96],
@@ -91,7 +97,7 @@ export function CoachMap({ coaches, onPinClick }: CoachMapProps) {
         scrollWheelZoom: false,
       })
 
-      L.tileLayer(
+      const tiles = L.tileLayer(
         'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
         {
           attribution:
@@ -99,7 +105,19 @@ export function CoachMap({ coaches, onPinClick }: CoachMapProps) {
           subdomains: 'abcd',
           maxZoom: 19,
         },
-      ).addTo(map)
+      )
+
+      tiles.once('load', () => {
+        if (!cancelled) setMapLoaded(true)
+      })
+
+      // Defensive fallback: if the tile provider is slow, avoid a permanent
+      // loading mask and let the user see/interact with the map shell.
+      loadFallbackTimer = setTimeout(() => {
+        if (!cancelled) setMapLoaded(true)
+      }, 1500)
+
+      tiles.addTo(map)
 
       markerLayerRef.current = L.layerGroup().addTo(map)
       mapRef.current = map
@@ -107,6 +125,7 @@ export function CoachMap({ coaches, onPinClick }: CoachMapProps) {
 
     return () => {
       cancelled = true
+      if (loadFallbackTimer) clearTimeout(loadFallbackTimer)
       mapRef.current?.remove()
       mapRef.current = null
       markerLayerRef.current = null
@@ -175,7 +194,13 @@ export function CoachMap({ coaches, onPinClick }: CoachMapProps) {
     <div className="coach-map-wrapper" onMouseLeave={() => setActive(false)}>
       <div ref={containerRef} className="coach-map" />
 
-      {!hasLocations && (
+      {!mapLoaded && (
+        <div className="coach-map-loading" aria-hidden="true">
+          <span className="coach-map-loading__label">Loading map…</span>
+        </div>
+      )}
+
+      {showNoLocations && (
         <div className="coach-map-empty" role="status">
           <div className="coach-map-empty__content">
             <div className="coach-map-empty__icon">
