@@ -1,5 +1,6 @@
 import { db } from "./db";
 import { getPgPool } from "./pg";
+import { ensureDbSchema, isPostgresDb } from "./schema";
 
 export interface CoachEmailLink {
   thinkificUserId: number;
@@ -16,42 +17,12 @@ interface CoachEmailLinkRow {
 }
 
 const pgPool = getPgPool();
-let pgInitPromise: Promise<void> | null = null;
 
-if (!pgPool) {
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS coach_email_links (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      thinkific_user_id INTEGER NOT NULL,
-      email TEXT NOT NULL UNIQUE COLLATE NOCASE,
-      source TEXT NOT NULL DEFAULT 'manual',
-      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-    );
-
-    CREATE INDEX IF NOT EXISTS idx_coach_email_links_thinkific_user_id
-    ON coach_email_links(thinkific_user_id);
-  `);
-}
-
-async function ensurePgCoachEmailLinksTable(): Promise<void> {
-  if (!pgPool) return;
-  if (pgInitPromise) return pgInitPromise;
-  pgInitPromise = pgPool
-    .query(`
-      CREATE TABLE IF NOT EXISTS coach_email_links (
-        id BIGSERIAL PRIMARY KEY,
-        thinkific_user_id BIGINT NOT NULL,
-        email TEXT NOT NULL UNIQUE,
-        source TEXT NOT NULL DEFAULT 'manual',
-        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-      );
-      CREATE INDEX IF NOT EXISTS idx_coach_email_links_thinkific_user_id
-      ON coach_email_links(thinkific_user_id);
-      CREATE UNIQUE INDEX IF NOT EXISTS idx_coach_email_links_lower_email
-      ON coach_email_links (lower(email));
-    `)
-    .then(() => undefined);
-  return pgInitPromise ?? Promise.resolve();
+function requirePgPool() {
+  if (!pgPool) {
+    throw new Error("Postgres pool unavailable in postgres mode.");
+  }
+  return pgPool;
 }
 
 function normalizeEmail(email: string): string {
@@ -70,9 +41,9 @@ function toCoachEmailLink(row: CoachEmailLinkRow): CoachEmailLink {
 export async function listCoachEmailLinks(
   thinkificUserId: number,
 ): Promise<CoachEmailLink[]> {
-  if (pgPool) {
-    await ensurePgCoachEmailLinksTable();
-    const result = await pgPool.query<CoachEmailLinkRow>(
+  await ensureDbSchema();
+  if (isPostgresDb) {
+    const result = await requirePgPool().query<CoachEmailLinkRow>(
       `SELECT thinkific_user_id, email, source, created_at
        FROM coach_email_links
        WHERE thinkific_user_id = $1
@@ -102,9 +73,9 @@ export async function upsertCoachEmailLink(
   const normalizedEmail = normalizeEmail(email);
   const normalizedSource = source.trim() || "manual";
 
-  if (pgPool) {
-    await ensurePgCoachEmailLinksTable();
-    const result = await pgPool.query<CoachEmailLinkRow>(
+  await ensureDbSchema();
+  if (isPostgresDb) {
+    const result = await requirePgPool().query<CoachEmailLinkRow>(
       `INSERT INTO coach_email_links (thinkific_user_id, email, source)
        VALUES ($1, $2, $3)
        ON CONFLICT (email) DO UPDATE SET
@@ -149,9 +120,9 @@ export async function deleteCoachEmailLink(
   email: string,
 ): Promise<boolean> {
   const normalizedEmail = normalizeEmail(email);
-  if (pgPool) {
-    await ensurePgCoachEmailLinksTable();
-    const result = await pgPool.query(
+  await ensureDbSchema();
+  if (isPostgresDb) {
+    const result = await requirePgPool().query(
       `DELETE FROM coach_email_links
        WHERE thinkific_user_id = $1 AND lower(email) = lower($2)`,
       [thinkificUserId, normalizedEmail],
@@ -171,9 +142,9 @@ export async function findThinkificUserIdByLinkedEmail(
   email: string,
 ): Promise<number | null> {
   const normalizedEmail = normalizeEmail(email);
-  if (pgPool) {
-    await ensurePgCoachEmailLinksTable();
-    const result = await pgPool.query<{ thinkific_user_id: number | string }>(
+  await ensureDbSchema();
+  if (isPostgresDb) {
+    const result = await requirePgPool().query<{ thinkific_user_id: number | string }>(
       `SELECT thinkific_user_id
        FROM coach_email_links
        WHERE lower(email) = lower($1)

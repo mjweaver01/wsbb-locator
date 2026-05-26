@@ -53,6 +53,7 @@ import {
   readCoachMedia,
   saveCoachMedia,
 } from "./lib/coach-media";
+import { ensureDbSchema } from "./lib/db/schema";
 
 const STATIC_FALLBACK_PATH = resolve(
   import.meta.dir,
@@ -676,6 +677,8 @@ app.route("/api/coaches", adminCoaches);
 // ---------------------------------------------------------------------------
 // Startup
 // ---------------------------------------------------------------------------
+
+await ensureDbSchema();
 
 console.log(`[api] starting on http://localhost:${env.port}`);
 console.log(`[api] db mode:          ${env.databaseUrl ? "postgres" : "sqlite"}`);

@@ -1,6 +1,7 @@
 import { createHash, randomBytes, randomInt, timingSafeEqual } from "crypto";
 import { db } from "./db";
 import { getPgPool } from "./pg";
+import { ensureDbSchema, isPostgresDb } from "./schema";
 
 interface CoachSessionRow {
   thinkific_user_id: number | string;
@@ -8,61 +9,12 @@ interface CoachSessionRow {
 }
 
 const pgPool = getPgPool();
-let pgInitPromise: Promise<void> | null = null;
 
-if (!pgPool) {
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS coach_login_codes (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      thinkific_user_id INTEGER NOT NULL,
-      email TEXT NOT NULL COLLATE NOCASE,
-      code_hash TEXT NOT NULL,
-      expires_at TEXT NOT NULL,
-      used_at TEXT,
-      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-    );
-
-    CREATE INDEX IF NOT EXISTS idx_coach_login_codes_lookup
-    ON coach_login_codes(thinkific_user_id, email, created_at DESC);
-
-    CREATE TABLE IF NOT EXISTS coach_sessions (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      thinkific_user_id INTEGER NOT NULL,
-      token_hash TEXT NOT NULL UNIQUE,
-      expires_at TEXT NOT NULL,
-      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      last_seen_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-    );
-  `);
-}
-
-async function ensurePgAuthTables(): Promise<void> {
-  if (!pgPool) return;
-  if (pgInitPromise) return pgInitPromise;
-  pgInitPromise = pgPool
-    .query(`
-      CREATE TABLE IF NOT EXISTS coach_login_codes (
-        id BIGSERIAL PRIMARY KEY,
-        thinkific_user_id BIGINT NOT NULL,
-        email TEXT NOT NULL,
-        code_hash TEXT NOT NULL,
-        expires_at TIMESTAMPTZ NOT NULL,
-        used_at TIMESTAMPTZ,
-        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-      );
-      CREATE INDEX IF NOT EXISTS idx_coach_login_codes_lookup
-      ON coach_login_codes(thinkific_user_id, lower(email), created_at DESC);
-      CREATE TABLE IF NOT EXISTS coach_sessions (
-        id BIGSERIAL PRIMARY KEY,
-        thinkific_user_id BIGINT NOT NULL,
-        token_hash TEXT NOT NULL UNIQUE,
-        expires_at TIMESTAMPTZ NOT NULL,
-        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-      );
-    `)
-    .then(() => undefined);
-  return pgInitPromise ?? Promise.resolve();
+function requirePgPool() {
+  if (!pgPool) {
+    throw new Error("Postgres pool unavailable in postgres mode.");
+  }
+  return pgPool;
 }
 
 function hashString(value: string): string {
@@ -95,9 +47,9 @@ export async function createLoginCode(
   const codeHash = hashString(code);
   const expiresAt = addMinutes(nowMs(), ttlMinutes);
 
-  if (pgPool) {
-    await ensurePgAuthTables();
-    await pgPool.query(
+  await ensureDbSchema();
+  if (isPostgresDb) {
+    await requirePgPool().query(
       `INSERT INTO coach_login_codes (
         thinkific_user_id, email, code_hash, expires_at
       ) VALUES ($1, $2, $3, $4::timestamptz)`,
@@ -122,9 +74,9 @@ export async function verifyAndConsumeLoginCode(
   submittedCode: string,
 ): Promise<boolean> {
   const normalizedEmail = normalizeEmail(email);
-  if (pgPool) {
-    await ensurePgAuthTables();
-    const result = await pgPool.query<
+  await ensureDbSchema();
+  if (isPostgresDb) {
+    const result = await requirePgPool().query<
       { id: number | string; code_hash: string; expires_at: string }
     >(
       `SELECT id, code_hash, expires_at
@@ -144,7 +96,7 @@ export async function verifyAndConsumeLoginCode(
     if (submittedBuf.length !== storedBuf.length) return false;
     if (!timingSafeEqual(submittedBuf, storedBuf)) return false;
 
-    await pgPool.query(
+    await requirePgPool().query(
       `UPDATE coach_login_codes
        SET used_at = NOW()
        WHERE id = $1`,
@@ -192,9 +144,9 @@ export async function createCoachSession(
   const tokenHash = hashString(token);
   const expiresAt = addDays(nowMs(), ttlDays);
 
-  if (pgPool) {
-    await ensurePgAuthTables();
-    await pgPool.query(
+  await ensureDbSchema();
+  if (isPostgresDb) {
+    await requirePgPool().query(
       `INSERT INTO coach_sessions (thinkific_user_id, token_hash, expires_at)
        VALUES ($1, $2, $3::timestamptz)`,
       [thinkificUserId, tokenHash, expiresAt],
@@ -215,9 +167,9 @@ export async function getCoachSession(
   token: string,
 ): Promise<{ thinkificUserId: number } | null> {
   const tokenHash = hashString(token);
-  if (pgPool) {
-    await ensurePgAuthTables();
-    const result = await pgPool.query<CoachSessionRow>(
+  await ensureDbSchema();
+  if (isPostgresDb) {
+    const result = await requirePgPool().query<CoachSessionRow>(
       `SELECT thinkific_user_id, expires_at
        FROM coach_sessions
        WHERE token_hash = $1
@@ -228,7 +180,7 @@ export async function getCoachSession(
     if (!row) return null;
     if (Date.parse(row.expires_at) <= nowMs()) return null;
 
-    await pgPool.query(
+    await requirePgPool().query(
       `UPDATE coach_sessions
        SET last_seen_at = NOW()
        WHERE token_hash = $1`,
@@ -262,9 +214,9 @@ export async function getCoachSession(
 
 export async function deleteCoachSession(token: string): Promise<void> {
   const tokenHash = hashString(token);
-  if (pgPool) {
-    await ensurePgAuthTables();
-    await pgPool.query(`DELETE FROM coach_sessions WHERE token_hash = $1`, [
+  await ensureDbSchema();
+  if (isPostgresDb) {
+    await requirePgPool().query(`DELETE FROM coach_sessions WHERE token_hash = $1`, [
       tokenHash,
     ]);
     return;

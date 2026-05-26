@@ -1,6 +1,7 @@
 import type { Coach } from "../thinkific";
 import { db } from "./db";
 import { getPgPool } from "./pg";
+import { dbMode, ensureDbSchema, isPostgresDb } from "./schema";
 
 export type CoachOverride = Partial<
   Pick<Coach, "bio" | "avatarUrl" | "city" | "state" | "lat" | "lng">
@@ -17,42 +18,13 @@ interface CoachOverrideRow {
 }
 
 const pgPool = getPgPool();
-export const coachOverridesDbDriver = pgPool ? "postgres" : "sqlite";
-let pgInitPromise: Promise<void> | null = null;
+export const coachOverridesDbDriver = dbMode;
 
-if (!pgPool) {
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS coach_overrides (
-      thinkific_user_id INTEGER PRIMARY KEY,
-      bio TEXT,
-      avatar_url TEXT,
-      city TEXT,
-      state TEXT,
-      lat REAL,
-      lng REAL,
-      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-    );
-  `);
-}
-
-async function ensurePgCoachOverridesTable(): Promise<void> {
-  if (!pgPool) return;
-  if (pgInitPromise) return pgInitPromise;
-  pgInitPromise = pgPool
-    .query(`
-      CREATE TABLE IF NOT EXISTS coach_overrides (
-        thinkific_user_id BIGINT PRIMARY KEY,
-        bio TEXT,
-        avatar_url TEXT,
-        city TEXT,
-        state TEXT,
-        lat DOUBLE PRECISION,
-        lng DOUBLE PRECISION,
-        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-      );
-    `)
-    .then(() => undefined);
-  return pgInitPromise ?? Promise.resolve();
+function requirePgPool() {
+  if (!pgPool) {
+    throw new Error("Postgres pool unavailable in postgres mode.");
+  }
+  return pgPool;
 }
 
 function toOverride(row: CoachOverrideRow): CoachOverride {
@@ -69,9 +41,9 @@ function toOverride(row: CoachOverrideRow): CoachOverride {
 export async function getCoachOverride(
   thinkificUserId: number,
 ): Promise<CoachOverride | null> {
-  if (pgPool) {
-    await ensurePgCoachOverridesTable();
-    const result = await pgPool.query<CoachOverrideRow>(
+  await ensureDbSchema();
+  if (isPostgresDb) {
+    const result = await requirePgPool().query<CoachOverrideRow>(
       `SELECT thinkific_user_id, bio, avatar_url, city, state, lat, lng
        FROM coach_overrides
        WHERE thinkific_user_id = $1`,
@@ -93,9 +65,9 @@ export async function getCoachOverride(
 }
 
 export async function listCoachOverrides(): Promise<Record<string, CoachOverride>> {
-  if (pgPool) {
-    await ensurePgCoachOverridesTable();
-    const result = await pgPool.query<CoachOverrideRow>(
+  await ensureDbSchema();
+  if (isPostgresDb) {
+    const result = await requirePgPool().query<CoachOverrideRow>(
       `SELECT thinkific_user_id, bio, avatar_url, city, state, lat, lng
        FROM coach_overrides`,
     );
@@ -128,9 +100,9 @@ export async function upsertCoachOverride(
   thinkificUserId: number,
   override: CoachOverride,
 ): Promise<CoachOverride> {
-  if (pgPool) {
-    await ensurePgCoachOverridesTable();
-    await pgPool.query(
+  await ensureDbSchema();
+  if (isPostgresDb) {
+    await requirePgPool().query(
       `INSERT INTO coach_overrides (
         thinkific_user_id, bio, avatar_url, city, state, lat, lng, updated_at
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
@@ -182,9 +154,9 @@ export async function upsertCoachOverride(
 }
 
 export async function deleteCoachOverride(thinkificUserId: number): Promise<void> {
-  if (pgPool) {
-    await ensurePgCoachOverridesTable();
-    await pgPool.query(`DELETE FROM coach_overrides WHERE thinkific_user_id = $1`, [
+  await ensureDbSchema();
+  if (isPostgresDb) {
+    await requirePgPool().query(`DELETE FROM coach_overrides WHERE thinkific_user_id = $1`, [
       thinkificUserId,
     ]);
     return;
