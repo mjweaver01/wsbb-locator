@@ -16,8 +16,14 @@ const {
   verifyAndConsumeLoginCode,
 } = await import("./auth");
 
-const USER_ID = 999_001;
 const EMAIL = "Coach@Example.com";
+let nextUserId = 999_001;
+
+function allocateUserId(): number {
+  const userId = nextUserId;
+  nextUserId += 1;
+  return userId;
+}
 
 describe("coach auth flow", () => {
   afterAll(() => {
@@ -25,46 +31,76 @@ describe("coach auth flow", () => {
   });
 
   test("a fresh code verifies once and only once", async () => {
-    const code = await createLoginCode(USER_ID, EMAIL, 15);
+    const userId = allocateUserId();
+    const code = await createLoginCode(userId, EMAIL, 15);
 
-    expect(await verifyAndConsumeLoginCode(USER_ID, EMAIL, code)).toBe(true);
-    expect(await verifyAndConsumeLoginCode(USER_ID, EMAIL, code)).toBe(false);
+    expect(await verifyAndConsumeLoginCode(userId, EMAIL, code)).toBe(true);
+    expect(await verifyAndConsumeLoginCode(userId, EMAIL, code)).toBe(false);
   });
 
   test("wrong code is rejected without consuming the valid one", async () => {
-    const code = await createLoginCode(USER_ID, EMAIL, 15);
+    const userId = allocateUserId();
+    const code = await createLoginCode(userId, EMAIL, 15);
 
-    expect(await verifyAndConsumeLoginCode(USER_ID, EMAIL, "000000")).toBe(
+    expect(await verifyAndConsumeLoginCode(userId, EMAIL, "000000")).toBe(
       false,
     );
-    expect(await verifyAndConsumeLoginCode(USER_ID, EMAIL, code)).toBe(true);
+    expect(await verifyAndConsumeLoginCode(userId, EMAIL, code)).toBe(true);
+  });
+
+  test("code cannot be consumed by a different user id", async () => {
+    const ownerId = allocateUserId();
+    const attackerId = allocateUserId();
+    const code = await createLoginCode(ownerId, EMAIL, 15);
+
+    expect(await verifyAndConsumeLoginCode(attackerId, EMAIL, code)).toBe(
+      false,
+    );
+    expect(await verifyAndConsumeLoginCode(ownerId, EMAIL, code)).toBe(true);
   });
 
   test("expired code is rejected", async () => {
-    const code = await createLoginCode(USER_ID, EMAIL, -1);
-    expect(await verifyAndConsumeLoginCode(USER_ID, EMAIL, code)).toBe(false);
+    const userId = allocateUserId();
+    const code = await createLoginCode(userId, EMAIL, -1);
+    expect(await verifyAndConsumeLoginCode(userId, EMAIL, code)).toBe(false);
   });
 
   test("email lookup is case- and whitespace-insensitive", async () => {
-    const code = await createLoginCode(USER_ID, "lowercase@example.com", 15);
+    const userId = allocateUserId();
+    const code = await createLoginCode(userId, "lowercase@example.com", 15);
     expect(
       await verifyAndConsumeLoginCode(
-        USER_ID,
+        userId,
         "  LowerCase@Example.com  ",
         code,
       ),
     ).toBe(true);
   });
 
+  test("submitted code is whitespace-trimmed before verification", async () => {
+    const userId = allocateUserId();
+    const code = await createLoginCode(userId, EMAIL, 15);
+    expect(await verifyAndConsumeLoginCode(userId, EMAIL, `  ${code}\n`)).toBe(
+      true,
+    );
+  });
+
   test("session lifecycle: create → fetch → delete", async () => {
-    const { token, expiresAt } = await createCoachSession(USER_ID, 30);
+    const userId = allocateUserId();
+    const { token, expiresAt } = await createCoachSession(userId, 30);
     expect(token).toMatch(/^[a-f0-9]{64}$/);
     expect(Date.parse(expiresAt)).toBeGreaterThan(Date.now());
 
     const session = await getCoachSession(token);
-    expect(session?.thinkificUserId).toBe(USER_ID);
+    expect(session?.thinkificUserId).toBe(userId);
 
     await deleteCoachSession(token);
+    expect(await getCoachSession(token)).toBeNull();
+  });
+
+  test("expired session token is rejected", async () => {
+    const userId = allocateUserId();
+    const { token } = await createCoachSession(userId, -1);
     expect(await getCoachSession(token)).toBeNull();
   });
 
