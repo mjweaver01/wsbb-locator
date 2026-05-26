@@ -76,6 +76,7 @@ export async function verifyAndConsumeLoginCode(
   const normalizedEmail = normalizeEmail(email);
   await ensureDbSchema();
   if (isPostgresDb) {
+    // `id DESC` breaks ties when `created_at` lands in the same timestamp bucket.
     const result = await requirePgPool().query<{
       id: number | string;
       code_hash: string;
@@ -84,7 +85,7 @@ export async function verifyAndConsumeLoginCode(
       `SELECT id, code_hash, expires_at
        FROM coach_login_codes
        WHERE thinkific_user_id = $1 AND lower(email) = lower($2) AND used_at IS NULL
-       ORDER BY created_at DESC
+       ORDER BY created_at DESC, id DESC
        LIMIT 1`,
       [thinkificUserId, normalizedEmail],
     );
@@ -107,6 +108,7 @@ export async function verifyAndConsumeLoginCode(
     return true;
   }
 
+  // Mirror Postgres ordering so "latest code wins" is deterministic in sqlite too.
   const row = db
     .query<
       { id: number; code_hash: string; expires_at: string },
@@ -115,7 +117,7 @@ export async function verifyAndConsumeLoginCode(
       `SELECT id, code_hash, expires_at
        FROM coach_login_codes
        WHERE thinkific_user_id = ? AND email = ? AND used_at IS NULL
-       ORDER BY created_at DESC
+       ORDER BY created_at DESC, id DESC
        LIMIT 1`,
     )
     .get(thinkificUserId, normalizedEmail);

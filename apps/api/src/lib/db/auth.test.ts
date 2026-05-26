@@ -48,6 +48,22 @@ describe("coach auth flow", () => {
     expect(await verifyAndConsumeLoginCode(userId, EMAIL, code)).toBe(true);
   });
 
+  test("only the newest unused login code can be consumed", async () => {
+    const userId = allocateUserId();
+    const firstCode = await createLoginCode(userId, EMAIL, 15);
+    let secondCode = await createLoginCode(userId, EMAIL, 15);
+    while (secondCode === firstCode) {
+      secondCode = await createLoginCode(userId, EMAIL, 15);
+    }
+
+    expect(await verifyAndConsumeLoginCode(userId, EMAIL, firstCode)).toBe(
+      false,
+    );
+    expect(await verifyAndConsumeLoginCode(userId, EMAIL, secondCode)).toBe(
+      true,
+    );
+  });
+
   test("code cannot be consumed by a different user id", async () => {
     const ownerId = allocateUserId();
     const attackerId = allocateUserId();
