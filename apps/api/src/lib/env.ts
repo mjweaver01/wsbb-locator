@@ -56,6 +56,14 @@ function readCsvEnv(name: string): string[] {
     .filter(Boolean);
 }
 
+function readFirstEnv(names: string[]): string | undefined {
+  for (const name of names) {
+    const value = readEnv(name);
+    if (value) return value;
+  }
+  return undefined;
+}
+
 const configuredCorsOrigins = readCsvEnv("CORS_ALLOWED_ORIGINS");
 const isProduction = readEnv("NODE_ENV") === "production";
 
@@ -66,6 +74,28 @@ export const env = {
     readEnv("COACH_DATA_DB_PATH") ??
     readEnv("COACH_OVERRIDES_DB_PATH") ??
     `${import.meta.dir}/../../data/coach-data.sqlite`,
+  coachUploadsDir:
+    readEnv("COACH_UPLOADS_DIR") ?? `${import.meta.dir}/../../data/coach-uploads`,
+  coachAvatarStorageDriver:
+    (readEnv("COACH_AVATAR_STORAGE_DRIVER") ?? "auto").toLowerCase(),
+  coachAvatarS3Endpoint: readFirstEnv(["AWS_ENDPOINT_URL", "ENDPOINT"]),
+  coachAvatarS3AccessKeyId: readFirstEnv(["AWS_ACCESS_KEY_ID", "ACCESS_KEY_ID"]),
+  coachAvatarS3SecretAccessKey: readFirstEnv([
+    "AWS_SECRET_ACCESS_KEY",
+    "SECRET_ACCESS_KEY",
+  ]),
+  coachAvatarS3Bucket: readFirstEnv(["AWS_S3_BUCKET_NAME", "BUCKET"]),
+  coachAvatarS3Region:
+    readFirstEnv(["AWS_DEFAULT_REGION", "AWS_REGION", "REGION"]) ?? "auto",
+  coachAvatarS3UrlStyle:
+    (readFirstEnv(["AWS_S3_URL_STYLE"]) ?? "virtual").toLowerCase(),
+  coachAvatarS3Prefix:
+    readEnv("COACH_AVATAR_S3_PREFIX")?.replace(/^\/+|\/+$/g, "") ??
+    "coach-avatars",
+  coachAvatarMaxBytes: readIntEnvWithDefault(
+    "COACH_AVATAR_MAX_BYTES",
+    5 * 1024 * 1024,
+  ),
   coachAuthCodeTtlMinutes: readIntEnvWithDefault(
     "COACH_AUTH_CODE_TTL_MINUTES",
     15,

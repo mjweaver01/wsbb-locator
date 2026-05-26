@@ -25,6 +25,11 @@ export function CoachProfileAccess({
   apiBase,
   showIntro = true,
 }: CoachProfileAccessProps) {
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [selectedAvatarFile, setSelectedAvatarFile] = useState<File | null>(null);
+  const [selectedAvatarPreview, setSelectedAvatarPreview] = useState<string | null>(
+    null,
+  );
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [requestStatus, setRequestStatus] = useState<string | null>(null);
@@ -40,6 +45,16 @@ export function CoachProfileAccess({
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
 
+  useEffect(() => {
+    if (!selectedAvatarFile) {
+      setSelectedAvatarPreview(null);
+      return;
+    }
+    const previewUrl = URL.createObjectURL(selectedAvatarFile);
+    setSelectedAvatarPreview(previewUrl);
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [selectedAvatarFile]);
+
   const hydrateProfile = useCallback((data: MeResponse) => {
     setMe(data);
     setBio(data.coach.bio ?? "");
@@ -48,6 +63,7 @@ export function CoachProfileAccess({
     setState(data.coach.state ?? "");
     setLat(data.coach.lat !== undefined ? String(data.coach.lat) : "");
     setLng(data.coach.lng !== undefined ? String(data.coach.lng) : "");
+    setSelectedAvatarFile(null);
   }, []);
 
   useEffect(() => {
@@ -177,6 +193,55 @@ export function CoachProfileAccess({
     }
   }
 
+  async function uploadAvatar() {
+    if (!selectedAvatarFile) {
+      setError("Choose an image before uploading.");
+      return;
+    }
+
+    setAvatarUploading(true);
+    setError(null);
+    setRequestStatus(null);
+
+    try {
+      const body = new FormData();
+      body.append("avatar", selectedAvatarFile);
+
+      const uploadResponse = await fetch(
+        apiUrl(apiBase, "/api/coach-auth/me/avatar"),
+        {
+          method: "POST",
+          credentials: "include",
+          body,
+        },
+      );
+      const uploadData = (await uploadResponse.json()) as {
+        error?: string;
+        avatarUrl?: string;
+      };
+      if (!uploadResponse.ok) {
+        throw new Error(uploadData.error ?? "Could not upload avatar");
+      }
+
+      if (uploadData.avatarUrl) {
+        setAvatarUrl(uploadData.avatarUrl);
+      }
+
+      const meResponse = await fetch(apiUrl(apiBase, "/api/coach-auth/me"), {
+        credentials: "include",
+      });
+      if (!meResponse.ok)
+        throw new Error("Uploaded image, but failed to refresh profile");
+      const meData = (await meResponse.json()) as MeResponse;
+      hydrateProfile(meData);
+      setRequestStatus("Avatar uploaded.");
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setAvatarUploading(false);
+    }
+  }
+
   async function logout() {
     setLoading(true);
     setError(null);
@@ -271,6 +336,37 @@ export function CoachProfileAccess({
                 onChange={(e) => setAvatarUrl(e.target.value)}
               />
             </label>
+            <div className="coach-access__avatar-upload">
+              {(selectedAvatarPreview || avatarUrl) && (
+                <img
+                  src={selectedAvatarPreview ?? avatarUrl}
+                  alt={`${me.coach.fullName} avatar preview`}
+                  className="coach-access__avatar-preview coach-access__avatar-upload-preview"
+                />
+              )}
+              <div className="coach-access__avatar-upload-controls">
+                <label>
+                  Upload image
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    onChange={(e) =>
+                      setSelectedAvatarFile(e.target.files?.[0] ?? null)
+                    }
+                  />
+                </label>
+                <p className="coach-access__hint">
+                  JPG, PNG, WEBP, or GIF up to 5 MB.
+                </p>
+                <button
+                  type="button"
+                  onClick={uploadAvatar}
+                  disabled={avatarUploading || !selectedAvatarFile}
+                >
+                  {avatarUploading ? "Uploading…" : "Upload avatar"}
+                </button>
+              </div>
+            </div>
             <div className="coach-access__row">
               <label>
                 City

@@ -88,6 +88,8 @@ Each `db/*.ts` module declares its own tables with `CREATE TABLE IF NOT EXISTS` 
 - `POST /api/coach-auth/logout`
 - `GET /api/coach-auth/me` — current coach + linked emails
 - `PUT /api/coach-auth/me` — replace override (bio/avatarUrl/city/state/lat/lng); omitted fields become NULL
+- `POST /api/coach-auth/me/avatar` (`multipart/form-data`, field `avatar`) — upload and persist coach avatar image (Railway bucket/S3 when configured)
+- `GET /api/coach-media/:filename` — serves uploaded avatar files through the API (works with private Railway buckets)
 
 ### Admin (requires `COACH_ADMIN_API_KEY`)
 
@@ -155,6 +157,11 @@ Common optional settings:
 - `PORT` (default `3001`)
 - `COACH_CACHE_TTL_MS`
 - `COACH_DATA_DB_PATH`
+- `COACH_AVATAR_STORAGE_DRIVER` (`auto` default; `s3` or `local`)
+- `COACH_UPLOADS_DIR` (used in `local` mode; default `apps/api/data/coach-uploads`)
+- `COACH_AVATAR_MAX_BYTES` (default `5242880`)
+- `COACH_AVATAR_S3_PREFIX` (default `coach-avatars`)
+- `AWS_ENDPOINT_URL`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_S3_BUCKET_NAME` (or `BUCKET`), `AWS_DEFAULT_REGION`, `AWS_S3_URL_STYLE`
 - `COACH_ADMIN_API_KEY`
 - `CORS_ALLOWED_ORIGINS` + `CORS_ENFORCE_ALLOWLIST`
 - `EMAIL_PROVIDER` (`console` or `resend`)

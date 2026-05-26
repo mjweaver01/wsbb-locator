@@ -9,6 +9,7 @@
     "test": "bun test"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1053.0",
     "hono": "^4.12.23"
   }
 }

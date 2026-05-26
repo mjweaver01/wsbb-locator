@@ -77,6 +77,53 @@
   padding: 10px 11px;
 }
 
+.coach-access__avatar-upload {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 14px;
+  flex-wrap: wrap;
+  flex-direction: row;
+  border: 1px dashed var(--divider);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+}
+
+.coach-access__avatar-upload-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 220px;
+}
+
+.coach-access__avatar-upload-preview {
+  flex-shrink: 0;
+}
+
+@media (max-width: 620px) {
+  .coach-access__avatar-upload {
+    align-items: flex-start;
+  }
+
+  .coach-access__avatar-upload-preview {
+    align-self: flex-start;
+  }
+}
+
+.coach-access__hint {
+  font-size: 11px;
+  color: var(--text-muted-soft);
+}
+
+.coach-access__avatar-preview {
+  width: 92px;
+  height: 92px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 1px solid var(--card-border);
+}
+
 .coach-access__row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

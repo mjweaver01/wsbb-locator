@@ -39,7 +39,7 @@ function toOverride(row: CoachOverrideRow): CoachOverride {
   };
 }
 
-function getCoachOverride(thinkificUserId: number): CoachOverride | null {
+export function getCoachOverride(thinkificUserId: number): CoachOverride | null {
   const row = db
     .query<CoachOverrideRow, [number]>(
       `SELECT thinkific_user_id, bio, avatar_url, city, state, lat, lng

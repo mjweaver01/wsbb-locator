@@ -12,6 +12,7 @@ import {
 import { env } from "./lib/env";
 import {
   deleteCoachOverride,
+  getCoachOverride,
   listCoachOverrides,
   upsertCoachOverride,
   type CoachOverride,
@@ -44,11 +45,26 @@ import {
 import { checkRateLimit, startRateLimitSweeper } from "./lib/rate-limit";
 import { getClientIp, parseIntParam, withJsonBody } from "./lib/http";
 import { serveStaticSpa } from "./lib/static";
+import {
+  buildCoachMediaFilename,
+  coachMediaStorageMode,
+  deleteCoachMedia,
+  readCoachMedia,
+  saveCoachMedia,
+} from "./lib/coach-media";
 
 const STATIC_FALLBACK_PATH = resolve(
   import.meta.dir,
   "../data/coaches-raw.json",
 );
+const COACH_MEDIA_ROUTE_PREFIX = "/api/coach-media/";
+const SAFE_MEDIA_FILENAME = /^[A-Za-z0-9._-]+$/;
+const IMAGE_MIME_TO_EXT: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/gif": "gif",
+};
 
 const SAFE_OVERRIDE_KEYS = [
   "bio",
@@ -109,6 +125,23 @@ function mergeCoachOverrides(data: CoachesPayload): CoachesPayload {
 
 function normalizeEmail(value: string): string {
   return value.trim().toLowerCase();
+}
+
+function buildCoachMediaUrl(c: Context, filename: string): string {
+  return new URL(`${COACH_MEDIA_ROUTE_PREFIX}${filename}`, c.req.url).toString();
+}
+
+function resolveManagedCoachMediaFilename(avatarUrl: string): string | null {
+  try {
+    const parsed = new URL(avatarUrl);
+    if (!parsed.pathname.startsWith(COACH_MEDIA_ROUTE_PREFIX)) return null;
+    const candidate = parsed.pathname.slice(COACH_MEDIA_ROUTE_PREFIX.length);
+    return SAFE_MEDIA_FILENAME.test(candidate) ? candidate : null;
+  } catch {
+    if (!avatarUrl.startsWith(COACH_MEDIA_ROUTE_PREFIX)) return null;
+    const candidate = avatarUrl.slice(COACH_MEDIA_ROUTE_PREFIX.length);
+    return SAFE_MEDIA_FILENAME.test(candidate) ? candidate : null;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -284,6 +317,18 @@ app.get("/api/coaches", async (c) => {
   }
 });
 
+app.get("/api/coach-media/:filename", async (c) => {
+  const filename = c.req.param("filename");
+  if (!SAFE_MEDIA_FILENAME.test(filename)) {
+    return c.json({ error: "Invalid filename" }, 400);
+  }
+  const media = await readCoachMedia(filename);
+  if (!media) {
+    return c.json({ error: "Not found" }, 404);
+  }
+  return media;
+});
+
 // ---------------------------------------------------------------------------
 // Coach auth (email + one-time code)
 // ---------------------------------------------------------------------------
@@ -436,6 +481,70 @@ app.put("/api/coach-auth/me", (c) =>
   }),
 );
 
+app.post("/api/coach-auth/me/avatar", async c => {
+  const thinkificUserId = getAuthenticatedThinkificUserId(c);
+  if (!thinkificUserId) return c.json({ error: "Unauthorized" }, 401);
+
+  let formData: FormData;
+  try {
+    formData = await c.req.formData();
+  } catch {
+    return c.json({ error: "Expected multipart/form-data" }, 400);
+  }
+
+  const avatar = formData.get("avatar");
+  if (!(avatar instanceof File)) {
+    return c.json({ error: "avatar file is required" }, 400);
+  }
+
+  if (avatar.size === 0) {
+    return c.json({ error: "avatar file is empty" }, 400);
+  }
+  if (avatar.size > env.coachAvatarMaxBytes) {
+    return c.json(
+      {
+        error: `avatar file is too large (max ${env.coachAvatarMaxBytes} bytes)`,
+      },
+      413,
+    );
+  }
+
+  const extension = IMAGE_MIME_TO_EXT[avatar.type];
+  if (!extension) {
+    return c.json(
+      {
+        error:
+          "Unsupported avatar type. Allowed: image/jpeg, image/png, image/webp, image/gif",
+      },
+      400,
+    );
+  }
+
+  const filename = buildCoachMediaFilename(thinkificUserId, extension);
+  await saveCoachMedia(filename, avatar, avatar.type);
+
+  const existingOverride = getCoachOverride(thinkificUserId) ?? {};
+  const oldFilename =
+    typeof existingOverride.avatarUrl === "string"
+      ? resolveManagedCoachMediaFilename(existingOverride.avatarUrl)
+      : null;
+
+  const avatarUrl = buildCoachMediaUrl(c, filename);
+  const saved = upsertCoachOverride(thinkificUserId, {
+    ...existingOverride,
+    avatarUrl,
+  });
+  invalidateCache();
+
+  if (oldFilename && oldFilename !== filename) {
+    deleteCoachMedia(oldFilename).catch(() => {
+      // Best-effort cleanup; it's safe to keep old media around.
+    });
+  }
+
+  return c.json({ ok: true, avatarUrl, override: saved });
+});
+
 // ---------------------------------------------------------------------------
 // Admin-gated subapp — mounted under /api/coaches *after* the public GET
 // so the public route takes precedence for GET /api/coaches.
@@ -569,6 +678,7 @@ app.route("/api/coaches", adminCoaches);
 
 console.log(`[api] starting on http://localhost:${env.port}`);
 console.log(`[api] sqlite db:        ${env.coachDataDbPath}`);
+console.log(`[api] media storage:    ${coachMediaStorageMode}`);
 console.log(`[api] coaches fallback: ${STATIC_FALLBACK_PATH}`);
 console.log(`[api] cors enforce:     ${env.corsEnforceAllowlist}`);
 console.log(
