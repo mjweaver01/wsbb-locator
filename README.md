@@ -2,8 +2,8 @@
 
 Bun monorepo for the Westside Barbell certified coach directory.
 
-- `apps/web` — React + Vite SPA (map, filters, coach directory, profile self-serve)
-- `apps/api` — Bun + Hono API (Thinkific sync, caching, coach auth, profile overrides). Also serves the built SPA in production.
+- `web/` — React + Vite SPA (map, filters, coach directory, profile self-serve)
+- `api/` — Bun + Hono API (Thinkific sync, caching, coach auth, profile overrides). Also serves the built SPA in production.
 
 ## Quick start
 
@@ -20,9 +20,9 @@ bun run dev:all
 | Script               | What it does                                                  |
 | -------------------- | ------------------------------------------------------------- |
 | `bun run dev:all`    | Frontend + API together (use `dev` / `dev:api` to run either) |
-| `bun run build`      | Build the SPA into `apps/web/dist/`                           |
+| `bun run build`      | Build the SPA into `web/dist/`                                |
 | `bun run start`      | Build, then run API + SPA from a single Bun process           |
-| `bun run test`       | `bun test` inside `apps/api`                                  |
+| `bun run test`       | `bun test` inside `api/`                                      |
 | `bun run fetch`      | Refresh the static fallback snapshot from Thinkific           |
 | `bun run format`     | Prettier                                                      |
 

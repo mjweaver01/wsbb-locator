@@ -3,18 +3,19 @@
   "version": "0.1.0",
   "private": true,
   "workspaces": [
-    "apps/*"
+    "api",
+    "web"
   ],
   "scripts": {
-    "dev": "bun run --cwd apps/web dev",
-    "dev:api": "bun run --cwd apps/api dev",
+    "dev": "bun run --cwd web dev",
+    "dev:api": "bun run --cwd api dev",
     "dev:all": "bun run dev:api & bun run dev",
     "d": "bun run dev:all",
-    "build": "bun run --cwd apps/web build",
-    "preview": "bun run --cwd apps/web preview",
-    "start": "bun run build && SERVE_STATIC=true bun run --cwd apps/api start",
-    "test": "bun run --cwd apps/api test",
-    "fetch": "bun run apps/api/src/scripts/fetch-thinkific.ts",
+    "build": "bun run --cwd web build",
+    "preview": "bun run --cwd web preview",
+    "start": "bun run build && SERVE_STATIC=true bun run --cwd api start",
+    "test": "bun run --cwd api test",
+    "fetch": "bun run api/src/scripts/fetch-thinkific.ts",
     "format": "prettier . --write"
   },
   "devDependencies": {

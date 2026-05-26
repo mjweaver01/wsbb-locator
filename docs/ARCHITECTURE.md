@@ -17,7 +17,7 @@ Reference for how the API and SPA fit together, what the API exposes, and which 
 | Mode       | Command           | Layout                                                                                              |
 | ---------- | ----------------- | --------------------------------------------------------------------------------------------------- |
 | Dev        | `bun run dev:all` | Vite at 5173 (SPA + HMR) + Bun API at 3001. Vite proxies `/api/*` to the API.                       |
-| Production | `bun run start`   | Builds the SPA, then one Bun process serves both `/api/*` and the static SPA from `apps/web/dist/`. |
+| Production | `bun run start`   | Builds the SPA, then one Bun process serves both `/api/*` and the static SPA from `web/dist/`.      |
 
 In production mode `SERVE_STATIC=true` makes the API handle non-`/api` paths: known files are served verbatim, unknown extensionless paths fall through to `index.html` so the client router takes over.
 
@@ -28,7 +28,7 @@ In production mode `SERVE_STATIC=true` makes the API handle non-`/api` paths: kn
 1. In-memory cache (TTL from `COACH_CACHE_TTL_MS`, default 1h)
 2. SQLite/Postgres cache tables (`thinkific_coaches_cache`, `thinkific_cache_meta`)
 3. Live Thinkific fetch (if credentials configured)
-4. Static fallback (`apps/api/data/coaches-raw.json`)
+4. Static fallback (`api/data/coaches-raw.json`)
 
 The response includes an `X-Data-Source` header so clients (and ops) can see which layer answered. The API merges Thinkific coach data with local overrides from `coach_overrides` — only the six safe fields (`bio`, `avatarUrl`, `city`, `state`, `lat`, `lng`) are allowed to override; identity columns always come from Thinkific.
 
@@ -79,48 +79,47 @@ Send the key as either `x-admin-api-key: <key>` or `Authorization: Bearer <key>`
 ## Project layout
 
 ```text
-apps/
-  api/
-    data/
-      coaches-raw.json
-    src/
-      index.ts                  # Bun.serve entry + startup
-      app.ts                    # Hono + middleware + route mount
-      routes/
-        public.ts               # health, coaches, coach-media GET
-        coach-auth.ts           # /api/coach-auth/*
-        admin-coaches.ts        # admin subapp under /api/coaches
-      lib/
-        env.ts
-        admin-auth.ts
-        coach-media.ts          # storage (local FS / S3)
-        coach-media-url.ts      # route prefix + URL helpers
-        coach-session.ts        # cookies, loadMe, resolveCoach
-        coaches-cache.ts        # in-memory + db cache + merge
-        cors-allowlist.ts       # origin matcher (exact + *.wildcard)
-        email.ts                # console / Resend
-        http.ts                 # withJsonBody, parseIntParam, getClientIp
-        rate-limit.ts           # in-process sliding-window limiter
-        request-validation.ts
-        static.ts               # SPA static handler
-        thinkific.ts            # Thinkific client
-        db/
-          db.ts                 # lazy sqlite connection + pragmas
-          pg.ts                 # lazy postgres pool
-          schema.ts             # CREATE TABLE IF NOT EXISTS for both backends
-          auth.ts               # login codes + sessions
-          email-links.ts
-          overrides.ts
-          thinkific-cache.ts
-      scripts/
-        fetch-thinkific.ts
-  web/
-    src/
-      main.tsx
-      pages/                    # LandingPage, CoachAccessPage, NotFoundPage
-      components/               # CoachMap, CoachCard, FilterBar, ...
-      lib/types.ts
-      styles/
+api/
+  data/
+    coaches-raw.json
+  src/
+    index.ts                  # Bun.serve entry + startup
+    app.ts                    # Hono + middleware + route mount
+    routes/
+      public.ts               # health, coaches, coach-media GET
+      coach-auth.ts           # /api/coach-auth/*
+      admin-coaches.ts        # admin subapp under /api/coaches
+    lib/
+      env.ts
+      admin-auth.ts
+      coach-media.ts          # storage (local FS / S3)
+      coach-media-url.ts      # route prefix + URL helpers
+      coach-session.ts        # cookies, loadMe, resolveCoach
+      coaches-cache.ts        # in-memory + db cache + merge
+      cors-allowlist.ts       # origin matcher (exact + *.wildcard)
+      email.ts                # console / Resend
+      http.ts                 # withJsonBody, parseIntParam, getClientIp
+      rate-limit.ts           # in-process sliding-window limiter
+      request-validation.ts
+      static.ts               # SPA static handler
+      thinkific.ts            # Thinkific client
+      db/
+        db.ts                 # lazy sqlite connection + pragmas
+        pg.ts                 # lazy postgres pool
+        schema.ts             # CREATE TABLE IF NOT EXISTS for both backends
+        auth.ts               # login codes + sessions
+        email-links.ts
+        overrides.ts
+        thinkific-cache.ts
+    scripts/
+      fetch-thinkific.ts
+web/
+  src/
+    main.tsx
+    pages/                    # LandingPage, CoachAccessPage, NotFoundPage
+    components/               # CoachMap, CoachCard, FilterBar, ...
+    lib/types.ts
+    styles/
 ```
 
 ## Environment
@@ -131,7 +130,7 @@ apps/
 
 - `PORT` (default `3001`)
 - `SERVE_STATIC` (default `true` in production, `false` otherwise) — toggles the SPA static handler in the API process
-- `WEB_DIST_PATH` — overrides where the API looks for the built SPA (default `apps/web/dist`)
+- `WEB_DIST_PATH` — overrides where the API looks for the built SPA (default `web/dist`)
 - `TRUST_PROXY` (default `true` in production) — when on, `X-Forwarded-For` / `X-Real-IP` are honored for rate-limit keys. Disable when the API is exposed directly without a reverse proxy.
 - `CORS_ALLOWED_ORIGINS` + `CORS_ENFORCE_ALLOWLIST` — comma-separated origins. Each entry is either an exact origin (`https://westside-barbell.com`) or a `*.` subdomain wildcard (`https://*.westside-barbell.com`, which matches any subdomain but NOT the apex — list both when you need both).
 
@@ -161,7 +160,7 @@ apps/
 ### Avatar storage
 
 - `COACH_AVATAR_STORAGE_DRIVER` (`auto` default; `s3` or `local`)
-- `COACH_UPLOADS_DIR` (local mode; default `apps/api/data/coach-uploads`)
+- `COACH_UPLOADS_DIR` (local mode; default `api/data/coach-uploads`)
 - `COACH_AVATAR_MAX_BYTES` (default 5 MB)
 - `COACH_AVATAR_S3_PREFIX` (default `coach-avatars`)
 - `AWS_ENDPOINT_URL`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_S3_BUCKET_NAME` (or `BUCKET`), `AWS_DEFAULT_REGION`, `AWS_S3_URL_STYLE`
