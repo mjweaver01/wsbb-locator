@@ -11,6 +11,7 @@ import {
 } from "./lib/thinkific";
 import { env } from "./lib/env";
 import {
+  coachOverridesDbDriver,
   deleteCoachOverride,
   getCoachOverride,
   listCoachOverrides,
@@ -100,8 +101,8 @@ function loadStaticFallback(): Promise<CoachesPayload> {
  * are merged in — identity columns (id/email/name/tier/certifications) always
  * come from Thinkific, even if a malformed override row contains them.
  */
-function mergeCoachOverrides(data: CoachesPayload): CoachesPayload {
-  const overridesById = listCoachOverrides();
+async function mergeCoachOverrides(data: CoachesPayload): Promise<CoachesPayload> {
+  const overridesById = await listCoachOverrides();
   const coaches = data.coaches.map((coach) => {
     const override = overridesById[String(coach.thinkificUserId)];
     if (!override) return coach;
@@ -169,10 +170,10 @@ function clearSessionCookie(c: Context): void {
   });
 }
 
-function getAuthenticatedThinkificUserId(c: Context): number | null {
+async function getAuthenticatedThinkificUserId(c: Context): Promise<number | null> {
   const token = getCookie(c, env.coachAuthCookieName);
   if (!token) return null;
-  return getCoachSession(token)?.thinkificUserId ?? null;
+  return (await getCoachSession(token))?.thinkificUserId ?? null;
 }
 
 async function resolveCoachByEmail(email: string): Promise<{
@@ -192,7 +193,7 @@ async function resolveCoachByEmail(email: string): Promise<{
     };
   }
 
-  const linkedId = findThinkificUserIdByLinkedEmail(normalizedEmail);
+  const linkedId = await findThinkificUserIdByLinkedEmail(normalizedEmail);
   if (linkedId) {
     return { thinkificUserId: linkedId, source: "linked-email" };
   }
@@ -206,9 +207,9 @@ async function getCoaches(): Promise<{ data: CoachesPayload; source: string }> {
   }
 
   try {
-    const cached = loadThinkificCache();
+    const cached = await loadThinkificCache();
     if (cached) {
-      const data = mergeCoachOverrides(cached);
+      const data = await mergeCoachOverrides(cached);
       cache = data;
       cacheSetAt = Date.now();
       console.log(
@@ -229,8 +230,8 @@ async function getCoaches(): Promise<{ data: CoachesPayload; source: string }> {
     try {
       console.log("[thinkific] db cache empty, fetching live data...");
       const thinkificData = await fetchCoachesFromThinkific();
-      saveThinkificCache(thinkificData);
-      const data = mergeCoachOverrides(thinkificData);
+      await saveThinkificCache(thinkificData);
+      const data = await mergeCoachOverrides(thinkificData);
       cache = data;
       cacheSetAt = Date.now();
       console.log(`[thinkific] cached ${data.totalCoaches} coaches`);
@@ -244,7 +245,7 @@ async function getCoaches(): Promise<{ data: CoachesPayload; source: string }> {
   }
 
   try {
-    const data = mergeCoachOverrides(await loadStaticFallback());
+    const data = await mergeCoachOverrides(await loadStaticFallback());
     cache = data;
     cacheSetAt = Date.now();
     console.log(
@@ -357,7 +358,7 @@ app.post("/api/coach-auth/request", (c) =>
     let debugCode: string | undefined;
     try {
       const resolved = await resolveCoachByEmail(email);
-      const code = createLoginCode(
+      const code = await createLoginCode(
         resolved.thinkificUserId,
         email,
         env.coachAuthCodeTtlMinutes,
@@ -407,14 +408,14 @@ app.post("/api/coach-auth/verify", (c) =>
 
     try {
       const resolved = await resolveCoachByEmail(email);
-      const ok = verifyAndConsumeLoginCode(
+      const ok = await verifyAndConsumeLoginCode(
         resolved.thinkificUserId,
         email,
         code,
       );
       if (!ok) return c.json({ error: "Invalid or expired code" }, 401);
 
-      const session = createCoachSession(
+      const session = await createCoachSession(
         resolved.thinkificUserId,
         env.coachSessionTtlDays,
       );
@@ -442,15 +443,15 @@ app.post("/api/coach-auth/verify", (c) =>
   }),
 );
 
-app.post("/api/coach-auth/logout", (c) => {
+app.post("/api/coach-auth/logout", async (c) => {
   const token = getCookie(c, env.coachAuthCookieName);
-  if (token) deleteCoachSession(token);
+  if (token) await deleteCoachSession(token);
   clearSessionCookie(c);
   return c.json({ ok: true });
 });
 
 app.get("/api/coach-auth/me", async (c) => {
-  const thinkificUserId = getAuthenticatedThinkificUserId(c);
+  const thinkificUserId = await getAuthenticatedThinkificUserId(c);
   if (!thinkificUserId) return c.json({ error: "Unauthorized" }, 401);
 
   const { data } = await getCoaches();
@@ -461,13 +462,13 @@ app.get("/api/coach-auth/me", async (c) => {
 
   return c.json({
     coach,
-    emailLinks: listCoachEmailLinks(thinkificUserId),
+    emailLinks: await listCoachEmailLinks(thinkificUserId),
   });
 });
 
 app.put("/api/coach-auth/me", (c) =>
-  withJsonBody(c, (body) => {
-    const thinkificUserId = getAuthenticatedThinkificUserId(c);
+  withJsonBody(c, async (body) => {
+    const thinkificUserId = await getAuthenticatedThinkificUserId(c);
     if (!thinkificUserId) return c.json({ error: "Unauthorized" }, 401);
 
     const parsed = parseCoachOverride(body);
@@ -475,14 +476,14 @@ app.put("/api/coach-auth/me", (c) =>
       return c.json({ error: parsed.error ?? "Invalid override" }, 400);
     }
 
-    const saved = upsertCoachOverride(thinkificUserId, parsed.override);
+    const saved = await upsertCoachOverride(thinkificUserId, parsed.override);
     invalidateCache();
     return c.json({ ok: true, thinkificUserId, override: saved });
   }),
 );
 
 app.post("/api/coach-auth/me/avatar", async c => {
-  const thinkificUserId = getAuthenticatedThinkificUserId(c);
+  const thinkificUserId = await getAuthenticatedThinkificUserId(c);
   if (!thinkificUserId) return c.json({ error: "Unauthorized" }, 401);
 
   let formData: FormData;
@@ -523,14 +524,14 @@ app.post("/api/coach-auth/me/avatar", async c => {
   const filename = buildCoachMediaFilename(thinkificUserId, extension);
   await saveCoachMedia(filename, avatar, avatar.type);
 
-  const existingOverride = getCoachOverride(thinkificUserId) ?? {};
+  const existingOverride = (await getCoachOverride(thinkificUserId)) ?? {};
   const oldFilename =
     typeof existingOverride.avatarUrl === "string"
       ? resolveManagedCoachMediaFilename(existingOverride.avatarUrl)
       : null;
 
   const avatarUrl = buildCoachMediaUrl(c, filename);
-  const saved = upsertCoachOverride(thinkificUserId, {
+  const saved = await upsertCoachOverride(thinkificUserId, {
     ...existingOverride,
     avatarUrl,
   });
@@ -575,8 +576,8 @@ adminCoaches.post("/resync", async (c) => {
   }
   try {
     const thinkificData = await fetchCoachesFromThinkific();
-    saveThinkificCache(thinkificData);
-    const data = mergeCoachOverrides(thinkificData);
+    await saveThinkificCache(thinkificData);
+    const data = await mergeCoachOverrides(thinkificData);
     cache = data;
     cacheSetAt = Date.now();
     return c.json({
@@ -605,14 +606,14 @@ adminCoaches.get("/resolve-user", async (c) => {
   }
 });
 
-adminCoaches.get("/:thinkificUserId/email-links", (c) => {
+adminCoaches.get("/:thinkificUserId/email-links", async (c) => {
   const id = parseIntParam(c, "thinkificUserId");
   if (id instanceof Response) return id;
-  return c.json({ thinkificUserId: id, links: listCoachEmailLinks(id) });
+  return c.json({ thinkificUserId: id, links: await listCoachEmailLinks(id) });
 });
 
 adminCoaches.put("/:thinkificUserId/email-links", (c) =>
-  withJsonBody(c, (body) => {
+  withJsonBody(c, async (body) => {
     const id = parseIntParam(c, "thinkificUserId");
     if (id instanceof Response) return id;
 
@@ -625,13 +626,13 @@ adminCoaches.put("/:thinkificUserId/email-links", (c) =>
       return c.json({ error: "source must not be empty when provided" }, 400);
     }
 
-    const link = upsertCoachEmailLink(id, parsedEmail.email, source);
+    const link = await upsertCoachEmailLink(id, parsedEmail.email, source);
     return c.json({ ok: true, link });
   }),
 );
 
 adminCoaches.delete("/:thinkificUserId/email-links", (c) =>
-  withJsonBody(c, (body) => {
+  withJsonBody(c, async (body) => {
     const id = parseIntParam(c, "thinkificUserId");
     if (id instanceof Response) return id;
 
@@ -640,13 +641,13 @@ adminCoaches.delete("/:thinkificUserId/email-links", (c) =>
       return c.json({ error: parsedEmail.error ?? "email is required" }, 400);
     }
 
-    const removed = deleteCoachEmailLink(id, parsedEmail.email);
+    const removed = await deleteCoachEmailLink(id, parsedEmail.email);
     return c.json({ ok: true, removed });
   }),
 );
 
 adminCoaches.put("/:thinkificUserId/override", (c) =>
-  withJsonBody(c, (body) => {
+  withJsonBody(c, async (body) => {
     const id = parseIntParam(c, "thinkificUserId");
     if (id instanceof Response) return id;
 
@@ -655,17 +656,17 @@ adminCoaches.put("/:thinkificUserId/override", (c) =>
       return c.json({ error: parsed.error ?? "Invalid override" }, 400);
     }
 
-    const saved = upsertCoachOverride(id, parsed.override);
+    const saved = await upsertCoachOverride(id, parsed.override);
     invalidateCache();
     return c.json({ ok: true, thinkificUserId: id, override: saved });
   }),
 );
 
-adminCoaches.delete("/:thinkificUserId/override", (c) => {
+adminCoaches.delete("/:thinkificUserId/override", async (c) => {
   const id = parseIntParam(c, "thinkificUserId");
   if (id instanceof Response) return id;
 
-  deleteCoachOverride(id);
+  await deleteCoachOverride(id);
   invalidateCache();
   return c.json({ ok: true, thinkificUserId: id });
 });
@@ -677,7 +678,9 @@ app.route("/api/coaches", adminCoaches);
 // ---------------------------------------------------------------------------
 
 console.log(`[api] starting on http://localhost:${env.port}`);
+console.log(`[api] db mode:          ${env.databaseUrl ? "postgres" : "sqlite"}`);
 console.log(`[api] sqlite db:        ${env.coachDataDbPath}`);
+console.log(`[api] overrides db:     ${coachOverridesDbDriver}`);
 console.log(`[api] media storage:    ${coachMediaStorageMode}`);
 console.log(`[api] coaches fallback: ${STATIC_FALLBACK_PATH}`);
 console.log(`[api] cors enforce:     ${env.corsEnforceAllowlist}`);

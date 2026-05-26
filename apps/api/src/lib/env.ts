@@ -74,6 +74,7 @@ export const env = {
     readEnv("COACH_DATA_DB_PATH") ??
     readEnv("COACH_OVERRIDES_DB_PATH") ??
     `${import.meta.dir}/../../data/coach-data.sqlite`,
+  databaseUrl: readEnv("DATABASE_URL"),
   coachUploadsDir:
     readEnv("COACH_UPLOADS_DIR") ?? `${import.meta.dir}/../../data/coach-uploads`,
   coachAvatarStorageDriver:

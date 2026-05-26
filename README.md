@@ -157,6 +157,7 @@ Common optional settings:
 - `PORT` (default `3001`)
 - `COACH_CACHE_TTL_MS`
 - `COACH_DATA_DB_PATH`
+- `DATABASE_URL` (when set, `coach_overrides` reads/writes move to Postgres)
 - `COACH_AVATAR_STORAGE_DRIVER` (`auto` default; `s3` or `local`)
 - `COACH_UPLOADS_DIR` (used in `local` mode; default `apps/api/data/coach-uploads`)
 - `COACH_AVATAR_MAX_BYTES` (default `5242880`)

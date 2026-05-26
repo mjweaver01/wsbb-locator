@@ -24,45 +24,51 @@ describe("coach auth flow", () => {
     rmSync(tmpDir, { recursive: true, force: true });
   });
 
-  test("a fresh code verifies once and only once", () => {
-    const code = createLoginCode(USER_ID, EMAIL, 15);
+  test("a fresh code verifies once and only once", async () => {
+    const code = await createLoginCode(USER_ID, EMAIL, 15);
 
-    expect(verifyAndConsumeLoginCode(USER_ID, EMAIL, code)).toBe(true);
-    expect(verifyAndConsumeLoginCode(USER_ID, EMAIL, code)).toBe(false);
+    expect(await verifyAndConsumeLoginCode(USER_ID, EMAIL, code)).toBe(true);
+    expect(await verifyAndConsumeLoginCode(USER_ID, EMAIL, code)).toBe(false);
   });
 
-  test("wrong code is rejected without consuming the valid one", () => {
-    const code = createLoginCode(USER_ID, EMAIL, 15);
+  test("wrong code is rejected without consuming the valid one", async () => {
+    const code = await createLoginCode(USER_ID, EMAIL, 15);
 
-    expect(verifyAndConsumeLoginCode(USER_ID, EMAIL, "000000")).toBe(false);
-    expect(verifyAndConsumeLoginCode(USER_ID, EMAIL, code)).toBe(true);
+    expect(await verifyAndConsumeLoginCode(USER_ID, EMAIL, "000000")).toBe(
+      false,
+    );
+    expect(await verifyAndConsumeLoginCode(USER_ID, EMAIL, code)).toBe(true);
   });
 
-  test("expired code is rejected", () => {
-    const code = createLoginCode(USER_ID, EMAIL, -1);
-    expect(verifyAndConsumeLoginCode(USER_ID, EMAIL, code)).toBe(false);
+  test("expired code is rejected", async () => {
+    const code = await createLoginCode(USER_ID, EMAIL, -1);
+    expect(await verifyAndConsumeLoginCode(USER_ID, EMAIL, code)).toBe(false);
   });
 
-  test("email lookup is case- and whitespace-insensitive", () => {
-    const code = createLoginCode(USER_ID, "lowercase@example.com", 15);
+  test("email lookup is case- and whitespace-insensitive", async () => {
+    const code = await createLoginCode(USER_ID, "lowercase@example.com", 15);
     expect(
-      verifyAndConsumeLoginCode(USER_ID, "  LowerCase@Example.com  ", code),
+      await verifyAndConsumeLoginCode(
+        USER_ID,
+        "  LowerCase@Example.com  ",
+        code,
+      ),
     ).toBe(true);
   });
 
-  test("session lifecycle: create → fetch → delete", () => {
-    const { token, expiresAt } = createCoachSession(USER_ID, 30);
+  test("session lifecycle: create → fetch → delete", async () => {
+    const { token, expiresAt } = await createCoachSession(USER_ID, 30);
     expect(token).toMatch(/^[a-f0-9]{64}$/);
     expect(Date.parse(expiresAt)).toBeGreaterThan(Date.now());
 
-    const session = getCoachSession(token);
+    const session = await getCoachSession(token);
     expect(session?.thinkificUserId).toBe(USER_ID);
 
-    deleteCoachSession(token);
-    expect(getCoachSession(token)).toBeNull();
+    await deleteCoachSession(token);
+    expect(await getCoachSession(token)).toBeNull();
   });
 
-  test("unknown session token is null", () => {
-    expect(getCoachSession("not-a-real-token")).toBeNull();
+  test("unknown session token is null", async () => {
+    expect(await getCoachSession("not-a-real-token")).toBeNull();
   });
 });

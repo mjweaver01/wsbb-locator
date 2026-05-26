@@ -1,4 +1,5 @@
 import { db } from "./db";
+import { getPgPool } from "./pg";
 
 export interface CoachEmailLink {
   thinkificUserId: number;
@@ -8,24 +9,50 @@ export interface CoachEmailLink {
 }
 
 interface CoachEmailLinkRow {
-  thinkific_user_id: number;
+  thinkific_user_id: number | string;
   email: string;
   source: string;
   created_at: string;
 }
 
-db.exec(`
-  CREATE TABLE IF NOT EXISTS coach_email_links (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    thinkific_user_id INTEGER NOT NULL,
-    email TEXT NOT NULL UNIQUE COLLATE NOCASE,
-    source TEXT NOT NULL DEFAULT 'manual',
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-  );
+const pgPool = getPgPool();
+let pgInitPromise: Promise<void> | null = null;
 
-  CREATE INDEX IF NOT EXISTS idx_coach_email_links_thinkific_user_id
-  ON coach_email_links(thinkific_user_id);
-`);
+if (!pgPool) {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS coach_email_links (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      thinkific_user_id INTEGER NOT NULL,
+      email TEXT NOT NULL UNIQUE COLLATE NOCASE,
+      source TEXT NOT NULL DEFAULT 'manual',
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_coach_email_links_thinkific_user_id
+    ON coach_email_links(thinkific_user_id);
+  `);
+}
+
+async function ensurePgCoachEmailLinksTable(): Promise<void> {
+  if (!pgPool) return;
+  if (pgInitPromise) return pgInitPromise;
+  pgInitPromise = pgPool
+    .query(`
+      CREATE TABLE IF NOT EXISTS coach_email_links (
+        id BIGSERIAL PRIMARY KEY,
+        thinkific_user_id BIGINT NOT NULL,
+        email TEXT NOT NULL UNIQUE,
+        source TEXT NOT NULL DEFAULT 'manual',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS idx_coach_email_links_thinkific_user_id
+      ON coach_email_links(thinkific_user_id);
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_coach_email_links_lower_email
+      ON coach_email_links (lower(email));
+    `)
+    .then(() => undefined);
+  return pgInitPromise ?? Promise.resolve();
+}
 
 function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
@@ -33,14 +60,28 @@ function normalizeEmail(email: string): string {
 
 function toCoachEmailLink(row: CoachEmailLinkRow): CoachEmailLink {
   return {
-    thinkificUserId: row.thinkific_user_id,
+    thinkificUserId: Number(row.thinkific_user_id),
     email: row.email,
     source: row.source,
     createdAt: row.created_at,
   };
 }
 
-export function listCoachEmailLinks(thinkificUserId: number): CoachEmailLink[] {
+export async function listCoachEmailLinks(
+  thinkificUserId: number,
+): Promise<CoachEmailLink[]> {
+  if (pgPool) {
+    await ensurePgCoachEmailLinksTable();
+    const result = await pgPool.query<CoachEmailLinkRow>(
+      `SELECT thinkific_user_id, email, source, created_at
+       FROM coach_email_links
+       WHERE thinkific_user_id = $1
+       ORDER BY created_at DESC`,
+      [thinkificUserId],
+    );
+    return result.rows.map(toCoachEmailLink);
+  }
+
   const rows = db
     .query<CoachEmailLinkRow, [number]>(
       `SELECT thinkific_user_id, email, source, created_at
@@ -53,13 +94,31 @@ export function listCoachEmailLinks(thinkificUserId: number): CoachEmailLink[] {
   return rows.map(toCoachEmailLink);
 }
 
-export function upsertCoachEmailLink(
+export async function upsertCoachEmailLink(
   thinkificUserId: number,
   email: string,
   source = "manual",
-): CoachEmailLink {
+): Promise<CoachEmailLink> {
   const normalizedEmail = normalizeEmail(email);
   const normalizedSource = source.trim() || "manual";
+
+  if (pgPool) {
+    await ensurePgCoachEmailLinksTable();
+    const result = await pgPool.query<CoachEmailLinkRow>(
+      `INSERT INTO coach_email_links (thinkific_user_id, email, source)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (email) DO UPDATE SET
+         thinkific_user_id = EXCLUDED.thinkific_user_id,
+         source = EXCLUDED.source
+       RETURNING thinkific_user_id, email, source, created_at`,
+      [thinkificUserId, normalizedEmail, normalizedSource],
+    );
+    const row = result.rows[0];
+    if (!row) {
+      throw new Error("Failed to load upserted coach email link.");
+    }
+    return toCoachEmailLink(row);
+  }
 
   db.run(
     `INSERT INTO coach_email_links (thinkific_user_id, email, source)
@@ -85,11 +144,21 @@ export function upsertCoachEmailLink(
   return toCoachEmailLink(row);
 }
 
-export function deleteCoachEmailLink(
+export async function deleteCoachEmailLink(
   thinkificUserId: number,
   email: string,
-): boolean {
+): Promise<boolean> {
   const normalizedEmail = normalizeEmail(email);
+  if (pgPool) {
+    await ensurePgCoachEmailLinksTable();
+    const result = await pgPool.query(
+      `DELETE FROM coach_email_links
+       WHERE thinkific_user_id = $1 AND lower(email) = lower($2)`,
+      [thinkificUserId, normalizedEmail],
+    );
+    return (result.rowCount ?? 0) > 0;
+  }
+
   const result = db.run(
     `DELETE FROM coach_email_links
      WHERE thinkific_user_id = ? AND email = ?`,
@@ -98,8 +167,23 @@ export function deleteCoachEmailLink(
   return result.changes > 0;
 }
 
-export function findThinkificUserIdByLinkedEmail(email: string): number | null {
+export async function findThinkificUserIdByLinkedEmail(
+  email: string,
+): Promise<number | null> {
   const normalizedEmail = normalizeEmail(email);
+  if (pgPool) {
+    await ensurePgCoachEmailLinksTable();
+    const result = await pgPool.query<{ thinkific_user_id: number | string }>(
+      `SELECT thinkific_user_id
+       FROM coach_email_links
+       WHERE lower(email) = lower($1)
+       LIMIT 1`,
+      [normalizedEmail],
+    );
+    const row = result.rows[0];
+    return row ? Number(row.thinkific_user_id) : null;
+  }
+
   const row = db
     .query<{ thinkific_user_id: number }, [string]>(
       `SELECT thinkific_user_id
