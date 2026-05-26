@@ -145,14 +145,23 @@ export async function readCoachMedia(
   });
 }
 
+/**
+ * Best-effort delete. Cleanup races (concurrent upload superseding the same
+ * filename, S3 eventual consistency, missing local file) are non-fatal —
+ * orphaned media is preferable to a failed user-facing request.
+ */
 export async function deleteCoachMedia(filename: string): Promise<void> {
   if (coachMediaStorageMode === "s3") {
-    await s3Client!.send(
-      new DeleteObjectCommand({
-        Bucket: env.coachAvatarS3Bucket,
-        Key: buildS3Key(filename),
-      }),
-    );
+    try {
+      await s3Client!.send(
+        new DeleteObjectCommand({
+          Bucket: env.coachAvatarS3Bucket,
+          Key: buildS3Key(filename),
+        }),
+      );
+    } catch {
+      // Intentionally swallowed to match local-mode behavior below.
+    }
     return;
   }
   await unlink(join(env.coachUploadsDir, filename)).catch(() => {});

@@ -6,7 +6,7 @@
  *
  * Env vars required:
  *   THINKIFIC_API_KEY    – from Thinkific Admin → Settings → API
- *   THINKIFIC_SUBDOMAIN  – e.g. "westsidebarbell"
+ *   THINKIFIC_SUBDOMAIN  – e.g. "westside-barbell"
  *
  * Env vars optional (fill in after running `bun run fetch` once to see all courses):
  *   THINKIFIC_LEVEL1_ID  – course ID for Level 1 pathway
@@ -22,11 +22,9 @@ const PAGE_LIMIT = 250;
 export function recalculateTierBreakdown(
   coaches: Coach[],
 ): CoachesPayload["tierBreakdown"] {
-  return {
-    master: coaches.filter((c) => c.tier === "master").length,
-    instructor: coaches.filter((c) => c.tier === "instructor").length,
-    certified: coaches.filter((c) => c.tier === "certified").length,
-  };
+  const breakdown = { master: 0, instructor: 0, certified: 0 };
+  for (const coach of coaches) breakdown[coach.tier] += 1;
+  return breakdown;
 }
 
 // ---------------------------------------------------------------------------

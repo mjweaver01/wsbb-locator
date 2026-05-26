@@ -74,7 +74,7 @@ export function parseCoachOverride(body: JsonRecord): {
 
   if (body.bio !== undefined && body.bio !== null) {
     if (typeof body.bio !== "string") return { error: "bio must be a string" };
-    override.bio = body.bio;
+    override.bio = body.bio.trim();
   }
 
   if (body.avatarUrl !== undefined && body.avatarUrl !== null) {
@@ -92,21 +92,22 @@ export function parseCoachOverride(body: JsonRecord): {
         return { error: "avatarUrl must be a valid URL" };
       }
     }
-    override.avatarUrl = body.avatarUrl;
+    // Store the trimmed (and thus validated) value, not the original.
+    override.avatarUrl = trimmed;
   }
 
   if (body.city !== undefined && body.city !== null) {
     if (typeof body.city !== "string") {
       return { error: "city must be a string" };
     }
-    override.city = body.city;
+    override.city = body.city.trim();
   }
 
   if (body.state !== undefined && body.state !== null) {
     if (typeof body.state !== "string") {
       return { error: "state must be a string" };
     }
-    override.state = body.state;
+    override.state = body.state.trim();
   }
 
   if (body.lat !== undefined && body.lat !== null) {

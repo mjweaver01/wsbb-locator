@@ -1,5 +1,5 @@
-import { db } from "./db";
 import { getPgPool } from "./pg";
+import { getSqliteDb } from "./db";
 
 const pgPool = getPgPool();
 
@@ -107,6 +107,9 @@ const POSTGRES_SCHEMA_SQL = `
     last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   );
 
+  -- App-level invariant: emails are lowercased before insert (see
+  -- normalizeEmail in email-links.ts), so a case-sensitive UNIQUE on the
+  -- column is sufficient and lets us target it with ON CONFLICT (email).
   CREATE TABLE IF NOT EXISTS coach_email_links (
     id BIGSERIAL PRIMARY KEY,
     thinkific_user_id BIGINT NOT NULL,
@@ -116,8 +119,6 @@ const POSTGRES_SCHEMA_SQL = `
   );
   CREATE INDEX IF NOT EXISTS idx_coach_email_links_thinkific_user_id
   ON coach_email_links(thinkific_user_id);
-  CREATE UNIQUE INDEX IF NOT EXISTS idx_coach_email_links_lower_email
-  ON coach_email_links (lower(email));
 
   CREATE TABLE IF NOT EXISTS thinkific_cache_meta (
     id INTEGER PRIMARY KEY CHECK (id = 1),
@@ -146,11 +147,17 @@ export async function ensureDbSchema(): Promise<void> {
   if (schemaInitPromise) return schemaInitPromise;
 
   if (isPostgresDb) {
+    // Don't memoize a rejected promise — a transient PG hiccup during the
+    // first startup query would otherwise wedge every later request.
     schemaInitPromise = pgPool!
       .query(POSTGRES_SCHEMA_SQL)
-      .then(() => undefined);
+      .then(() => undefined)
+      .catch((err) => {
+        schemaInitPromise = null;
+        throw err;
+      });
   } else {
-    db.exec(SQLITE_SCHEMA_SQL);
+    getSqliteDb().exec(SQLITE_SCHEMA_SQL);
     schemaInitPromise = Promise.resolve();
   }
 

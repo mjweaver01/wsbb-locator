@@ -127,16 +127,14 @@ export function CoachProfileAccess({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, code }),
       });
-      const data = (await response.json()) as { error?: string } & MeResponse;
+      const data = (await response.json()) as {
+        error?: string;
+        me?: MeResponse | null;
+      };
       if (!response.ok) throw new Error(data.error ?? "Could not verify code");
+      if (!data.me) throw new Error("Verified, but profile is not available");
 
-      const meResponse = await fetch(apiUrl(apiBase, "/api/coach-auth/me"), {
-        credentials: "include",
-      });
-      if (!meResponse.ok)
-        throw new Error("Verified, but failed to load profile");
-      const meData = (await meResponse.json()) as MeResponse;
-      hydrateProfile(meData);
+      hydrateProfile(data.me);
       setRequestStatus("Email verified. You can now edit your listing.");
     } catch (err) {
       setError((err as Error).message);
@@ -177,16 +175,14 @@ export function CoachProfileAccess({
           lng: parsedLng,
         }),
       });
-      const data = (await response.json()) as { error?: string };
+      const data = (await response.json()) as {
+        error?: string;
+        me?: MeResponse | null;
+      };
       if (!response.ok) throw new Error(data.error ?? "Could not save profile");
+      if (!data.me) throw new Error("Saved, but profile is not available");
 
-      const meResponse = await fetch(apiUrl(apiBase, "/api/coach-auth/me"), {
-        credentials: "include",
-      });
-      if (!meResponse.ok)
-        throw new Error("Saved, but failed to reload profile");
-      const meData = (await meResponse.json()) as MeResponse;
-      hydrateProfile(meData);
+      hydrateProfile(data.me);
       setRequestStatus("Profile updated.");
     } catch (err) {
       setError((err as Error).message);
@@ -220,22 +216,16 @@ export function CoachProfileAccess({
       const uploadData = (await uploadResponse.json()) as {
         error?: string;
         avatarUrl?: string;
+        me?: MeResponse | null;
       };
       if (!uploadResponse.ok) {
         throw new Error(uploadData.error ?? "Could not upload avatar");
       }
-
-      if (uploadData.avatarUrl) {
-        setAvatarUrl(uploadData.avatarUrl);
+      if (!uploadData.me) {
+        throw new Error("Uploaded image, but profile is not available");
       }
 
-      const meResponse = await fetch(apiUrl(apiBase, "/api/coach-auth/me"), {
-        credentials: "include",
-      });
-      if (!meResponse.ok)
-        throw new Error("Uploaded image, but failed to refresh profile");
-      const meData = (await meResponse.json()) as MeResponse;
-      hydrateProfile(meData);
+      hydrateProfile(uploadData.me);
       setRequestStatus("Avatar uploaded.");
     } catch (err) {
       setError((err as Error).message);
@@ -253,7 +243,15 @@ export function CoachProfileAccess({
         credentials: "include",
       });
       setMe(null);
+      setEmail("");
       setCode("");
+      setBio("");
+      setAvatarUrl("");
+      setCity("");
+      setState("");
+      setLat("");
+      setLng("");
+      setSelectedAvatarFile(null);
       setRequestStatus("Signed out.");
     } catch (err) {
       setError((err as Error).message);

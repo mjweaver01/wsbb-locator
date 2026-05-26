@@ -6,7 +6,7 @@
  *
  * Env vars required (.env):
  *   THINKIFIC_API_KEY       – from Thinkific Admin → Settings → API
- *   THINKIFIC_SUBDOMAIN     – e.g. "westsidebarbell"
+ *   THINKIFIC_SUBDOMAIN     – e.g. "westside-barbell"
  *
  * Env vars optional (run once without them to see all course IDs):
  *   THINKIFIC_LEVEL1_ID

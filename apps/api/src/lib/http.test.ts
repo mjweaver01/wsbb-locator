@@ -1,6 +1,11 @@
-import { describe, expect, test } from "bun:test";
+import { beforeEach, describe, expect, test } from "bun:test";
 import type { Context } from "hono";
 import { getClientIp, parseIntParam, withJsonBody } from "./http";
+
+beforeEach(() => {
+  // getClientIp consults TRUST_PROXY at request time.
+  process.env.TRUST_PROXY = "true";
+});
 
 function makeContext({
   body,
@@ -79,5 +84,19 @@ describe("getClientIp", () => {
       getClientIp(makeContext({ headers: { "x-real-ip": "203.0.113.44" } })),
     ).toBe("203.0.113.44");
     expect(getClientIp(makeContext())).toBe("unknown");
+  });
+
+  test("ignores forwarded headers when proxy trust is disabled", () => {
+    process.env.TRUST_PROXY = "false";
+    expect(
+      getClientIp(
+        makeContext({
+          headers: {
+            "x-forwarded-for": "198.51.100.23",
+            "x-real-ip": "203.0.113.10",
+          },
+        }),
+      ),
+    ).toBe("unknown");
   });
 });
