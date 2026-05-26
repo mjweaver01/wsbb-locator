@@ -144,7 +144,9 @@ export async function findThinkificUserIdByLinkedEmail(
   const normalizedEmail = normalizeEmail(email);
   await ensureDbSchema();
   if (isPostgresDb) {
-    const result = await requirePgPool().query<{ thinkific_user_id: number | string }>(
+    const result = await requirePgPool().query<{
+      thinkific_user_id: number | string;
+    }>(
       `SELECT thinkific_user_id
        FROM coach_email_links
        WHERE lower(email) = lower($1)

@@ -64,7 +64,9 @@ export async function getCoachOverride(
   return row ? toOverride(row) : null;
 }
 
-export async function listCoachOverrides(): Promise<Record<string, CoachOverride>> {
+export async function listCoachOverrides(): Promise<
+  Record<string, CoachOverride>
+> {
   await ensureDbSchema();
   if (isPostgresDb) {
     const result = await requirePgPool().query<CoachOverrideRow>(
@@ -153,12 +155,15 @@ export async function upsertCoachOverride(
   return override;
 }
 
-export async function deleteCoachOverride(thinkificUserId: number): Promise<void> {
+export async function deleteCoachOverride(
+  thinkificUserId: number,
+): Promise<void> {
   await ensureDbSchema();
   if (isPostgresDb) {
-    await requirePgPool().query(`DELETE FROM coach_overrides WHERE thinkific_user_id = $1`, [
-      thinkificUserId,
-    ]);
+    await requirePgPool().query(
+      `DELETE FROM coach_overrides WHERE thinkific_user_id = $1`,
+      [thinkificUserId],
+    );
     return;
   }
 

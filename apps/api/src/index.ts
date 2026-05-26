@@ -102,7 +102,9 @@ function loadStaticFallback(): Promise<CoachesPayload> {
  * are merged in — identity columns (id/email/name/tier/certifications) always
  * come from Thinkific, even if a malformed override row contains them.
  */
-async function mergeCoachOverrides(data: CoachesPayload): Promise<CoachesPayload> {
+async function mergeCoachOverrides(
+  data: CoachesPayload,
+): Promise<CoachesPayload> {
   const overridesById = await listCoachOverrides();
   const coaches = data.coaches.map((coach) => {
     const override = overridesById[String(coach.thinkificUserId)];
@@ -130,7 +132,10 @@ function normalizeEmail(value: string): string {
 }
 
 function buildCoachMediaUrl(c: Context, filename: string): string {
-  return new URL(`${COACH_MEDIA_ROUTE_PREFIX}${filename}`, c.req.url).toString();
+  return new URL(
+    `${COACH_MEDIA_ROUTE_PREFIX}${filename}`,
+    c.req.url,
+  ).toString();
 }
 
 function resolveManagedCoachMediaFilename(avatarUrl: string): string | null {
@@ -171,7 +176,9 @@ function clearSessionCookie(c: Context): void {
   });
 }
 
-async function getAuthenticatedThinkificUserId(c: Context): Promise<number | null> {
+async function getAuthenticatedThinkificUserId(
+  c: Context,
+): Promise<number | null> {
   const token = getCookie(c, env.coachAuthCookieName);
   if (!token) return null;
   return (await getCoachSession(token))?.thinkificUserId ?? null;
@@ -483,7 +490,7 @@ app.put("/api/coach-auth/me", (c) =>
   }),
 );
 
-app.post("/api/coach-auth/me/avatar", async c => {
+app.post("/api/coach-auth/me/avatar", async (c) => {
   const thinkificUserId = await getAuthenticatedThinkificUserId(c);
   if (!thinkificUserId) return c.json({ error: "Unauthorized" }, 401);
 
@@ -681,7 +688,9 @@ app.route("/api/coaches", adminCoaches);
 await ensureDbSchema();
 
 console.log(`[api] starting on http://localhost:${env.port}`);
-console.log(`[api] db mode:          ${env.databaseUrl ? "postgres" : "sqlite"}`);
+console.log(
+  `[api] db mode:          ${env.databaseUrl ? "postgres" : "sqlite"}`,
+);
 console.log(`[api] sqlite db:        ${env.coachDataDbPath}`);
 console.log(`[api] overrides db:     ${coachOverridesDbDriver}`);
 console.log(`[api] media storage:    ${coachMediaStorageMode}`);

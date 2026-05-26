@@ -26,10 +26,12 @@ export function CoachProfileAccess({
   showIntro = true,
 }: CoachProfileAccessProps) {
   const [avatarUploading, setAvatarUploading] = useState(false);
-  const [selectedAvatarFile, setSelectedAvatarFile] = useState<File | null>(null);
-  const [selectedAvatarPreview, setSelectedAvatarPreview] = useState<string | null>(
+  const [selectedAvatarFile, setSelectedAvatarFile] = useState<File | null>(
     null,
   );
+  const [selectedAvatarPreview, setSelectedAvatarPreview] = useState<
+    string | null
+  >(null);
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [requestStatus, setRequestStatus] = useState<string | null>(null);

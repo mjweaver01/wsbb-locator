@@ -37,7 +37,9 @@ function requirePgPool() {
   return pgPool;
 }
 
-export async function saveThinkificCache(payload: CoachesPayload): Promise<void> {
+export async function saveThinkificCache(
+  payload: CoachesPayload,
+): Promise<void> {
   await ensureDbSchema();
   if (isPostgresDb) {
     const client = await requirePgPool().connect();
@@ -139,7 +141,7 @@ export async function loadThinkificCache(): Promise<CoachesPayload | null> {
        ORDER BY tier DESC, full_name ASC`,
     );
 
-    const coaches: Coach[] = rowsResult.rows.map(row => ({
+    const coaches: Coach[] = rowsResult.rows.map((row) => ({
       thinkificUserId: Number(row.thinkific_user_id),
       email: row.email,
       firstName: row.first_name,

@@ -17,9 +17,9 @@ function resolveCoachMediaStorageMode(): CoachMediaStorageMode {
   if (explicit === "local") return "local";
   const hasS3Creds = Boolean(
     env.coachAvatarS3Endpoint &&
-      env.coachAvatarS3Bucket &&
-      env.coachAvatarS3AccessKeyId &&
-      env.coachAvatarS3SecretAccessKey,
+    env.coachAvatarS3Bucket &&
+    env.coachAvatarS3AccessKeyId &&
+    env.coachAvatarS3SecretAccessKey,
   );
   return hasS3Creds ? "s3" : "local";
 }
@@ -105,7 +105,9 @@ export async function saveCoachMedia(
   await Bun.write(join(env.coachUploadsDir, filename), file);
 }
 
-export async function readCoachMedia(filename: string): Promise<Response | null> {
+export async function readCoachMedia(
+  filename: string,
+): Promise<Response | null> {
   if (coachMediaStorageMode === "s3") {
     try {
       const output = await s3Client!.send(

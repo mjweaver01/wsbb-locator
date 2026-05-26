@@ -76,9 +76,11 @@ export async function verifyAndConsumeLoginCode(
   const normalizedEmail = normalizeEmail(email);
   await ensureDbSchema();
   if (isPostgresDb) {
-    const result = await requirePgPool().query<
-      { id: number | string; code_hash: string; expires_at: string }
-    >(
+    const result = await requirePgPool().query<{
+      id: number | string;
+      code_hash: string;
+      expires_at: string;
+    }>(
       `SELECT id, code_hash, expires_at
        FROM coach_login_codes
        WHERE thinkific_user_id = $1 AND lower(email) = lower($2) AND used_at IS NULL
@@ -216,9 +218,10 @@ export async function deleteCoachSession(token: string): Promise<void> {
   const tokenHash = hashString(token);
   await ensureDbSchema();
   if (isPostgresDb) {
-    await requirePgPool().query(`DELETE FROM coach_sessions WHERE token_hash = $1`, [
-      tokenHash,
-    ]);
+    await requirePgPool().query(
+      `DELETE FROM coach_sessions WHERE token_hash = $1`,
+      [tokenHash],
+    );
     return;
   }
   db.run(`DELETE FROM coach_sessions WHERE token_hash = ?`, [tokenHash]);

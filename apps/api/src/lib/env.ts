@@ -76,11 +76,16 @@ export const env = {
     `${import.meta.dir}/../../data/coach-data.sqlite`,
   databaseUrl: readEnv("DATABASE_URL"),
   coachUploadsDir:
-    readEnv("COACH_UPLOADS_DIR") ?? `${import.meta.dir}/../../data/coach-uploads`,
-  coachAvatarStorageDriver:
-    (readEnv("COACH_AVATAR_STORAGE_DRIVER") ?? "auto").toLowerCase(),
+    readEnv("COACH_UPLOADS_DIR") ??
+    `${import.meta.dir}/../../data/coach-uploads`,
+  coachAvatarStorageDriver: (
+    readEnv("COACH_AVATAR_STORAGE_DRIVER") ?? "auto"
+  ).toLowerCase(),
   coachAvatarS3Endpoint: readFirstEnv(["AWS_ENDPOINT_URL", "ENDPOINT"]),
-  coachAvatarS3AccessKeyId: readFirstEnv(["AWS_ACCESS_KEY_ID", "ACCESS_KEY_ID"]),
+  coachAvatarS3AccessKeyId: readFirstEnv([
+    "AWS_ACCESS_KEY_ID",
+    "ACCESS_KEY_ID",
+  ]),
   coachAvatarS3SecretAccessKey: readFirstEnv([
     "AWS_SECRET_ACCESS_KEY",
     "SECRET_ACCESS_KEY",
@@ -88,8 +93,9 @@ export const env = {
   coachAvatarS3Bucket: readFirstEnv(["AWS_S3_BUCKET_NAME", "BUCKET"]),
   coachAvatarS3Region:
     readFirstEnv(["AWS_DEFAULT_REGION", "AWS_REGION", "REGION"]) ?? "auto",
-  coachAvatarS3UrlStyle:
-    (readFirstEnv(["AWS_S3_URL_STYLE"]) ?? "virtual").toLowerCase(),
+  coachAvatarS3UrlStyle: (
+    readFirstEnv(["AWS_S3_URL_STYLE"]) ?? "virtual"
+  ).toLowerCase(),
   coachAvatarS3Prefix:
     readEnv("COACH_AVATAR_S3_PREFIX")?.replace(/^\/+|\/+$/g, "") ??
     "coach-avatars",
