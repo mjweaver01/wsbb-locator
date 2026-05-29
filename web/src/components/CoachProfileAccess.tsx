@@ -48,6 +48,13 @@ export function CoachProfileAccess({
   const [lng, setLng] = useState("");
 
   useEffect(() => {
+    const invitedEmail = new URLSearchParams(window.location.search).get(
+      "email",
+    );
+    if (invitedEmail) setEmail(invitedEmail);
+  }, []);
+
+  useEffect(() => {
     if (!selectedAvatarFile) {
       setSelectedAvatarPreview(null);
       return;

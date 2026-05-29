@@ -4,6 +4,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "./index.css";
 import { LandingPage } from "./pages/LandingPage";
 import { CoachAccessPage } from "./pages/CoachAccessPage";
+import { AdminInvitePage } from "./pages/AdminInvitePage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 
 createRoot(document.getElementById("root")!).render(
@@ -12,6 +13,7 @@ createRoot(document.getElementById("root")!).render(
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/coach-access" element={<CoachAccessPage />} />
+        <Route path="/admin" element={<AdminInvitePage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>

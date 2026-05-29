@@ -14,6 +14,7 @@ import {
   parseCoachOverride,
   readOptionalStringField,
   readRequiredEmailField,
+  type JsonRecord,
 } from "../lib/request-validation";
 import { parseIntParam, withJsonBody } from "../lib/http";
 import {
@@ -22,6 +23,8 @@ import {
   resyncFromThinkific,
 } from "../lib/coaches-cache";
 import { resolveCoachByEmail } from "../lib/coach-session";
+import { createLoginCode } from "../lib/db/auth";
+import { sendCoachInvite } from "../lib/email";
 
 export const adminCoachesRoutes = new Hono();
 
@@ -59,6 +62,91 @@ adminCoachesRoutes.post("/resync", async (c) => {
     return c.json({ error: (err as Error).message }, 503);
   }
 });
+
+interface InviteResult {
+  email: string;
+  ok: boolean;
+  thinkificUserId?: number;
+  error?: string;
+}
+
+/** Collect the candidate addresses from either `email` or `emails[]`. */
+function readInviteEmails(body: JsonRecord): {
+  emails?: string[];
+  error?: string;
+} {
+  const raw = body.emails;
+  if (raw !== undefined) {
+    if (!Array.isArray(raw)) {
+      return { error: "emails must be an array of strings" };
+    }
+    if (raw.length === 0) {
+      return { error: "emails must not be empty" };
+    }
+    const emails: string[] = [];
+    for (const entry of raw) {
+      const parsed = readRequiredEmailField({ email: entry }, "email");
+      if (!parsed.email) {
+        return { error: parsed.error ?? `invalid email: ${String(entry)}` };
+      }
+      emails.push(parsed.email);
+    }
+    return { emails: Array.from(new Set(emails)) };
+  }
+
+  const single = readRequiredEmailField(body, "email");
+  if (!single.email) {
+    return { error: single.error ?? "email is required" };
+  }
+  return { emails: [single.email] };
+}
+
+adminCoachesRoutes.post("/invite", (c) =>
+  withJsonBody(c, async (body) => {
+    const parsed = readInviteEmails(body);
+    if (!parsed.emails) {
+      return c.json({ error: parsed.error ?? "email is required" }, 400);
+    }
+
+    const base = env.appBaseUrl || new URL(c.req.url).origin;
+
+    // Loaded once so bulk invites can attach coach names without re-fetching.
+    const { data } = await getCoaches();
+    const coachById = new Map(
+      data.coaches.map((coach) => [coach.thinkificUserId, coach]),
+    );
+
+    const results: InviteResult[] = [];
+    for (const email of parsed.emails) {
+      try {
+        const resolved = await resolveCoachByEmail(email);
+        const code = await createLoginCode(
+          resolved.thinkificUserId,
+          email,
+          env.coachInviteCodeTtlMinutes,
+        );
+        const accessUrl = `${base}/coach-access?email=${encodeURIComponent(email)}`;
+        await sendCoachInvite({
+          toEmail: email,
+          code,
+          coachName: coachById.get(resolved.thinkificUserId)?.fullName,
+          accessUrl,
+          ttlMinutes: env.coachInviteCodeTtlMinutes,
+        });
+        results.push({
+          email,
+          ok: true,
+          thinkificUserId: resolved.thinkificUserId,
+        });
+      } catch (err) {
+        results.push({ email, ok: false, error: (err as Error).message });
+      }
+    }
+
+    const sent = results.filter((r) => r.ok).length;
+    return c.json({ ok: true, sent, total: results.length, results });
+  }),
+);
 
 adminCoachesRoutes.get("/resolve-user", async (c) => {
   const email = c.req.query("email");

@@ -107,6 +107,12 @@ export const env = {
     "COACH_AUTH_CODE_TTL_MINUTES",
     15,
   ),
+  // Invite codes are emailed proactively by an admin, so they get a much
+  // longer window than the self-serve login code (default 72h).
+  coachInviteCodeTtlMinutes: readIntEnvWithDefault(
+    "COACH_INVITE_CODE_TTL_MINUTES",
+    72 * 60,
+  ),
   coachSessionTtlDays: readIntEnvWithDefault("COACH_SESSION_TTL_DAYS", 30),
   coachAuthCookieName:
     readEnv("COACH_AUTH_COOKIE_NAME") ?? "wsbb_coach_session",
@@ -149,6 +155,12 @@ export const env = {
   thinkificLevel2Id: readOptionalIntEnv("THINKIFIC_LEVEL2_ID"),
   thinkificLevel3Id: readOptionalIntEnv("THINKIFIC_LEVEL3_ID"),
   thinkificRateLimitMs: readIntEnvWithDefault("THINKIFIC_RATE_LIMIT_MS", 500),
+  // Public base URL of the deployed SPA (e.g. https://coaches.westside-barbell.com).
+  // Used to build absolute links in invite emails. When unset, the invite route
+  // falls back to the request origin.
+  appBaseUrl: (
+    readFirstEnv(["APP_BASE_URL", "PUBLIC_APP_URL"]) ?? ""
+  ).replace(/\/+$/, ""),
   webDistPath:
     readEnv("WEB_DIST_PATH") ?? `${import.meta.dir}/../../../web/dist`,
   serveStatic: readBoolEnvWithDefault("SERVE_STATIC", isProduction),

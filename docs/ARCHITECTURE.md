@@ -72,6 +72,7 @@ Send the key as either `x-admin-api-key: <key>` or `Authorization: Bearer <key>`
 
 - `POST /api/coaches/refresh`
 - `POST /api/coaches/resync`
+- `POST /api/coaches/invite` `{ email }` or `{ emails: string[] }` — emails each coach a longer-lived login code plus a deep link to `/coach-access?email=...` so they can self-update their listing. Returns `{ ok, sent, total, results: [{ email, ok, thinkificUserId?, error? }] }`. Reuses the existing OTP machinery; code TTL is `COACH_INVITE_CODE_TTL_MINUTES`. The SPA route `/admin` (`AdminInvitePage`) provides a UI for this: paste the admin key, load coaches, multi-select, and send.
 - `GET /api/coaches/resolve-user?email=...`
 - `GET | PUT | DELETE /api/coaches/:thinkificUserId/email-links`
 - `PUT | DELETE /api/coaches/:thinkificUserId/override`
@@ -116,7 +117,7 @@ api/
 web/
   src/
     main.tsx
-    pages/                    # LandingPage, CoachAccessPage, NotFoundPage
+    pages/                    # LandingPage, CoachAccessPage, AdminInvitePage, NotFoundPage
     components/               # CoachMap, CoachCard, FilterBar, ...
     lib/types.ts
     styles/
@@ -129,6 +130,7 @@ web/
 ### Runtime / deploy
 
 - `PORT` (default `3001`)
+- `APP_BASE_URL` (alias `PUBLIC_APP_URL`) — public base URL of the SPA, used to build absolute links in invite emails. Falls back to the request origin when unset.
 - `SERVE_STATIC` (default `true` in production, `false` otherwise) — toggles the SPA static handler in the API process
 - `WEB_DIST_PATH` — overrides where the API looks for the built SPA (default `web/dist`)
 - `TRUST_PROXY` (default `true` in production) — when on, `X-Forwarded-For` / `X-Real-IP` are honored for rate-limit keys. Disable when the API is exposed directly without a reverse proxy.
@@ -150,7 +152,7 @@ web/
 ### Auth + admin
 
 - `COACH_ADMIN_API_KEY`
-- `COACH_AUTH_*_RATE_LIMIT_*`, `COACH_AUTH_CODE_TTL_MINUTES`, `COACH_SESSION_TTL_DAYS`, `COACH_AUTH_COOKIE_*`
+- `COACH_AUTH_*_RATE_LIMIT_*`, `COACH_AUTH_CODE_TTL_MINUTES`, `COACH_INVITE_CODE_TTL_MINUTES` (default 72h), `COACH_SESSION_TTL_DAYS`, `COACH_AUTH_COOKIE_*`
 
 ### Email
 
