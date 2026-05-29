@@ -186,14 +186,15 @@ export function AdminInvitePage() {
           </div>
 
           {coaches.length > 0 && (
-            <div className="coach-access__panel coach-access__panel--full">
-              <div className="admin-invite__toolbar">
-                <h3>
-                  Recipients
-                  <span className="admin-invite__count">
-                    {selected.size} selected
-                  </span>
-                </h3>
+            <div className="coach-access__panel admin-invite__panel">
+              <div className="admin-invite__head">
+                <h3>Recipients</h3>
+                <span className="admin-invite__count">
+                  {selected.size} of {coaches.length} selected
+                </span>
+              </div>
+
+              <div className="admin-invite__controls">
                 <input
                   className="admin-invite__search"
                   type="search"
@@ -201,49 +202,53 @@ export function AdminInvitePage() {
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search name or email…"
                 />
-              </div>
-
-              <div className="admin-invite__bulk">
-                <button
-                  type="button"
-                  className="coach-access__ghost"
-                  onClick={selectAllFiltered}
-                >
-                  Select all {search ? "(filtered)" : ""}
-                </button>
-                <button
-                  type="button"
-                  className="coach-access__ghost"
-                  onClick={clearSelection}
-                  disabled={selected.size === 0}
-                >
-                  Clear
-                </button>
+                <div className="admin-invite__bulk">
+                  <button
+                    type="button"
+                    className="coach-access__ghost"
+                    onClick={selectAllFiltered}
+                  >
+                    Select all{search ? " shown" : ""}
+                  </button>
+                  <button
+                    type="button"
+                    className="coach-access__ghost"
+                    onClick={clearSelection}
+                    disabled={selected.size === 0}
+                  >
+                    Clear
+                  </button>
+                </div>
               </div>
 
               <ul className="admin-invite__list">
-                {filtered.map((coach) => (
-                  <li key={coach.thinkificUserId}>
-                    <label className="admin-invite__item">
-                      <input
-                        type="checkbox"
-                        checked={selected.has(coach.thinkificUserId)}
-                        onChange={() => toggle(coach.thinkificUserId)}
-                      />
-                      <span className="admin-invite__item-name">
-                        {coach.fullName}
-                      </span>
-                      <span className="admin-invite__item-email">
-                        {coach.email}
-                      </span>
-                      <span
-                        className={`admin-invite__tier admin-invite__tier--${coach.tier}`}
+                {filtered.map((coach) => {
+                  const checked = selected.has(coach.thinkificUserId);
+                  return (
+                    <li key={coach.thinkificUserId}>
+                      <label
+                        className={`admin-invite__item${checked ? " admin-invite__item--checked" : ""}`}
                       >
-                        {TIER_LABEL[coach.tier]}
-                      </span>
-                    </label>
-                  </li>
-                ))}
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => toggle(coach.thinkificUserId)}
+                        />
+                        <span className="admin-invite__item-name">
+                          {coach.fullName}
+                        </span>
+                        <span className="admin-invite__item-email">
+                          {coach.email}
+                        </span>
+                        <span
+                          className={`admin-invite__tier admin-invite__tier--${coach.tier}`}
+                        >
+                          {TIER_LABEL[coach.tier]}
+                        </span>
+                      </label>
+                    </li>
+                  );
+                })}
                 {filtered.length === 0 && (
                   <li className="admin-invite__empty">
                     No coaches match “{search}”.
@@ -251,9 +256,13 @@ export function AdminInvitePage() {
                 )}
               </ul>
 
-              <div className="coach-access__actions">
+              <div className="admin-invite__footer">
+                <span className="admin-invite__shown">
+                  Showing {filtered.length} of {coaches.length}
+                </span>
                 <button
                   type="button"
+                  className="admin-invite__send"
                   onClick={sendInvites}
                   disabled={sending || selected.size === 0}
                 >
@@ -266,7 +275,7 @@ export function AdminInvitePage() {
           )}
 
           {result && failedResults.length > 0 && (
-            <div className="coach-access__panel coach-access__panel--full">
+            <div className="coach-access__panel admin-invite__panel">
               <h3>Failed ({failedResults.length})</h3>
               <ul className="admin-invite__results">
                 {failedResults.map((r) => (
