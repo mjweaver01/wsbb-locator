@@ -29,4 +29,5 @@ bun run dev:all
 ## More
 
 - [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) — data flow, API surface, project layout, environment, known gaps
+- [`docs/THINKIFIC.md`](./docs/THINKIFIC.md) — Thinkific auth, tier/course mapping, fetch + refresh flow
 - `.env.example` — full env-var reference (source of truth)

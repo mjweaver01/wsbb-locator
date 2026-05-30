@@ -145,9 +145,10 @@ web/
 
 ### Thinkific sync (required for live data)
 
-- `THINKIFIC_API_KEY`
+- `THINKIFIC_API_KEY` — a JWT API access token, sent as `Authorization: Bearer …`. See [`docs/THINKIFIC.md`](./THINKIFIC.md).
 - `THINKIFIC_SUBDOMAIN`
-- `THINKIFIC_LEVEL1_ID` / `THINKIFIC_LEVEL2_ID` / `THINKIFIC_LEVEL3_ID`
+- `THINKIFIC_LEVEL1_ID` / `THINKIFIC_LEVEL2_ID` / `THINKIFIC_LEVEL3_ID` — course IDs per pathway level (run `bun run fetch` with these empty to list all courses)
+- `THINKIFIC_SSO_SECRET` — present but currently unused (reserved for future SSO)
 
 ### Auth + admin
 

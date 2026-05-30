@@ -108,7 +108,10 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 function makeHeaders(apiKey: string, subdomain: string) {
   return {
-    "X-Auth-API-Key": apiKey,
+    // The API access token (type `api_access_token`) is a JWT and
+    // authenticates via a Bearer header. The subdomain is encoded in the
+    // token; we still send the header for parity.
+    Authorization: `Bearer ${apiKey}`,
     "X-Auth-Subdomain": subdomain,
     "Content-Type": "application/json",
   };

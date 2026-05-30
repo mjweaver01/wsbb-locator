@@ -1,276 +1,2439 @@
 {
-  "fetchedAt": "2026-05-23T16:00:00.000Z",
-  "subdomain": "westside-barbell",
-  "totalCoaches": 11,
+  "fetchedAt": "2026-05-29T23:42:06.047Z",
+  "subdomain": "tom-s-site-b3e4",
+  "totalCoaches": 137,
   "tierBreakdown": {
-    "master": 2,
-    "instructor": 3,
-    "certified": 6
+    "master": 41,
+    "instructor": 2,
+    "certified": 94
   },
   "coaches": [
     {
-      "thinkificUserId": 1001,
-      "email": "jim.wendler@example.com",
-      "firstName": "Jim",
-      "lastName": "Wendler",
-      "fullName": "Jim Wendler",
-      "avatarUrl": null,
-      "bio": "30+ years under the bar. WSBB faculty since 2019. Specializes in conjugate method programming for strength athletes and combat sports.",
-      "tier": "master",
-      "city": "Columbus",
-      "state": "OH",
-      "lat": 39.9612,
-      "lng": -82.9988,
-      "certifications": [
-        {
-          "level": 1,
-          "courseId": 11001,
-          "completedAt": "2021-03-15T00:00:00.000Z"
-        },
-        {
-          "level": 2,
-          "courseId": 11002,
-          "completedAt": "2021-09-22T00:00:00.000Z"
-        },
-        {
-          "level": 3,
-          "courseId": 11003,
-          "completedAt": "2022-04-10T00:00:00.000Z"
-        }
-      ]
-    },
-    {
-      "thinkificUserId": 1002,
-      "email": "sarah.blake@example.com",
-      "firstName": "Sarah",
-      "lastName": "Blake",
-      "fullName": "Sarah Blake",
-      "avatarUrl": null,
-      "bio": "Competitive powerlifter and WSBB seminar instructor. Coaches online and in-person clients in the Columbus, OH area.",
-      "tier": "master",
-      "city": "Columbus",
-      "state": "OH",
-      "lat": 39.98,
-      "lng": -82.935,
-      "certifications": [
-        {
-          "level": 1,
-          "courseId": 11001,
-          "completedAt": "2021-06-01T00:00:00.000Z"
-        },
-        {
-          "level": 2,
-          "courseId": 11002,
-          "completedAt": "2022-01-18T00:00:00.000Z"
-        },
-        {
-          "level": 3,
-          "courseId": 11003,
-          "completedAt": "2023-02-05T00:00:00.000Z"
-        }
-      ]
-    },
-    {
-      "thinkificUserId": 1003,
-      "email": "derek.moss@example.com",
-      "firstName": "Derek",
-      "lastName": "Moss",
-      "fullName": "Derek Moss",
-      "avatarUrl": null,
-      "bio": "Former collegiate lineman turned strength coach. Runs the conjugate method for high school and collegiate athletes.",
-      "tier": "instructor",
-      "city": "Chicago",
-      "state": "IL",
-      "lat": 41.8781,
-      "lng": -87.6298,
-      "certifications": [
-        {
-          "level": 1,
-          "courseId": 11001,
-          "completedAt": "2022-05-10T00:00:00.000Z"
-        },
-        {
-          "level": 2,
-          "courseId": 11002,
-          "completedAt": "2023-03-22T00:00:00.000Z"
-        }
-      ]
-    },
-    {
-      "thinkificUserId": 1004,
-      "email": "angela.tran@example.com",
-      "firstName": "Angela",
-      "lastName": "Tran",
-      "fullName": "Angela Tran",
-      "avatarUrl": null,
-      "bio": "USAPL competitor and coach focused on the conjugate method for raw powerlifting. Based in Austin, TX.",
-      "tier": "instructor",
-      "city": "Austin",
-      "state": "TX",
-      "lat": 30.2672,
-      "lng": -97.7431,
-      "certifications": [
-        {
-          "level": 1,
-          "courseId": 11001,
-          "completedAt": "2022-08-14T00:00:00.000Z"
-        },
-        {
-          "level": 2,
-          "courseId": 11002,
-          "completedAt": "2023-07-05T00:00:00.000Z"
-        }
-      ]
-    },
-    {
-      "thinkificUserId": 1005,
-      "email": "marcus.hill@example.com",
-      "firstName": "Marcus",
-      "lastName": "Hill",
-      "fullName": "Marcus Hill",
-      "avatarUrl": null,
-      "bio": "Strength and conditioning coach with 10 years experience. Specializes in MMA athletes and general population strength.",
-      "tier": "instructor",
-      "city": "Los Angeles",
-      "state": "CA",
-      "lat": 34.0522,
-      "lng": -118.2437,
-      "certifications": [
-        {
-          "level": 1,
-          "courseId": 11001,
-          "completedAt": "2023-01-30T00:00:00.000Z"
-        },
-        {
-          "level": 2,
-          "courseId": 11002,
-          "completedAt": "2023-11-15T00:00:00.000Z"
-        }
-      ]
-    },
-    {
-      "thinkificUserId": 1006,
-      "email": "tyler.reed@example.com",
-      "firstName": "Tyler",
-      "lastName": "Reed",
-      "fullName": "Tyler Reed",
-      "avatarUrl": null,
-      "bio": "Gym owner and coach in Denver, CO. Completed the Level 1 Conjugate pathway in 2024.",
-      "tier": "certified",
-      "city": "Denver",
-      "state": "CO",
-      "lat": 39.7392,
-      "lng": -104.9903,
-      "certifications": [
-        {
-          "level": 1,
-          "courseId": 11001,
-          "completedAt": "2024-02-11T00:00:00.000Z"
-        }
-      ]
-    },
-    {
-      "thinkificUserId": 1007,
-      "email": "jessica.park@example.com",
-      "firstName": "Jessica",
-      "lastName": "Park",
-      "fullName": "Jessica Park",
+      "thinkificUserId": 236709501,
+      "email": "yatesatkinson@gmail.com",
+      "firstName": "Yates",
+      "lastName": " Atkinson",
+      "fullName": "Yates  Atkinson",
       "avatarUrl": null,
       "bio": null,
       "tier": "certified",
-      "city": "Seattle",
-      "state": "WA",
-      "lat": 47.6062,
-      "lng": -122.3321,
       "certifications": [
         {
           "level": 1,
-          "courseId": 11001,
-          "completedAt": "2024-03-20T00:00:00.000Z"
+          "courseId": 3244772,
+          "completedAt": "2026-01-31T22:48:40.921Z"
         }
       ]
     },
     {
-      "thinkificUserId": 1008,
-      "email": "carlos.vega@example.com",
-      "firstName": "Carlos",
-      "lastName": "Vega",
-      "fullName": "Carlos Vega",
-      "avatarUrl": null,
-      "bio": "Powerlifting coach in Miami, FL. Training conjugate for 6 years before pursuing formal certification.",
+      "thinkificUserId": 236709524,
+      "email": "info@crossfitpurmerend.nl",
+      "firstName": "Kay",
+      "lastName": " Ziesemer",
+      "fullName": "Kay  Ziesemer",
+      "avatarUrl": "https://files.cdn.thinkific.com/profiles/245/628/7241765801327.thumb.jpg",
+      "bio": null,
       "tier": "certified",
-      "city": "Miami",
-      "state": "FL",
-      "lat": 25.7617,
-      "lng": -80.1918,
       "certifications": [
         {
           "level": 1,
-          "courseId": 11001,
-          "completedAt": "2024-05-02T00:00:00.000Z"
+          "courseId": 3244772,
+          "completedAt": "2026-02-04T11:40:21.974Z"
         }
       ]
     },
     {
-      "thinkificUserId": 1009,
-      "email": "kate.morrison@example.com",
-      "firstName": "Kate",
-      "lastName": "Morrison",
-      "fullName": "Kate Morrison",
+      "thinkificUserId": 236709548,
+      "email": "kenneth@thewholisticrevolution.com",
+      "firstName": "Kenneth ",
+      "lastName": "Poucket",
+      "fullName": "Kenneth  Poucket",
       "avatarUrl": null,
       "bio": null,
       "tier": "certified",
-      "city": "New York",
-      "state": "NY",
-      "lat": 40.7128,
-      "lng": -74.006,
       "certifications": [
         {
           "level": 1,
-          "courseId": 11001,
-          "completedAt": "2024-06-18T00:00:00.000Z"
+          "courseId": 3244772,
+          "completedAt": "2026-05-16T19:16:28.701Z"
         }
       ]
     },
     {
-      "thinkificUserId": 1010,
-      "email": "brian.fox@example.com",
+      "thinkificUserId": 236709564,
+      "email": "joshua.m.miller91@gmail.com",
+      "firstName": "Joshua",
+      "lastName": " Miller",
+      "fullName": "Joshua  Miller",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-02-03T20:19:03.902Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236709581,
+      "email": "jroney32@gmail.com",
+      "firstName": "James \t",
+      "lastName": "Roney",
+      "fullName": "James \t Roney",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-03-18T17:25:45.978Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 224356441,
+      "email": "crusecompletefitness@yahoo.com",
+      "firstName": "Ian",
+      "lastName": "Cruse",
+      "fullName": "Ian Cruse",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-02-01T07:09:08.557Z"
+        },
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2025-07-27T08:07:43.890Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236709680,
+      "email": "bryanpotter5213@gmail.com",
+      "firstName": "Bryan",
+      "lastName": "Potter",
+      "fullName": "Bryan Potter",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-03-17T17:42:34.838Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 231909075,
+      "email": "dannyski72@gmail.com",
+      "firstName": "Dan",
+      "lastName": "Ligarzewski",
+      "fullName": "Dan Ligarzewski",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-02-05T17:48:48.549Z"
+        },
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2025-11-01T11:33:52.180Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236709834,
+      "email": "aaronwambold@web.de",
+      "firstName": "Aaron ",
+      "lastName": "Wambold\t",
+      "fullName": "Aaron  Wambold\t",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-02-04T20:39:44.956Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236709862,
+      "email": "seratt.jim@gmail.com",
+      "firstName": "James\t",
+      "lastName": "Seratt",
+      "fullName": "James\t Seratt",
+      "avatarUrl": "https://files.cdn.thinkific.com/profiles/245/629/1001765726114.thumb.",
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-03-17T16:36:42.945Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 214950475,
+      "email": "richarddstunt@gmail.com",
+      "firstName": "Richard",
+      "lastName": "Stunt",
+      "fullName": "Richard Stunt",
+      "avatarUrl": "https://files.cdn.thinkific.com/profiles/221/974/5401737633246.thumb.jpg",
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-02-18T15:01:46.931Z"
+        },
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2025-11-07T19:37:54.539Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236709963,
+      "email": "edrivas53@yahoo.com",
+      "firstName": "Ed\t",
+      "lastName": "Rivas",
+      "fullName": "Ed\t Rivas",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-02-01T21:20:02.821Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236709983,
+      "email": "philip@unlockedphilogic.com",
+      "firstName": "Philip",
+      "lastName": "Ha",
+      "fullName": "Philip Ha",
+      "avatarUrl": "https://files.cdn.thinkific.com/profiles/245/629/2301765661267.thumb.jpg",
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-02-03T18:52:14.472Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236710048,
+      "email": "bfleming2262@gmail.com",
+      "firstName": "Brennan\t",
+      "lastName": "Fleming",
+      "fullName": "Brennan\t Fleming",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-02-03T21:08:20.332Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 214919749,
+      "email": "txpowerlifter@gmail.com",
+      "firstName": "Dion",
+      "lastName": "Chavez",
+      "fullName": "Dion Chavez",
+      "avatarUrl": "https://files.cdn.thinkific.com/profiles/221/940/9421737907541.thumb.jpg",
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-02-18T03:58:05.956Z"
+        },
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2025-12-10T18:28:37.372Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236710094,
+      "email": "mlickwar@gmail.com",
+      "firstName": "Michael\t",
+      "lastName": "Lickwar",
+      "fullName": "Michael\t Lickwar",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-02-06T12:36:33.842Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236710162,
+      "email": "psamato@gmail.com",
+      "firstName": "Paul\t",
+      "lastName": "Amato",
+      "fullName": "Paul\t Amato",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-02-04T15:34:40.979Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236710176,
+      "email": "coastalstrengthandbarbell@gmail.com",
+      "firstName": "isaac\t",
+      "lastName": "bermudez",
+      "fullName": "isaac\t bermudez",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-02-03T23:07:35.284Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 235179051,
+      "email": "ondra.mareda@icloud.com",
+      "firstName": "Ondřej",
+      "lastName": "Mareda",
+      "fullName": "Ondřej Mareda",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-02-04T16:34:45.452Z"
+        },
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2025-11-21T20:39:47.237Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236710225,
+      "email": "rmrpjorge@gmail.com",
+      "firstName": "Ricardo ",
+      "lastName": "Jorge\t",
+      "fullName": "Ricardo  Jorge\t",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-02-09T19:12:30.713Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236710260,
+      "email": "colin.a.kuehn@gmail.com",
+      "firstName": "Colin\t",
+      "lastName": "Kuehn",
+      "fullName": "Colin\t Kuehn",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-01-31T23:24:06.833Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236710492,
+      "email": "cnichols999@gmail.com",
+      "firstName": "Chris ",
+      "lastName": "Nichols\t",
+      "fullName": "Chris  Nichols\t",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-02-02T20:43:19.056Z"
+        },
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2026-04-25T18:10:53.419Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236710508,
+      "email": "doubleunders@gmail.com",
+      "firstName": "Joshua \t",
+      "lastName": "Porter",
+      "fullName": "Joshua \t Porter",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-03-20T11:33:08.669Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236710531,
+      "email": "hub.rak24@gmail.com",
+      "firstName": "Hubert\t",
+      "lastName": "Rak",
+      "fullName": "Hubert\t Rak",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-01-31T20:13:16.698Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236710550,
+      "email": "acalzadilla20@gmail.com",
+      "firstName": "Anthony\t",
+      "lastName": "Calzadilla",
+      "fullName": "Anthony\t Calzadilla",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-02-01T02:10:36.180Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 214922602,
+      "email": "worlsc@hendricks.k12.in.us",
+      "firstName": "Scott",
+      "lastName": "Worl",
+      "fullName": "Scott Worl",
+      "avatarUrl": "https://files.cdn.thinkific.com/profiles/221/944/0601737650215.thumb.jpeg",
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-02-05T11:05:52.112Z"
+        },
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2025-01-31T22:35:43.290Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236710566,
+      "email": "travis_turner85@yahoo.com",
+      "firstName": "Travis\t",
+      "lastName": "Turner",
+      "fullName": "Travis\t Turner",
+      "avatarUrl": "https://files.cdn.thinkific.com/profiles/245/629/8791765718488.thumb.",
+      "bio": null,
+      "tier": "instructor",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-01-31T20:11:32.057Z"
+        },
+        {
+          "level": 2,
+          "courseId": 3344505,
+          "completedAt": "2026-05-20T19:03:53.152Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236710584,
+      "email": "jeffslagter@hotmail.com",
+      "firstName": "Jeff ",
+      "lastName": "Slagter\t",
+      "fullName": "Jeff  Slagter\t",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-02-01T21:19:35.414Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236710611,
+      "email": "paxton.titus@gmail.com",
+      "firstName": "Paxton ",
+      "lastName": "Titus\t",
+      "fullName": "Paxton  Titus\t",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-02-02T01:46:57.252Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236710623,
+      "email": "zachmullinsmma@gmail.com",
+      "firstName": "Zachary\t",
+      "lastName": "Mullins",
+      "fullName": "Zachary\t Mullins",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-02-02T23:29:07.112Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236710633,
+      "email": "aapclark@gmail.com",
+      "firstName": "Aaron\t",
+      "lastName": "Clark",
+      "fullName": "Aaron\t Clark",
+      "avatarUrl": "https://files.cdn.thinkific.com/profiles/245/629/9551770475680.thumb.",
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-02-01T06:17:16.263Z"
+        },
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2026-02-15T15:18:30.273Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236710648,
+      "email": "jmkopec@yahoo.com",
+      "firstName": "Justin ",
+      "lastName": "Kopec\t",
+      "fullName": "Justin  Kopec\t",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-02-01T23:08:31.786Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236710657,
+      "email": "gskalioras@gmail.com",
+      "firstName": "George ",
+      "lastName": "Kalioras\t",
+      "fullName": "George  Kalioras\t",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-02-03T16:47:45.491Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236710742,
+      "email": "travis@darkhorseperformance.us",
+      "firstName": "Travis ",
+      "lastName": "Ursprung\t",
+      "fullName": "Travis  Ursprung\t",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-02-01T15:51:41.881Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236710752,
+      "email": "geoffreydoc3@icloud.com",
+      "firstName": "Geoffrey ",
+      "lastName": "Dougherty\t",
+      "fullName": "Geoffrey  Dougherty\t",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-02-02T09:35:50.967Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236710769,
+      "email": "gcshelby1235@gmail.com",
+      "firstName": "George ",
+      "lastName": "Shelby\t",
+      "fullName": "George  Shelby\t",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-01-31T21:19:28.756Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236710779,
+      "email": "c_wright65@yahoo.com",
+      "firstName": "Caleb ",
+      "lastName": "Wright\t",
+      "fullName": "Caleb  Wright\t",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-02-07T16:35:21.091Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236710813,
+      "email": "jrejmx@gmail.com",
+      "firstName": "Jeremy\t",
+      "lastName": "Evans",
+      "fullName": "Jeremy\t Evans",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-02-01T18:31:58.937Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236710835,
+      "email": "jeff@jeffamiller.com",
+      "firstName": "Jeffrey",
+      "lastName": "Miller",
+      "fullName": "Jeffrey Miller",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-03-21T19:32:03.949Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236710856,
+      "email": "jacquis.o.robertson1@gmail.com",
+      "firstName": "Jacquis ",
+      "lastName": "Robertson\t",
+      "fullName": "Jacquis  Robertson\t",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-02-02T22:22:14.653Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 224779822,
+      "email": "marshalllee.strong@gmail.com",
+      "firstName": "Marshall",
+      "lastName": "Lee",
+      "fullName": "Marshall Lee",
+      "avatarUrl": "https://files.cdn.thinkific.com/profiles/232/572/3021768767086.thumb.jpg",
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-02-03T16:42:38.077Z"
+        },
+        {
+          "level": 2,
+          "courseId": 3344505,
+          "completedAt": "2026-05-22T00:31:42.421Z"
+        },
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2025-10-09T00:41:22.020Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236825275,
+      "email": "brian@sportsadvantedge.com",
       "firstName": "Brian",
-      "lastName": "Fox",
-      "fullName": "Brian Fox",
-      "avatarUrl": null,
-      "bio": "WSBB-certified coach training out of a private garage gym in Nashville, TN. Focus on raw equipped powerlifting.",
+      "lastName": "Bott",
+      "fullName": "Brian Bott",
+      "avatarUrl": "https://files.cdn.thinkific.com/profiles/245/757/8881776611500.thumb.jpg",
+      "bio": null,
       "tier": "certified",
-      "city": "Nashville",
-      "state": "TN",
-      "lat": 36.1627,
-      "lng": -86.7816,
       "certifications": [
         {
           "level": 1,
-          "courseId": 11001,
-          "completedAt": "2024-09-09T00:00:00.000Z"
+          "courseId": 3244772,
+          "completedAt": "2026-04-19T15:08:58.559Z"
         }
       ]
     },
     {
-      "thinkificUserId": 1011,
-      "email": "mjweaver01@gmail.com",
-      "firstName": "Mike",
-      "lastName": "Weaver",
-      "fullName": "Mike Weaver",
+      "thinkificUserId": 232754549,
+      "email": "tommy@divinesavagery.com",
+      "firstName": "Tommy",
+      "lastName": "Richardson ",
+      "fullName": "Tommy Richardson ",
       "avatarUrl": null,
-      "bio": "Novice powerlifter learning from the strongest men in the sport",
-      "tier": "certified",
-      "city": "Columbus",
-      "state": "Ohio",
-      "lat": 39.9612,
-      "lng": -82.9988,
+      "bio": null,
+      "tier": "master",
       "certifications": [
         {
           "level": 1,
-          "courseId": 11001,
-          "completedAt": "2026-05-25T00:00:00.000Z"
+          "courseId": 3244772,
+          "completedAt": "2026-02-04T15:26:58.746Z"
+        },
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2025-11-19T00:12:41.427Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236887226,
+      "email": "gaumerb@eastonsd.org",
+      "firstName": "BRIAN",
+      "lastName": "Gaumer",
+      "fullName": "BRIAN Gaumer",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-02-25T12:31:59.846Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 237052938,
+      "email": "gmo661@yahoo.com",
+      "firstName": "Greg",
+      "lastName": "Olivos",
+      "fullName": "Greg Olivos",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-02-07T07:10:13.438Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 237191536,
+      "email": "trainerjo@gmail.com",
+      "firstName": "Joey",
+      "lastName": "Williams",
+      "fullName": "Joey Williams",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-02-14T01:15:02.353Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 237202060,
+      "email": "gregorydb26@gmail.com",
+      "firstName": "Gregory",
+      "lastName": "Bohannon",
+      "fullName": "Gregory Bohannon",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-02-16T23:16:40.309Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 237225709,
+      "email": "markjbreeding73@gmail.com",
+      "firstName": "Mark",
+      "lastName": "Breeding",
+      "fullName": "Mark Breeding",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-04-04T03:51:56.815Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 237238408,
+      "email": "hayman3.1416@gmail.com",
+      "firstName": "Nathan",
+      "lastName": "Hayman",
+      "fullName": "Nathan Hayman",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-02-26T03:26:45.523Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 237328647,
+      "email": "davidhampton75@gmail.com",
+      "firstName": "David",
+      "lastName": "Hampton",
+      "fullName": "David Hampton",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-02-16T03:28:31.253Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 237538404,
+      "email": "robschillaci.3@gmail.com",
+      "firstName": "Rob",
+      "lastName": "Schillaci",
+      "fullName": "Rob Schillaci",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-03-10T10:55:30.597Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 237869137,
+      "email": "r_giordanella@yahoo.com",
+      "firstName": "Richard",
+      "lastName": "Giordanella",
+      "fullName": "Richard Giordanella",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-03-02T18:21:17.298Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 238058934,
+      "email": "athlete.p.t@btinternet.com",
+      "firstName": "Mark",
+      "lastName": "Lammas",
+      "fullName": "Mark Lammas",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-03-03T08:32:49.997Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 238140593,
+      "email": "thebrownygod@gmail.com",
+      "firstName": "Krishnan",
+      "lastName": "Snehaj Lal",
+      "fullName": "Krishnan Snehaj Lal",
+      "avatarUrl": "https://files.cdn.thinkific.com/profiles/247/209/1031768576661.thumb.png",
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-03-04T17:00:55.908Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 238256496,
+      "email": "macy.shearman@gmail.com",
+      "firstName": "MACY",
+      "lastName": "SHEARMAN",
+      "fullName": "MACY SHEARMAN",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-03-05T21:15:00.148Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 235342287,
+      "email": "tmaciczak13@gmail.com",
+      "firstName": "Tony",
+      "lastName": "Maciczak",
+      "fullName": "Tony Maciczak",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-03-05T23:14:43.533Z"
+        },
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2025-12-31T23:43:55.131Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 239138490,
+      "email": "ggolding3@gmail.com",
+      "firstName": "Gerald",
+      "lastName": "Golding",
+      "fullName": "Gerald Golding",
+      "avatarUrl": "https://files.cdn.thinkific.com/profiles/248/247/4891773369829.thumb.jpg",
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-03-10T23:47:16.328Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 239810028,
+      "email": "cornerstoneland@windstream.net",
+      "firstName": "Everett",
+      "lastName": "Stewart",
+      "fullName": "Everett Stewart",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-03-22T18:18:59.458Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 239810085,
+      "email": "ruffhousebjj@gmail.com",
+      "firstName": "Arthur",
+      "lastName": "Ruff",
+      "fullName": "Arthur Ruff",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-04-06T00:21:16.730Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 240309862,
+      "email": "alex.trotter23@gmail.com",
+      "firstName": "Alex ",
+      "lastName": "Trotter",
+      "fullName": "Alex  Trotter",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-03-30T14:11:21.571Z"
+        },
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2026-02-21T00:16:10.437Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 240314805,
+      "email": "pawel.polozynski21@onet.pl",
+      "firstName": "Paweł",
+      "lastName": "Położyński",
+      "fullName": "Paweł Położyński",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-05-18T21:01:26.500Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236614753,
+      "email": "greifenederm@gmail.com",
+      "firstName": "Maximilian",
+      "lastName": "Greifeneder",
+      "fullName": "Maximilian Greifeneder",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-05-23T05:12:48.696Z"
+        },
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2025-12-19T14:25:34.439Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 240322166,
+      "email": "yinyangpersonnaltraining@gmail.com",
+      "firstName": "Matthieu",
+      "lastName": "Jeandel",
+      "fullName": "Matthieu Jeandel",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-03-27T12:54:40.182Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 240325191,
+      "email": "westside@ryangibney.com",
+      "firstName": "Ryan",
+      "lastName": "Gibney",
+      "fullName": "Ryan Gibney",
+      "avatarUrl": "https://files.cdn.thinkific.com/profiles/249/557/8341773690091.thumb.png",
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-03-27T17:32:00.917Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 240329730,
+      "email": "timswope@ymail.com",
+      "firstName": "Tim",
+      "lastName": "Swope",
+      "fullName": "Tim Swope",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-03-28T23:06:58.051Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 240331581,
+      "email": "jholmes032087@yahoo.com",
+      "firstName": "jonathan",
+      "lastName": "Holmes",
+      "fullName": "jonathan Holmes",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-04-02T20:37:59.573Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 240332415,
+      "email": "shodastrength@gmail.com",
+      "firstName": "Derick",
+      "lastName": "Shoda",
+      "fullName": "Derick Shoda",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-03-27T15:57:17.549Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 231138397,
+      "email": "belanger013@gmail.com",
+      "firstName": "Anthony",
+      "lastName": "Belanger",
+      "fullName": "Anthony Belanger",
+      "avatarUrl": "https://files.cdn.thinkific.com/profiles/239/481/0081757817251.thumb.jpeg",
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-03-31T00:50:51.774Z"
+        },
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2026-01-19T01:58:13.958Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 237606962,
+      "email": "adschill@mac.com",
+      "firstName": "Andrew",
+      "lastName": "Schill",
+      "fullName": "Andrew Schill",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-03-30T18:59:49.003Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 240342899,
+      "email": "daniel.c.geist@gmail.com",
+      "firstName": "Daniel",
+      "lastName": "Geist",
+      "fullName": "Daniel Geist",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-03-30T16:49:19.697Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 240348255,
+      "email": "jspradley56@gmail.com",
+      "firstName": "Jarin",
+      "lastName": "spradley",
+      "fullName": "Jarin spradley",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-03-30T12:08:13.863Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 240352230,
+      "email": "millertime123093@gmail.com",
+      "firstName": "Austin",
+      "lastName": "Miller",
+      "fullName": "Austin Miller",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-04-23T22:01:23.170Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 240361346,
+      "email": "jason.hunter7801@gmail.com",
+      "firstName": "Jason",
+      "lastName": "Thomas",
+      "fullName": "Jason Thomas",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-03-29T22:30:14.917Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 240374800,
+      "email": "freddy.pujols20@gmail.com",
+      "firstName": "Freddy",
+      "lastName": "Pujols",
+      "fullName": "Freddy Pujols",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-03-29T23:00:52.619Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 240386977,
+      "email": "jesus.garcia03.86@gmail.com",
+      "firstName": "Jesus",
+      "lastName": "Garcia",
+      "fullName": "Jesus Garcia",
+      "avatarUrl": "https://files.cdn.thinkific.com/profiles/249/627/5181771254236.thumb.",
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-03-31T00:28:13.256Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 240401686,
+      "email": "gllntedeschi153@gmail.com",
+      "firstName": "Gillian",
+      "lastName": "Tedeschi",
+      "fullName": "Gillian Tedeschi",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-03-31T20:23:30.801Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 240402341,
+      "email": "kevin.michael.higar@gmail.com",
+      "firstName": "KEVIN",
+      "lastName": "HIGAR",
+      "fullName": "KEVIN HIGAR",
+      "avatarUrl": "https://files.cdn.thinkific.com/profiles/249/644/8191774894594.thumb.",
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-04-12T13:50:04.001Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 240434334,
+      "email": "valhallawlc@gmail.com",
+      "firstName": "Brett",
+      "lastName": "Hampton",
+      "fullName": "Brett Hampton",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-03-30T15:58:12.239Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 240438499,
+      "email": "seanmcalindon1987@hotmail.co.uk",
+      "firstName": "Sean",
+      "lastName": "Mcalindon",
+      "fullName": "Sean Mcalindon",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-05-25T21:41:58.307Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 240461127,
+      "email": "kanarriso@gmail.com",
+      "firstName": "Jr",
+      "lastName": "Elsperman",
+      "fullName": "Jr Elsperman",
+      "avatarUrl": "https://files.cdn.thinkific.com/profiles/249/709/6961770664196.thumb.PNG",
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-03-31T02:40:27.645Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 240482486,
+      "email": "dph00723@gmail.com",
+      "firstName": "Dylan",
+      "lastName": "Heath",
+      "fullName": "Dylan Heath",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-03-31T19:43:41.305Z"
+        },
+        {
+          "level": 2,
+          "courseId": 3344505,
+          "completedAt": "2026-05-26T18:27:42.549Z"
+        },
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2026-05-18T14:42:43.095Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 240486686,
+      "email": "maxim.dhondt@hotmail.com",
+      "firstName": "Maxim",
+      "lastName": "D’hondt",
+      "fullName": "Maxim D’hondt",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-03-31T07:16:31.213Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 240496654,
+      "email": "cer2007@hotmail.com",
+      "firstName": "Christina",
+      "lastName": "Rodriguez",
+      "fullName": "Christina Rodriguez",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-04-05T02:56:57.658Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 240516486,
+      "email": "ryansemke15@gmail.com",
+      "firstName": "Ryan",
+      "lastName": "Semke",
+      "fullName": "Ryan Semke",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-04-04T15:31:16.654Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 240530101,
+      "email": "lukere77@gmail.com",
+      "firstName": "Luke",
+      "lastName": "Eikenberg",
+      "fullName": "Luke Eikenberg",
+      "avatarUrl": "https://files.cdn.thinkific.com/profiles/249/786/9891770747371.thumb.",
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-04-01T00:27:25.089Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 240537012,
+      "email": "coachdurand@gmail.com",
+      "firstName": "Mike",
+      "lastName": "Durand",
+      "fullName": "Mike Durand",
+      "avatarUrl": "https://files.cdn.thinkific.com/profiles/249/794/8321773530435.thumb.",
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-03-31T22:26:43.953Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 243852128,
+      "email": "sccistrength@yahoo.com",
+      "firstName": "Aaron",
+      "lastName": "Mehl",
+      "fullName": "Aaron Mehl",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-04-28T03:26:59.531Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 243852143,
+      "email": "orlaskyappraisals@gmail.com",
+      "firstName": "Daniel",
+      "lastName": "Orlasky",
+      "fullName": "Daniel Orlasky",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-05-26T19:03:53.870Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 243866360,
+      "email": "eugene.thomas412@gmail.com",
+      "firstName": "Eugene",
+      "lastName": "Thomas",
+      "fullName": "Eugene Thomas",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-04-15T07:15:19.791Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 243874288,
+      "email": "ivo.ploum@hotmail.com",
+      "firstName": "Ivo",
+      "lastName": "Ploum",
+      "fullName": "Ivo Ploum",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-04-09T12:36:32.610Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 244028393,
+      "email": "pattontaylor17@gmail.com",
+      "firstName": "Patton",
+      "lastName": "Taylor",
+      "fullName": "Patton Taylor",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-04-01T17:26:26.510Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 244029742,
+      "email": "falgoutalec@gmail.com",
+      "firstName": "Alec",
+      "lastName": "Falgout",
+      "fullName": "Alec Falgout",
+      "avatarUrl": "https://files.cdn.thinkific.com/profiles/253/519/6891774292980.thumb.",
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-04-09T17:34:42.544Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 244030830,
+      "email": "skurfitness@gmail.com",
+      "firstName": "Garrett",
+      "lastName": "Skurnit",
+      "fullName": "Garrett Skurnit",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "instructor",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-04-01T17:41:48.729Z"
+        },
+        {
+          "level": 2,
+          "courseId": 3344505,
+          "completedAt": "2026-05-20T18:36:01.091Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 244035463,
+      "email": "tizianobecchio5@gmail.com",
+      "firstName": "Tiziano",
+      "lastName": "Becchio",
+      "fullName": "Tiziano Becchio",
+      "avatarUrl": "https://files.cdn.thinkific.com/profiles/253/526/2621774298822.thumb.",
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-04-05T16:54:47.958Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 244040774,
+      "email": "kellerlogging@gmail.com",
+      "firstName": "Benjamin",
+      "lastName": "Keller",
+      "fullName": "Benjamin Keller",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-04-05T18:51:35.557Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 244148887,
+      "email": "k.thorpe86@yahoo.co.uk",
+      "firstName": "Karl",
+      "lastName": "Thorpe",
+      "fullName": "Karl Thorpe",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-05-12T14:43:48.273Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 244151553,
+      "email": "kurtis.bowler@gmail.com",
+      "firstName": "Kurtis",
+      "lastName": "Bowler",
+      "fullName": "Kurtis Bowler",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-04-05T17:07:05.829Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 244165713,
+      "email": "r65083443@gmail.com",
+      "firstName": "Ricardo",
+      "lastName": "Rios",
+      "fullName": "Ricardo Rios",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-05-16T19:54:32.094Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 244193915,
+      "email": "mlucotch@gmail.com",
+      "firstName": "Michael",
+      "lastName": "Lucotch",
+      "fullName": "Michael Lucotch",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-04-30T17:44:41.487Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 244233435,
+      "email": "jgcaballero@hotmail.com",
+      "firstName": "Jay",
+      "lastName": "Caballero",
+      "fullName": "Jay Caballero",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-04-16T20:00:42.557Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 244233560,
+      "email": "heo9542@gmail.com",
+      "firstName": "Trevor",
+      "lastName": "Porter",
+      "fullName": "Trevor Porter",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-05-20T16:54:14.078Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 244250362,
+      "email": "brandonf9577@gmail.com",
+      "firstName": "Brandon",
+      "lastName": "Fink",
+      "fullName": "Brandon Fink",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-04-11T12:56:45.817Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 244336180,
+      "email": "matt.georgiades16@gmail.com",
+      "firstName": "Matthew",
+      "lastName": "Georgiades",
+      "fullName": "Matthew Georgiades",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-04-08T13:10:48.545Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 244736940,
+      "email": "ashley.letters@gmail.com",
+      "firstName": "Raymond",
+      "lastName": "Tinneny",
+      "fullName": "Raymond Tinneny",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-04-26T09:57:07.469Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 244750484,
+      "email": "longak2@gmail.com",
+      "firstName": "Andrew",
+      "lastName": "Long",
+      "fullName": "Andrew Long",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-04-08T19:53:49.127Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 244759576,
+      "email": "rustyj86@gmail.com",
+      "firstName": "David",
+      "lastName": "Jenkins",
+      "fullName": "David Jenkins",
+      "avatarUrl": "https://files.cdn.thinkific.com/profiles/254/338/2471779479311.thumb.jpeg",
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-04-15T23:55:55.223Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 228643852,
+      "email": "wilsonmr22@gmail.com",
+      "firstName": "Boone",
+      "lastName": "Wilson",
+      "fullName": "Boone Wilson",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-04-25T17:57:08.002Z"
+        },
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2026-04-24T18:04:30.880Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 245311398,
+      "email": "jengaju22@gmail.com",
+      "firstName": "Bryan",
+      "lastName": "Mason",
+      "fullName": "Bryan Mason",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-05-22T00:08:01.160Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 245501961,
+      "email": "fperini660@gmail.com",
+      "firstName": "Federico",
+      "lastName": "Perini",
+      "fullName": "Federico Perini",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-04-26T10:58:40.077Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 245520185,
+      "email": "oliverwsm@gmail.com",
+      "firstName": "Oliver",
+      "lastName": "Werner",
+      "fullName": "Oliver Werner",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-04-27T22:42:33.579Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 246449254,
+      "email": "joshuatnicklin@gmail.com",
+      "firstName": "Joshua",
+      "lastName": "Nicklin",
+      "fullName": "Joshua Nicklin",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-05-13T14:02:05.652Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 246499576,
+      "email": "jj047257@gmail.com",
+      "firstName": "Anthony",
+      "lastName": "Quinn",
+      "fullName": "Anthony Quinn",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "certified",
+      "certifications": [
+        {
+          "level": 1,
+          "courseId": 3244772,
+          "completedAt": "2026-05-14T16:12:36.934Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 214915942,
+      "email": "kylegarrison76@gmail.com",
+      "firstName": "kyle",
+      "lastName": "garrison",
+      "fullName": "kyle garrison",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2025-01-22T21:36:35.329Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 214919807,
+      "email": "harrisonsmithok7@gmail.com",
+      "firstName": "Harrison",
+      "lastName": "Smith",
+      "fullName": "Harrison Smith",
+      "avatarUrl": "https://files.cdn.thinkific.com/profiles/221/941/0061737586703.thumb.jpeg",
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2025-01-28T00:32:38.642Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 214921433,
+      "email": "boeydafunk@gmail.com",
+      "firstName": "Boe",
+      "lastName": "Dennett",
+      "fullName": "Boe Dennett",
+      "avatarUrl": "https://files.cdn.thinkific.com/profiles/221/942/7541737665058.thumb.png",
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2025-02-10T18:39:41.076Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 214922398,
+      "email": "dougr830@gmail.com",
+      "firstName": "Doug",
+      "lastName": "Roberts",
+      "fullName": "Doug Roberts",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2025-02-11T19:03:56.662Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 214927066,
+      "email": "countzero007@hotmail.com",
+      "firstName": "David",
+      "lastName": "Marcus",
+      "fullName": "David Marcus",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2025-02-15T14:32:35.987Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 214929968,
+      "email": "adamslez@gmail.com",
+      "firstName": "Adam",
+      "lastName": "Slez",
+      "fullName": "Adam Slez",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2025-01-28T14:52:19.686Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 215027923,
+      "email": "robert.lulashi@gmail.com",
+      "firstName": "Robert",
+      "lastName": "Lulashi",
+      "fullName": "Robert Lulashi",
+      "avatarUrl": "https://files.cdn.thinkific.com/profiles/222/059/2521738463781.thumb.jpg",
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2025-01-28T17:11:03.806Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 215092036,
+      "email": "graydaniel79@gmail.com",
+      "firstName": "Daniel",
+      "lastName": "Gray",
+      "fullName": "Daniel Gray",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2025-03-13T15:23:40.774Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 224218098,
+      "email": "m.kerr92@yahoo.com",
+      "firstName": "Micah",
+      "lastName": "Kerr",
+      "fullName": "Micah Kerr",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2025-06-22T00:09:54.705Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 224567054,
+      "email": "zacktheimpaler@gmail.com",
+      "firstName": "Zachary",
+      "lastName": "june",
+      "fullName": "Zachary june",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2025-07-04T01:34:02.387Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 225953527,
+      "email": "michaelrogdakis@gmail.com",
+      "firstName": "Michael",
+      "lastName": "Rogdakis",
+      "fullName": "Michael Rogdakis",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2025-07-21T20:52:18.315Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 227367370,
+      "email": "jberenbach89@gmail.com",
+      "firstName": "Joshua",
+      "lastName": "Berenbach",
+      "fullName": "Joshua Berenbach",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2025-07-18T15:59:46.418Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 228236471,
+      "email": "brmsuhr@gmail.com",
+      "firstName": "B",
+      "lastName": "Suhr",
+      "fullName": "B Suhr",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2025-11-30T20:27:34.176Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 228365444,
+      "email": "reillykelleher@gmail.com",
+      "firstName": "Reilly",
+      "lastName": "Kelleher",
+      "fullName": "Reilly Kelleher",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2025-08-27T19:51:51.656Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 229124072,
+      "email": "uruzclan.coaching@gmail.com",
+      "firstName": "lely",
+      "lastName": "thibaut",
+      "fullName": "lely thibaut",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2025-08-18T15:36:27.207Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 233340272,
+      "email": "stan.hardter@outlook.com",
+      "firstName": "Stanley",
+      "lastName": "Hardter",
+      "fullName": "Stanley Hardter",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2026-01-02T17:00:40.061Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 233562004,
+      "email": "danterrybusiness@gmail.com",
+      "firstName": "Daniel",
+      "lastName": "Terry",
+      "fullName": "Daniel Terry",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2025-11-07T23:58:45.616Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 235110131,
+      "email": "mcosgrove@bishopgorman.org",
+      "firstName": "Michael",
+      "lastName": "Cosgrove",
+      "fullName": "Michael Cosgrove",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2026-01-07T08:14:43.241Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 235832719,
+      "email": "jeremiahvanlarson@gmail.com",
+      "firstName": "Jeremiah",
+      "lastName": "Larson",
+      "fullName": "Jeremiah Larson",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2025-12-18T06:44:13.295Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236027906,
+      "email": "josh.melendez@crossfit.com",
+      "firstName": "Josh",
+      "lastName": "Melendez",
+      "fullName": "Josh Melendez",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2026-05-27T18:54:48.240Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236118871,
+      "email": "rayprz444@gmail.com",
+      "firstName": "Raymond",
+      "lastName": "Peralta",
+      "fullName": "Raymond Peralta",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2025-12-08T03:35:08.922Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236938614,
+      "email": "taylorp@oacsd.org",
+      "firstName": "Patton",
+      "lastName": "Taylor",
+      "fullName": "Patton Taylor",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2026-03-10T13:45:25.446Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 236990030,
+      "email": "srandalluconn@yahoo.com",
+      "firstName": "Stephanie",
+      "lastName": "Randall",
+      "fullName": "Stephanie Randall",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2026-02-24T23:33:59.699Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 237855973,
+      "email": "kintnerz@oacsd.org",
+      "firstName": "Zachary",
+      "lastName": "Kinter",
+      "fullName": "Zachary Kinter",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2026-03-11T17:12:12.655Z"
+        }
+      ]
+    },
+    {
+      "thinkificUserId": 243546268,
+      "email": "andrew.paquin@aoc.gov",
+      "firstName": "Andrew",
+      "lastName": "Paquin",
+      "fullName": "Andrew Paquin",
+      "avatarUrl": null,
+      "bio": null,
+      "tier": "master",
+      "certifications": [
+        {
+          "level": 3,
+          "courseId": 2989367,
+          "completedAt": "2026-04-30T17:37:44.629Z"
         }
       ]
     }
