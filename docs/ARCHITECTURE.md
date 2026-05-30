@@ -21,16 +21,47 @@ Reference for how the API and SPA fit together, what the API exposes, and which 
 
 In production mode `SERVE_STATIC=true` makes the API handle non-`/api` paths: known files are served verbatim, unknown extensionless paths fall through to `index.html` so the client router takes over.
 
-## Data flow
+## Shared code (`shared/`)
 
-`GET /api/coaches` resolves data in this order:
+The API and SPA are one repo and speak one wire contract, so the domain types and tier ordering that define that contract live in a top-level `shared/` directory rather than being redefined on each side. Both workspaces reach it through the `@shared/*` path alias (`api/tsconfig.json`, `web/tsconfig.json`, and `web/vite.config.ts`).
+
+| File              | Owns                                                                                                                                  |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `shared/coach.ts` | Canonical domain types — `Coach`, `CoachesPayload`, `CoachTier`, `RawCertification`, `CoachEmailLink`, `MeResponse`. Single source of truth for the FE/BE wire shape. |
+| `shared/tiers.ts` | Tier **ordering** only: `TIER_ORDER` (display order) and `TIER_RANK` (precedence when a coach qualifies for multiple levels).          |
+
+The boundary is deliberate: `shared/` holds the contract and pure logic that both sides must agree on. Presentation stays local — tier **labels and colors** live in `web/src/lib/tiers.ts` (which imports `TIER_ORDER`/`TIER_RANK`), and the API imports `TIER_RANK` to pick a coach's headline tier. The web client's `apiUrl` helper (`web/src/lib/api.ts`) centralizes the `/api` base so components don't each thread an `apiBase` prop.
+
+When you add a field to the coach contract, edit `shared/coach.ts` once; both `tsc` runs will flag every call site that needs updating.
+
+## Data model: base data + overrides
+
+Two layers, with a clear precedence rule:
+
+1. **Base data** comes from Thinkific (identity, tier, certifications, company). It is refreshed **only by explicit write triggers** — never as a side effect of a read.
+2. **Overrides** are the edits coaches make in our UI (`coach_overrides`). For the six safe profile fields (`bio`, `avatarUrl`, `city`, `state`, `lat`, `lng`) the override **supersedes** the Thinkific base. Identity columns (id/email/name/tier/certifications) always come from Thinkific, even if a malformed override row contains them.
+
+So: if a coach updates their info in Thinkific, an explicit resync updates our base data. If they update it in our UI, that override wins until they clear it.
+
+## Read path (never calls Thinkific)
+
+`GET /api/coaches` resolves data in this order — and **stops before ever contacting Thinkific**:
 
 1. In-memory cache (TTL from `COACH_CACHE_TTL_MS`, default 1h)
 2. SQLite/Postgres cache tables (`thinkific_coaches_cache`, `thinkific_cache_meta`)
-3. Live Thinkific fetch (if credentials configured)
-4. Static fallback (`api/data/coaches-raw.json`)
+3. Static seed (`api/data/coaches-raw.json`)
 
-The response includes an `X-Data-Source` header so clients (and ops) can see which layer answered. The API merges Thinkific coach data with local overrides from `coach_overrides` — only the six safe fields (`bio`, `avatarUrl`, `city`, `state`, `lat`, `lng`) are allowed to override; identity columns always come from Thinkific.
+Every layer is merged with `coach_overrides` before being returned. The response includes an `X-Data-Source` header (`cache | db-cache | static`) so clients and ops can see which layer answered.
+
+## Write path (the only Thinkific calls)
+
+Thinkific is contacted exclusively by explicit triggers, which fetch live data, persist it to the DB cache, and seed the in-memory cache (`resyncFromThinkific` in `coaches-cache.ts`):
+
+- An admin pull (`POST /api/coaches/resync`, or `refresh` to also bust the in-memory cache).
+- A coach's own profile update / avatar upload (writes their override row).
+- A future Thinkific webhook (same `resyncFromThinkific` entry point).
+
+This is why the read path can never stall on a slow or rate-limited Thinkific API: nothing reads from Thinkific synchronously.
 
 ## Identity resolution
 
@@ -53,7 +84,7 @@ Two backends share one schema module (`lib/db/schema.ts`) that runs `CREATE TABL
 
 ### Public
 
-- `GET /api/coaches` — returns `X-Data-Source: cache | db-cache | thinkific | static`
+- `GET /api/coaches` — returns `X-Data-Source: cache | db-cache | static` (read path never calls Thinkific)
 - `GET /api/health`
 - `GET /api/coach-media/:filename` — serves uploaded avatar files through the API (works with private buckets)
 
@@ -80,6 +111,9 @@ Send the key as either `x-admin-api-key: <key>` or `Authorization: Bearer <key>`
 ## Project layout
 
 ```text
+shared/                        # FE/BE contract, imported via @shared/*
+  coach.ts                     # Coach, CoachesPayload, MeResponse, ...
+  tiers.ts                     # TIER_ORDER, TIER_RANK (ordering only)
 api/
   data/
     coaches-raw.json
@@ -119,7 +153,10 @@ web/
     main.tsx
     pages/                    # LandingPage, CoachAccessPage, AdminInvitePage, NotFoundPage
     components/               # CoachMap, CoachCard, FilterBar, ...
-    lib/types.ts
+    lib/
+      api.ts                  # API_BASE + apiUrl/apiFetch helpers
+      tiers.ts                # tier labels/colors (re-exports @shared ordering)
+      types.ts                # re-exports @shared/coach
     styles/
 ```
 
@@ -179,8 +216,10 @@ Currently covers:
 - Auth state machine (`createLoginCode → verify → createSession → getSession → delete`) against an isolated sqlite file (`lib/db/auth.test.ts`).
 - HTTP helpers — `withJsonBody`, `parseIntParam`, `getClientIp` (including the `TRUST_PROXY` gate) (`lib/http.test.ts`).
 - Rate limiter sliding-window + sweeper (`lib/rate-limit.test.ts`).
+- `parseCoachOverride` Zod validation matrix (`lib/request-validation.test.ts`).
+- `mergeCoachOverrides` precedence + tier recompute, using injected overrides so it stays a pure unit test (`lib/coaches-cache.test.ts`).
 
-Worth expanding next: `parseCoachOverride` validation matrix, `mergeCoachOverrides` precedence + tier recompute, `isOriginAllowed` allowlist matrix, `serveStaticSpa` extension routing + `..` rejection, and route-level tests via `app.fetch(new Request(...))`.
+Worth expanding next: `isOriginAllowed` allowlist matrix, `serveStaticSpa` extension routing + `..` rejection, and route-level tests via `app.fetch(new Request(...))`.
 
 ## Known gaps
 
