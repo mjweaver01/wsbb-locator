@@ -155,6 +155,12 @@ export const env = {
   thinkificLevel2Id: readOptionalIntEnv("THINKIFIC_LEVEL2_ID"),
   thinkificLevel3Id: readOptionalIntEnv("THINKIFIC_LEVEL3_ID"),
   thinkificRateLimitMs: readIntEnvWithDefault("THINKIFIC_RATE_LIMIT_MS", 500),
+  // Derive coach locations from their Thinkific `company` field via Nominatim
+  // during fetch. On by default; results are cached to disk.
+  geocodeEnabled: readBoolEnvWithDefault("GEOCODE_ENABLED", true),
+  geocodeRateLimitMs: readIntEnvWithDefault("GEOCODE_RATE_LIMIT_MS", 1100),
+  geocodeUserAgent:
+    readEnv("GEOCODE_USER_AGENT") ?? "wsbb-locator/0.1 (coach-map geocoding)",
   // Public base URL of the deployed SPA (e.g. https://coaches.westside-barbell.com).
   // Used to build absolute links in invite emails. When unset, the invite route
   // falls back to the request origin.

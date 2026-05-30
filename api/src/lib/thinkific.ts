@@ -15,6 +15,7 @@
  */
 
 import { env } from "./env";
+import { geocodeCompany } from "./geocode";
 
 const BASE_URL = "https://api.thinkific.com/api/public/v1";
 const PAGE_LIMIT = 250;
@@ -47,12 +48,17 @@ export interface Coach {
   fullName: string;
   avatarUrl: string | null;
   bio: string | null;
+  company: string | null;
   tier: CoachTier;
   certifications: RawCertification[];
   city?: string;
   state?: string;
   lat?: number;
   lng?: number;
+  // How city/state/lat/lng were resolved. "company-geocode" means derived from
+  // the Thinkific company field — a best-effort guess a coach override can
+  // replace. Absent when location came from an override or isn't set.
+  locationSource?: "company-geocode";
 }
 
 export interface CoachesPayload {
@@ -71,6 +77,7 @@ interface ThinkificUser {
   full_name: string;
   avatar_url: string | null;
   bio: string | null;
+  company: string | null;
 }
 
 interface ThinkificEnrollment {
@@ -262,6 +269,7 @@ export async function fetchCoachesFromThinkific(): Promise<CoachesPayload> {
         fullName: user.full_name,
         avatarUrl: user.avatar_url,
         bio: user.bio,
+        company: user.company || null,
         tier,
         certifications: certifications.sort((a, b) => a.level - b.level),
       });
@@ -271,6 +279,8 @@ export async function fetchCoachesFromThinkific(): Promise<CoachesPayload> {
     if (i < userEntries.length - 1) await sleep(env.thinkificRateLimitMs);
   }
 
+  await resolveCoachLocations(coaches);
+
   return {
     fetchedAt: new Date().toISOString(),
     subdomain,
@@ -278,4 +288,32 @@ export async function fetchCoachesFromThinkific(): Promise<CoachesPayload> {
     tierBreakdown: recalculateTierBreakdown(coaches),
     coaches,
   };
+}
+
+/**
+ * Best-effort: derive a location for coaches that have a `company` but no
+ * location yet, by geocoding the company name. Confidently-placed coaches get
+ * city/state/lat/lng plus a `locationSource` marker; everyone else is left
+ * untouched for a coach override to fill in. Mutates `coaches` in place.
+ */
+async function resolveCoachLocations(coaches: Coach[]): Promise<void> {
+  if (!env.geocodeEnabled) return;
+
+  let resolved = 0;
+  for (const coach of coaches) {
+    const hasLocation = coach.lat != null && coach.lng != null;
+    if (!coach.company || hasLocation) continue;
+
+    const geo = await geocodeCompany(coach.company);
+    if (!geo) continue;
+
+    coach.lat = geo.lat;
+    coach.lng = geo.lng;
+    if (geo.city) coach.city = geo.city;
+    if (geo.state) coach.state = geo.state;
+    coach.locationSource = "company-geocode";
+    resolved += 1;
+  }
+
+  console.log(`[geocode] resolved ${resolved} coach location(s) from company`);
 }

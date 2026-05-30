@@ -56,6 +56,18 @@ curl -X POST http://localhost:3001/api/coaches/refresh \
 
 …or just restart the API.
 
+## Location resolution
+
+Thinkific stores **no** location data on users — no city/state/lat/lng, and `custom_profile_fields` is empty. The only location-ish field is `company` (a gym name), populated for ~12% of coaches.
+
+During fetch we best-effort geocode `company` via OpenStreetMap [Nominatim](https://nominatim.org/) (no API key) in `api/src/lib/geocode.ts`. Company names are noisy seeds — most are brand names, and a naive lookup returns same-named gyms on the wrong continent (e.g. "RDS Fitness" → Ukraine). So we **only accept a match that resolves to a populated place** (`administrative`/`city`/`town`/`village`/`hamlet`) above `MIN_IMPORTANCE` (0.45). A missing pin beats a confidently-wrong one.
+
+Resolved coaches get `city`/`state`/`lat`/`lng` plus `locationSource: "company-geocode"` marking the value as a derived guess. A coach override always wins over it (see merge precedence in `docs/ARCHITECTURE.md`).
+
+- Coverage is intentionally low: of ~16 companies, typically only the handful naming a real town resolve. The rest are left for the `/coach-access` override flow.
+- Results (hits **and** misses) are cached in `api/data/geocode-cache.json`, so repeat fetches don't re-hit Nominatim. Delete the file to force re-geocoding.
+- Tuning: `GEOCODE_ENABLED` (default true), `GEOCODE_RATE_LIMIT_MS` (default 1100, respects Nominatim's ~1 req/s), `GEOCODE_USER_AGENT`. The place-type allowlist and `MIN_IMPORTANCE` are constants in `geocode.ts` — loosen them to raise coverage at the cost of false positives.
+
 ## Known data gaps
 
 - **Bios and avatars are mostly empty in Thinkific.** These are filled by coaches via the self-serve `/coach-access` flow (local overrides), not upstream. Don't expect them from the API.
