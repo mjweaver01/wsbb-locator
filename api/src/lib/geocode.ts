@@ -71,8 +71,29 @@ function stripBrandWords(name: string): string {
     .trim();
 }
 
+function toResult(item: NominatimItem): GeocodeResult {
+  const a = item.address ?? {};
+  return {
+    lat: Number(item.lat),
+    lng: Number(item.lon),
+    city:
+      a.city || a.town || a.village || a.hamlet || a.municipality || undefined,
+    state: a.state || undefined,
+  };
+}
+
+// Apply the noisy-seed guardrail: only trust a populated-place match above the
+// confidence floor. Used for company names, not explicit addresses.
+function acceptPlace(item: NominatimItem | null): GeocodeResult | null {
+  if (!item) return null;
+  if (!PLACE_TYPES.has(item.type)) return null;
+  if ((item.importance ?? 0) < MIN_IMPORTANCE) return null;
+  return toResult(item);
+}
+
 // In-process cache, hydrated from disk on first use. Value is the result or
-// `null` (a remembered miss).
+// `null` (a remembered miss). Address lookups are namespaced with `addr:` to
+// avoid colliding with company keys.
 let cache: Record<string, GeocodeResult | null> | null = null;
 
 async function loadCache(): Promise<Record<string, GeocodeResult | null>> {
@@ -88,7 +109,19 @@ async function loadCache(): Promise<Record<string, GeocodeResult | null>> {
   return cache;
 }
 
-async function queryNominatim(q: string): Promise<GeocodeResult | null> {
+async function cachedLookup(
+  key: string,
+  run: () => Promise<GeocodeResult | null>,
+): Promise<GeocodeResult | null> {
+  const store = await loadCache();
+  if (key in store) return store[key] ?? null;
+  const result = await run();
+  store[key] = result;
+  await Bun.write(CACHE_PATH, JSON.stringify(store, null, 2));
+  return result;
+}
+
+async function nominatimTop(q: string): Promise<NominatimItem | null> {
   const url = new URL(NOMINATIM_URL);
   url.searchParams.set("q", q);
   url.searchParams.set("format", "jsonv2");
@@ -102,24 +135,13 @@ async function queryNominatim(q: string): Promise<GeocodeResult | null> {
   if (!res.ok) return null;
 
   const items = (await res.json()) as NominatimItem[];
-  const top = items[0];
-  if (!top) return null;
-  if (!PLACE_TYPES.has(top.type)) return null;
-  if ((top.importance ?? 0) < MIN_IMPORTANCE) return null;
-
-  const a = top.address ?? {};
-  return {
-    lat: Number(top.lat),
-    lng: Number(top.lon),
-    city:
-      a.city || a.town || a.village || a.hamlet || a.municipality || undefined,
-    state: a.state || undefined,
-  };
+  return items[0] ?? null;
 }
 
 /**
  * Resolve a company/gym name to a trusted location, or `null` if it can't be
- * confidently placed. Cached by company string (case-insensitive).
+ * confidently placed. Guardrailed because company names are noisy seeds.
+ * Cached by company string (case-insensitive).
  */
 export async function geocodeCompany(
   company: string,
@@ -127,22 +149,38 @@ export async function geocodeCompany(
   const key = company.trim().toLowerCase();
   if (!key) return null;
 
-  const store = await loadCache();
-  if (key in store) return store[key] ?? null;
+  return cachedLookup(key, async () => {
+    let result = acceptPlace(await nominatimTop(company.trim()));
+    await sleep(env.geocodeRateLimitMs);
 
-  let result = await queryNominatim(company.trim());
-  await sleep(env.geocodeRateLimitMs);
-
-  // Second pass on the brand-stripped variant (e.g. "CrossFit Purmerend").
-  if (!result) {
-    const cleaned = stripBrandWords(company);
-    if (cleaned && cleaned.toLowerCase() !== key) {
-      result = await queryNominatim(cleaned);
-      await sleep(env.geocodeRateLimitMs);
+    // Second pass on the brand-stripped variant (e.g. "CrossFit Purmerend").
+    if (!result) {
+      const cleaned = stripBrandWords(company);
+      if (cleaned && cleaned.toLowerCase() !== key) {
+        result = acceptPlace(await nominatimTop(cleaned));
+        await sleep(env.geocodeRateLimitMs);
+      }
     }
-  }
+    return result;
+  });
+}
 
-  store[key] = result;
-  await Bun.write(CACHE_PATH, JSON.stringify(store, null, 2));
-  return result;
+/**
+ * Resolve an explicit "city, state" to coordinates. Unlike geocodeCompany this
+ * is a high-trust input the coach typed, so we accept Nominatim's top result
+ * without the place-type / importance guardrail. Returns `null` only when
+ * there's no match at all. Cached by the normalized query.
+ */
+export async function geocodeAddress(
+  city: string,
+  state: string,
+): Promise<GeocodeResult | null> {
+  const q = [city.trim(), state.trim()].filter(Boolean).join(", ");
+  if (!q) return null;
+
+  return cachedLookup(`addr:${q.toLowerCase()}`, async () => {
+    const item = await nominatimTop(q);
+    await sleep(env.geocodeRateLimitMs);
+    return item ? toResult(item) : null;
+  });
 }

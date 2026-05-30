@@ -63,7 +63,7 @@ Two backends share one schema module (`lib/db/schema.ts`) that runs `CREATE TABL
 - `POST /api/coach-auth/verify` `{ email, code }` → sets `wsbb_coach_session` cookie, returns `{ ok, me }`
 - `POST /api/coach-auth/logout`
 - `GET /api/coach-auth/me` — current coach + linked emails
-- `PUT /api/coach-auth/me` — replace override (bio/avatarUrl/city/state/lat/lng); omitted fields become NULL. Returns `{ ok, me }`
+- `PUT /api/coach-auth/me` — replace override (bio/avatarUrl/city/state/lat/lng); omitted fields become NULL. When city/state are present but no coordinates are supplied, the server geocodes them to lat/lng (see [`docs/THINKIFIC.md`](./THINKIFIC.md)) so coaches never enter coordinates by hand. Returns `{ ok, me }`
 - `POST /api/coach-auth/me/avatar` (`multipart/form-data`, field `avatar`) — upload and persist coach avatar image. Returns `{ ok, avatarUrl, me }`
 
 ### Admin (requires `COACH_ADMIN_API_KEY`)

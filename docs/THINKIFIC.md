@@ -64,6 +64,8 @@ During fetch we best-effort geocode `company` via OpenStreetMap [Nominatim](http
 
 Resolved coaches get `city`/`state`/`lat`/`lng` plus `locationSource: "company-geocode"` marking the value as a derived guess. A coach override always wins over it (see merge precedence in `docs/ARCHITECTURE.md`).
 
+The same geocoder also powers the coach self-serve flow: on `PUT /api/coach-auth/me`, when a coach saves a `city`/`state` without coordinates, the server resolves them via `geocodeAddress()` and stores the `lat`/`lng` for them — coaches never type coordinates. Because an explicit "city, state" is a high-trust input (unlike a gym name), `geocodeAddress` skips the place-type / importance guardrail and accepts Nominatim's top match. This is the primary, reliable path to populating the map; company geocoding is just a best-effort head start.
+
 - Coverage is intentionally low: of ~16 companies, typically only the handful naming a real town resolve. The rest are left for the `/coach-access` override flow.
 - Results (hits **and** misses) are cached in `api/data/geocode-cache.json`, so repeat fetches don't re-hit Nominatim. Delete the file to force re-geocoding.
 - Tuning: `GEOCODE_ENABLED` (default true), `GEOCODE_RATE_LIMIT_MS` (default 1100, respects Nominatim's ~1 req/s), `GEOCODE_USER_AGENT`. The place-type allowlist and `MIN_IMPORTANCE` are constants in `geocode.ts` — loosen them to raise coverage at the cost of false positives.

@@ -8,6 +8,7 @@ import {
   verifyAndConsumeLoginCode,
 } from "../lib/db/auth";
 import { getCoachOverride, upsertCoachOverride } from "../lib/db/overrides";
+import { geocodeAddress } from "../lib/geocode";
 import { sendCoachLoginCode } from "../lib/email";
 import {
   parseCoachOverride,
@@ -165,7 +166,23 @@ coachAuthRoutes.put("/api/coach-auth/me", (c) =>
       return c.json({ error: parsed.error ?? "Invalid override" }, 400);
     }
 
-    await upsertCoachOverride(thinkificUserId, parsed.override);
+    const override = parsed.override;
+
+    // Coaches set their location by city/state only — derive map coordinates
+    // for them. If a client supplied explicit coords we respect those instead.
+    if (
+      override.lat == null &&
+      override.lng == null &&
+      (override.city || override.state)
+    ) {
+      const geo = await geocodeAddress(override.city ?? "", override.state ?? "");
+      if (geo) {
+        override.lat = geo.lat;
+        override.lng = geo.lng;
+      }
+    }
+
+    await upsertCoachOverride(thinkificUserId, override);
     invalidateCache();
     const me = await loadMeResponse(thinkificUserId);
     return c.json({ ok: true, me });

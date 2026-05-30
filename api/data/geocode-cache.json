@@ -19,5 +19,23 @@
   "ryan gibney coaching": null,
   "mog power house": null,
   "owego apalachin central school district": null,
-  "owego apalachin csd": null
+  "owego apalachin csd": null,
+  "addr:columbus, ohio": {
+    "lat": 39.9622601,
+    "lng": -83.0007065,
+    "city": "Columbus",
+    "state": "Ohio"
+  },
+  "addr:austin, texas": {
+    "lat": 30.2711286,
+    "lng": -97.7436995,
+    "city": "Austin",
+    "state": "Texas"
+  },
+  "addr:brooklyn, new york": {
+    "lat": 40.6526006,
+    "lng": -73.9497211,
+    "city": "New York",
+    "state": "New York"
+  }
 }

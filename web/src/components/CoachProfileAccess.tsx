@@ -44,8 +44,6 @@ export function CoachProfileAccess({
   const [avatarUrl, setAvatarUrl] = useState("");
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
-  const [lat, setLat] = useState("");
-  const [lng, setLng] = useState("");
 
   useEffect(() => {
     const invitedEmail = new URLSearchParams(window.location.search).get(
@@ -70,8 +68,6 @@ export function CoachProfileAccess({
     setAvatarUrl(data.coach.avatarUrl ?? "");
     setCity(data.coach.city ?? "");
     setState(data.coach.state ?? "");
-    setLat(data.coach.lat !== undefined ? String(data.coach.lat) : "");
-    setLng(data.coach.lng !== undefined ? String(data.coach.lng) : "");
     setSelectedAvatarFile(null);
   }, []);
 
@@ -156,18 +152,6 @@ export function CoachProfileAccess({
     setError(null);
     setRequestStatus(null);
 
-    const parsedLat = lat.trim() === "" ? undefined : Number(lat);
-    const parsedLng = lng.trim() === "" ? undefined : Number(lng);
-
-    if (
-      (parsedLat !== undefined && Number.isNaN(parsedLat)) ||
-      (parsedLng !== undefined && Number.isNaN(parsedLng))
-    ) {
-      setError("Latitude and longitude must be valid numbers.");
-      setProfileSaving(false);
-      return;
-    }
-
     try {
       const response = await fetch(apiUrl(apiBase, "/api/coach-auth/me"), {
         method: "PUT",
@@ -178,8 +162,6 @@ export function CoachProfileAccess({
           avatarUrl,
           city,
           state,
-          lat: parsedLat,
-          lng: parsedLng,
         }),
       });
       const data = (await response.json()) as {
@@ -256,8 +238,6 @@ export function CoachProfileAccess({
       setAvatarUrl("");
       setCity("");
       setState("");
-      setLat("");
-      setLng("");
       setSelectedAvatarFile(null);
       setRequestStatus("Signed out.");
     } catch (err) {
@@ -387,16 +367,13 @@ export function CoachProfileAccess({
                 />
               </label>
             </div>
-            <div className="coach-access__row">
-              <label>
-                Latitude
-                <input value={lat} onChange={(e) => setLat(e.target.value)} />
-              </label>
-              <label>
-                Longitude
-                <input value={lng} onChange={(e) => setLng(e.target.value)} />
-              </label>
-            </div>
+            <p className="coach-access__hint">
+              Your spot on the map is set automatically from your city and
+              state.{" "}
+              {me.coach.lat != null && me.coach.lng != null
+                ? "You're currently shown on the map."
+                : "Add your city and state to appear on the map."}
+            </p>
 
             {me.emailLinks.length > 0 && (
               <div className="coach-access__links">
