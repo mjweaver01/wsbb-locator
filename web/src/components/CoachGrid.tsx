@@ -1,19 +1,12 @@
-import type { RawCoach, CoachTier } from "@/lib/types";
+import type { Coach } from "@/lib/types";
+import { TIER_LABELS, TIER_ORDER } from "@/lib/tiers";
 import { CoachCard } from "./CoachCard";
 
 interface CoachGridProps {
-  coaches: RawCoach[];
+  coaches: Coach[];
   activeTier: string;
   cardRefs: Map<number, HTMLElement>;
 }
-
-const TIER_ORDER: CoachTier[] = ["master", "instructor", "certified"];
-
-const SECTION_TITLE: Record<CoachTier, string> = {
-  master: "Master Instructors",
-  instructor: "Instructors",
-  certified: "Certified Coaches",
-};
 
 export function CoachGrid({ coaches, activeTier, cardRefs }: CoachGridProps) {
   if (coaches.length === 0) {
@@ -41,7 +34,7 @@ export function CoachGrid({ coaches, activeTier, cardRefs }: CoachGridProps) {
           <section key={tier} className="coach-section">
             <div className="coach-section__header">
               <span className="coach-section__title">
-                {SECTION_TITLE[tier]}
+                {TIER_LABELS[tier].section}
               </span>
               <div className="coach-section__line" />
             </div>

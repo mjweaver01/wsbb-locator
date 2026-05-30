@@ -1,8 +1,6 @@
 import { Link } from "react-router-dom";
 import { CoachProfileAccess } from "@/components/CoachProfileAccess";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "";
-
 export function CoachAccessPage() {
   return (
     <main className="coach-access-page">
@@ -21,7 +19,7 @@ export function CoachAccessPage() {
         </div>
       </header>
 
-      <CoachProfileAccess apiBase={API_BASE} showIntro={false} />
+      <CoachProfileAccess showIntro={false} />
     </main>
   );
 }

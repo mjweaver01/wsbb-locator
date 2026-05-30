@@ -1,5 +1,5 @@
-import type { Coach } from "../thinkific";
-import { db } from "./db";
+import type { Coach } from "@shared/coach";
+import { getSqliteDb } from "./db";
 import { requirePgPool } from "./pg";
 import { dbMode, ensureDbSchema, isPostgresDb } from "./schema";
 
@@ -45,6 +45,7 @@ export async function getCoachOverride(
     return row ? toOverride(row) : null;
   }
 
+  const db = getSqliteDb();
   const row = db
     .query<CoachOverrideRow, [number]>(
       `SELECT thinkific_user_id, bio, avatar_url, city, state, lat, lng
@@ -72,6 +73,7 @@ export async function listCoachOverrides(): Promise<
     return out;
   }
 
+  const db = getSqliteDb();
   const rows = db
     .query<CoachOverrideRow, []>(
       `SELECT thinkific_user_id, bio, avatar_url, city, state, lat, lng
@@ -121,6 +123,7 @@ export async function upsertCoachOverride(
     return override;
   }
 
+  const db = getSqliteDb();
   db.run(
     `INSERT INTO coach_overrides (
       thinkific_user_id, bio, avatar_url, city, state, lat, lng, updated_at
@@ -159,6 +162,7 @@ export async function deleteCoachOverride(
     return;
   }
 
+  const db = getSqliteDb();
   db.run(`DELETE FROM coach_overrides WHERE thinkific_user_id = ?`, [
     thinkificUserId,
   ]);

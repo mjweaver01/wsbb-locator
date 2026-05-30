@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import type { CoachTier, RawCoach } from "@/lib/types";
+import type { Coach, CoachesPayload } from "@/lib/types";
+import { apiFetch } from "@/lib/api";
+import { TIER_LABELS } from "@/lib/tiers";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "";
 const ADMIN_KEY_STORAGE = "wsbb_admin_key";
 
 interface InviteResult {
@@ -20,15 +21,9 @@ interface InviteResponse {
   error?: string;
 }
 
-const TIER_LABEL: Record<CoachTier, string> = {
-  master: "Master",
-  instructor: "Instructor",
-  certified: "Certified",
-};
-
 export function AdminInvitePage() {
   const [apiKey, setApiKey] = useState("");
-  const [coaches, setCoaches] = useState<RawCoach[]>([]);
+  const [coaches, setCoaches] = useState<Coach[]>([]);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [search, setSearch] = useState("");
   const [loadingCoaches, setLoadingCoaches] = useState(false);
@@ -54,11 +49,7 @@ export function AdminInvitePage() {
     setStatus(null);
     setResult(null);
     try {
-      const response = await fetch(`${API_BASE}/api/coaches`);
-      if (!response.ok) {
-        throw new Error(`Failed to load coaches (${response.status})`);
-      }
-      const data = (await response.json()) as { coaches?: RawCoach[] };
+      const data = await apiFetch<CoachesPayload>("/api/coaches");
       const list = (data.coaches ?? []).filter((c) => c.email);
       list.sort((a, b) => a.fullName.localeCompare(b.fullName));
       setCoaches(list);
@@ -120,7 +111,7 @@ export function AdminInvitePage() {
     setStatus(null);
     setResult(null);
     try {
-      const response = await fetch(`${API_BASE}/api/coaches/invite`, {
+      const data = await apiFetch<InviteResponse>("/api/coaches/invite", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -128,10 +119,6 @@ export function AdminInvitePage() {
         },
         body: JSON.stringify({ emails }),
       });
-      const data = (await response.json()) as InviteResponse;
-      if (!response.ok) {
-        throw new Error(data.error ?? `Invite failed (${response.status})`);
-      }
       setResult(data);
       setStatus(`Sent ${data.sent} of ${data.total} invites.`);
     } catch (err) {
@@ -243,7 +230,7 @@ export function AdminInvitePage() {
                         <span
                           className={`admin-invite__tier admin-invite__tier--${coach.tier}`}
                         >
-                          {TIER_LABEL[coach.tier]}
+                          {TIER_LABELS[coach.tier].short}
                         </span>
                       </label>
                     </li>

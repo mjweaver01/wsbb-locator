@@ -1,9 +1,8 @@
 import { resolve } from "path";
+import type { Coach, CoachesPayload } from "@shared/coach";
 import {
   fetchCoachesFromThinkific,
   recalculateTierBreakdown,
-  type Coach,
-  type CoachesPayload,
 } from "./thinkific";
 import { env } from "./env";
 import { listCoachOverrides, type CoachOverride } from "./db/overrides";
@@ -99,9 +98,13 @@ export async function mergeCoachOverrides(
 }
 
 /**
- * Resolution order: in-memory cache → sqlite/pg cache → live Thinkific →
- * static JSON fallback. `source` is exposed via the `X-Data-Source` header
- * so ops can see which layer answered.
+ * Read path — never calls Thinkific. Resolution order:
+ *   in-memory cache → sqlite/pg DB cache → static JSON seed.
+ *
+ * Thinkific is only ever contacted by an explicit write trigger (admin
+ * `resyncFromThinkific`, or a future Thinkific webhook), which populates the
+ * DB cache that this function reads. `source` is exposed via the
+ * `X-Data-Source` header so ops can see which layer answered.
  */
 export async function getCoaches(): Promise<{
   data: CoachesPayload;
@@ -124,28 +127,9 @@ export async function getCoaches(): Promise<{
     }
   } catch (err) {
     console.error(
-      "[db-cache] load failed, trying thinkific/static fallback:",
+      "[db-cache] load failed, falling back to static JSON seed:",
       (err as Error).message,
     );
-  }
-
-  const hasThinkificCreds = env.thinkificApiKey && env.thinkificSubdomain;
-
-  if (hasThinkificCreds) {
-    try {
-      console.log("[thinkific] db cache empty, fetching live data...");
-      const thinkificData = await fetchCoachesFromThinkific();
-      await saveThinkificCache(thinkificData);
-      const data = await mergeCoachOverrides(thinkificData);
-      writeCache(data);
-      console.log(`[thinkific] cached ${data.totalCoaches} coaches`);
-      return { data, source: "thinkific" };
-    } catch (err) {
-      console.error(
-        "[thinkific] fetch failed, falling back to static JSON:",
-        (err as Error).message,
-      );
-    }
   }
 
   try {
@@ -161,9 +145,10 @@ export async function getCoaches(): Promise<{
 }
 
 /**
- * Force a live Thinkific fetch, persist to the db cache, and seed the
- * in-memory cache. Used by the admin /resync endpoint to bypass every
- * layer above Thinkific.
+ * Force a live Thinkific fetch, persist to the DB cache, and seed the
+ * in-memory cache. This is the only read-time path that contacts Thinkific,
+ * and it's invoked exclusively by explicit write triggers (admin /resync,
+ * future webhook) — never as an automatic fallback.
  */
 export async function resyncFromThinkific(): Promise<CoachesPayload> {
   const thinkificData = await fetchCoachesFromThinkific();

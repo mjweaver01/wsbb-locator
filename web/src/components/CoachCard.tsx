@@ -1,24 +1,13 @@
 import { useState } from "react";
 import { MapPin, Mail } from "lucide-react";
-import type { RawCoach } from "@/lib/types";
+import type { Coach } from "@/lib/types";
+import { LEVEL_LABEL, TIER_LABELS } from "@/lib/tiers";
 
 interface CoachCardProps {
-  coach: RawCoach;
+  coach: Coach;
   cardRef?: (el: HTMLElement | null) => void;
   includeAnchorId?: boolean;
 }
-
-const TIER_LABEL: Record<string, string> = {
-  master: "Master Instructor",
-  instructor: "Instructor",
-  certified: "Certified Coach",
-};
-
-const LEVEL_LABEL: Record<number, string> = {
-  1: "Level 1",
-  2: "Level 2",
-  3: "Level 3",
-};
 
 function getInitials(fullName: string): string {
   return fullName
@@ -72,7 +61,7 @@ export function CoachCard({
           <p className="coach-card__name">{fullName}</p>
           <span className={`tier-badge tier-badge--${tier}`}>
             <span className={`tier-badge__dot tier-badge__dot--${tier}`} />
-            {TIER_LABEL[tier]}
+            {TIER_LABELS[tier].badge}
           </span>
           {city && (
             <p className="coach-card__location">

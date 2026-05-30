@@ -1,5 +1,5 @@
 import { createHash, randomBytes, randomInt, timingSafeEqual } from "crypto";
-import { db } from "./db";
+import { getSqliteDb } from "./db";
 import { requirePgPool } from "./pg";
 import { ensureDbSchema, isPostgresDb } from "./schema";
 import { normalizeEmail } from "../normalize-email";
@@ -46,6 +46,7 @@ export async function createLoginCode(
     return code;
   }
 
+  const db = getSqliteDb();
   db.run(
     `INSERT INTO coach_login_codes (
       thinkific_user_id, email, code_hash, expires_at
@@ -97,6 +98,7 @@ export async function verifyAndConsumeLoginCode(
   }
 
   // Mirror Postgres ordering so "latest code wins" is deterministic in sqlite too.
+  const db = getSqliteDb();
   const row = db
     .query<
       { id: number; code_hash: string; expires_at: string },
@@ -146,6 +148,7 @@ export async function createCoachSession(
     return { token, expiresAt };
   }
 
+  const db = getSqliteDb();
   db.run(
     `INSERT INTO coach_sessions (thinkific_user_id, token_hash, expires_at)
      VALUES (?, ?, ?)`,
@@ -182,6 +185,7 @@ export async function getCoachSession(
     return { thinkificUserId: Number(row.thinkific_user_id) };
   }
 
+  const db = getSqliteDb();
   const row = db
     .query<CoachSessionRow, [string]>(
       `SELECT thinkific_user_id, expires_at
@@ -214,5 +218,6 @@ export async function deleteCoachSession(token: string): Promise<void> {
     );
     return;
   }
+  const db = getSqliteDb();
   db.run(`DELETE FROM coach_sessions WHERE token_hash = ?`, [tokenHash]);
 }

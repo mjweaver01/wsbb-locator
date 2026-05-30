@@ -8,9 +8,6 @@ import { getCoaches } from "./coaches-cache";
 import { normalizeEmail } from "./normalize-email";
 import type { MeResponse } from "@shared/coach";
 
-export type { MeResponse };
-export { normalizeEmail };
-
 // ---------------------------------------------------------------------------
 // Session cookie helpers
 // ---------------------------------------------------------------------------

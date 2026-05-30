@@ -72,7 +72,6 @@ export const env = {
   coachCacheTtlMs: readIntEnvWithDefault("COACH_CACHE_TTL_MS", 60 * 60 * 1000),
   coachDataDbPath:
     readEnv("COACH_DATA_DB_PATH") ??
-    readEnv("COACH_OVERRIDES_DB_PATH") ??
     `${import.meta.dir}/../../data/coach-data.sqlite`,
   databaseUrl: readEnv("DATABASE_URL"),
   coachUploadsDir:

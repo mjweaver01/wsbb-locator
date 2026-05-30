@@ -1,5 +1,5 @@
 import type { CoachEmailLink } from "@shared/coach";
-import { db } from "./db";
+import { getSqliteDb } from "./db";
 import { requirePgPool } from "./pg";
 import { ensureDbSchema, isPostgresDb } from "./schema";
 import { normalizeEmail } from "../normalize-email";
@@ -37,6 +37,7 @@ export async function listCoachEmailLinks(
     return result.rows.map(toCoachEmailLink);
   }
 
+  const db = getSqliteDb();
   const rows = db
     .query<CoachEmailLinkRow, [number]>(
       `SELECT thinkific_user_id, email, source, created_at
@@ -75,6 +76,7 @@ export async function upsertCoachEmailLink(
     return toCoachEmailLink(row);
   }
 
+  const db = getSqliteDb();
   db.run(
     `INSERT INTO coach_email_links (thinkific_user_id, email, source)
      VALUES (?, ?, ?)
@@ -114,6 +116,7 @@ export async function deleteCoachEmailLink(
     return (result.rowCount ?? 0) > 0;
   }
 
+  const db = getSqliteDb();
   const result = db.run(
     `DELETE FROM coach_email_links
      WHERE thinkific_user_id = ? AND email = ?`,
@@ -141,6 +144,7 @@ export async function findThinkificUserIdByLinkedEmail(
     return row ? Number(row.thinkific_user_id) : null;
   }
 
+  const db = getSqliteDb();
   const row = db
     .query<{ thinkific_user_id: number }, [string]>(
       `SELECT thinkific_user_id

@@ -1,10 +1,4 @@
-import type { CoachTier } from "@/lib/types";
-
-const TIERS: { tier: CoachTier; label: string }[] = [
-  { tier: "master", label: "Master Instructor" },
-  { tier: "instructor", label: "Instructor" },
-  { tier: "certified", label: "Certified Coach" },
-];
+import { TIER_LABELS, TIER_ORDER } from "@/lib/tiers";
 
 export function TierLegend() {
   return (
@@ -12,10 +6,10 @@ export function TierLegend() {
       <div className="tier-legend__inner">
         <span className="tier-legend__label">Tiers</span>
         <div className="tier-legend__items">
-          {TIERS.map(({ tier, label }) => (
+          {TIER_ORDER.map((tier) => (
             <span key={tier} className={`tier-badge tier-badge--${tier}`}>
               <span className={`tier-badge__dot tier-badge__dot--${tier}`} />
-              {label}
+              {TIER_LABELS[tier].badge}
             </span>
           ))}
         </div>

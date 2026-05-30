@@ -1,10 +1,6 @@
-import {
-  recalculateTierBreakdown,
-  type Coach,
-  type CoachesPayload,
-} from "../thinkific";
-import type { RawCertification } from "@shared/coach";
-import { db } from "./db";
+import type { Coach, CoachesPayload, RawCertification } from "@shared/coach";
+import { recalculateTierBreakdown } from "../thinkific";
+import { getSqliteDb } from "./db";
 import { requirePgPool } from "./pg";
 import { ensureDbSchema, isPostgresDb } from "./schema";
 
@@ -96,6 +92,7 @@ export async function saveThinkificCache(
     }
   }
 
+  const db = getSqliteDb();
   const write = db.transaction((data: CoachesPayload) => {
     db.run(`DELETE FROM thinkific_coaches_cache`);
     db.run(`DELETE FROM thinkific_cache_meta WHERE id = 1`);
@@ -183,6 +180,7 @@ export async function loadThinkificCache(): Promise<CoachesPayload | null> {
     };
   }
 
+  const db = getSqliteDb();
   const meta = db
     .query<
       ThinkificCacheMetaRow,

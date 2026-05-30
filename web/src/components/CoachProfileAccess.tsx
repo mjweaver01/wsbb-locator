@@ -1,17 +1,12 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import type { MeResponse } from "@/lib/types";
+import { apiUrl } from "@/lib/api";
 
 interface CoachProfileAccessProps {
-  apiBase: string;
   showIntro?: boolean;
 }
 
-function apiUrl(apiBase: string, path: string) {
-  return `${apiBase}${path}`;
-}
-
 export function CoachProfileAccess({
-  apiBase,
   showIntro = true,
 }: CoachProfileAccessProps) {
   const [avatarUploading, setAvatarUploading] = useState(false);
@@ -61,7 +56,7 @@ export function CoachProfileAccess({
   }, []);
 
   useEffect(() => {
-    fetch(apiUrl(apiBase, "/api/coach-auth/me"), { credentials: "include" })
+    fetch(apiUrl("/api/coach-auth/me"), { credentials: "include" })
       .then(async (response) => {
         if (response.status === 401) return null;
         if (!response.ok)
@@ -75,7 +70,7 @@ export function CoachProfileAccess({
       .catch(() => {
         // Unauthenticated is an expected initial state.
       });
-  }, [apiBase, hydrateProfile]);
+  }, [hydrateProfile]);
 
   async function requestCode(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -84,7 +79,7 @@ export function CoachProfileAccess({
     setRequestStatus(null);
 
     try {
-      const response = await fetch(apiUrl(apiBase, "/api/coach-auth/request"), {
+      const response = await fetch(apiUrl("/api/coach-auth/request"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -113,7 +108,7 @@ export function CoachProfileAccess({
     setError(null);
 
     try {
-      const response = await fetch(apiUrl(apiBase, "/api/coach-auth/verify"), {
+      const response = await fetch(apiUrl("/api/coach-auth/verify"), {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -142,7 +137,7 @@ export function CoachProfileAccess({
     setRequestStatus(null);
 
     try {
-      const response = await fetch(apiUrl(apiBase, "/api/coach-auth/me"), {
+      const response = await fetch(apiUrl("/api/coach-auth/me"), {
         method: "PUT",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -184,7 +179,7 @@ export function CoachProfileAccess({
       body.append("avatar", selectedAvatarFile);
 
       const uploadResponse = await fetch(
-        apiUrl(apiBase, "/api/coach-auth/me/avatar"),
+        apiUrl("/api/coach-auth/me/avatar"),
         {
           method: "POST",
           credentials: "include",
@@ -216,7 +211,7 @@ export function CoachProfileAccess({
     setLoading(true);
     setError(null);
     try {
-      await fetch(apiUrl(apiBase, "/api/coach-auth/logout"), {
+      await fetch(apiUrl("/api/coach-auth/logout"), {
         method: "POST",
         credentials: "include",
       });

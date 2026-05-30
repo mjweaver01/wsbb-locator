@@ -5,8 +5,8 @@ let instance: Database | null = null;
 
 /**
  * Lazy sqlite handle. Opening is deferred so PG-mode deploys never touch the
- * filesystem (no stray empty sqlite file). All sqlite call sites must go
- * through this — direct `new Database(...)` would re-introduce the eager-open.
+ * filesystem (no stray empty sqlite file). All sqlite call sites go through
+ * this — direct `new Database(...)` would re-introduce the eager-open.
  */
 export function getSqliteDb(): Database {
   if (!instance) {
@@ -20,18 +20,3 @@ export function getSqliteDb(): Database {
   }
   return instance;
 }
-
-/**
- * Back-compat shim so existing `import { db } from "./db"` call sites keep
- * working as a Proxy that lazily resolves the underlying Database. New code
- * should prefer `getSqliteDb()` for clarity.
- */
-export const db: Database = new Proxy({} as Database, {
-  get(_target, prop) {
-    const real = getSqliteDb();
-    const value = Reflect.get(real, prop);
-    // Methods on bun:sqlite's Database are native and rely on `this` being
-    // the real instance — rebind so callers using `db.run(...)` don't break.
-    return typeof value === "function" ? value.bind(real) : value;
-  },
-}) as Database;

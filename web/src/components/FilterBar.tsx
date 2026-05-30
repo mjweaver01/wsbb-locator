@@ -1,6 +1,7 @@
 import { Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { FilterState, TierFilter } from "@/lib/types";
+import { TIER_LABELS, TIER_ORDER } from "@/lib/tiers";
 
 interface FilterBarProps {
   filters: FilterState;
@@ -12,9 +13,7 @@ interface FilterBarProps {
 
 const TIER_BUTTONS: { value: TierFilter; label: string }[] = [
   { value: "all", label: "All" },
-  { value: "master", label: "Master" },
-  { value: "instructor", label: "Instructor" },
-  { value: "certified", label: "Certified" },
+  ...TIER_ORDER.map((tier) => ({ value: tier, label: TIER_LABELS[tier].short })),
 ];
 
 export function FilterBar({

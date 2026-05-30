@@ -2,26 +2,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type * as Leaflet from "leaflet";
 import { createRoot, type Root } from "react-dom/client";
 import { MapPin } from "lucide-react";
-import type { CoachTier, RawCoach } from "@/lib/types";
+import type { Coach, CoachTier } from "@/lib/types";
+import { TIER_COLORS, TIER_Z_INDEX } from "@/lib/tiers";
 import { CoachCard } from "./CoachCard";
 
 interface CoachMapProps {
-  coaches: RawCoach[];
+  coaches: Coach[];
   hasLocationHint?: boolean;
 }
-
-const TIER_COLORS: Record<string, string> = {
-  master: "#c8a96e",
-  instructor: "#c0bdb8",
-  certified: "#a8a49c",
-};
-
-// Higher tiers paint above lower ones when pins overlap.
-const TIER_Z_INDEX: Record<CoachTier, number> = {
-  certified: 0,
-  instructor: 100,
-  master: 200,
-};
 
 // Cache the leaflet module so we only pay the dynamic-import cost once,
 // not on every keystroke in the search box.
@@ -51,11 +39,11 @@ function makePinHtml(color: string): string {
 
 // Cache one icon per tier — every marker of the same tier shares one icon
 // instead of allocating a fresh L.DivIcon (and SVG markup) per pin.
-const iconCache = new Map<string, Leaflet.DivIcon>();
-function getIcon(L: typeof Leaflet, tier: string): Leaflet.DivIcon {
+const iconCache = new Map<CoachTier, Leaflet.DivIcon>();
+function getIcon(L: typeof Leaflet, tier: CoachTier): Leaflet.DivIcon {
   const cached = iconCache.get(tier);
   if (cached) return cached;
-  const color = TIER_COLORS[tier] ?? "#a8a49c";
+  const color = TIER_COLORS[tier];
   const icon = L.divIcon({
     className: "coach-map-pin-icon",
     html: makePinHtml(color),
@@ -67,9 +55,9 @@ function getIcon(L: typeof Leaflet, tier: string): Leaflet.DivIcon {
   return icon;
 }
 
-type LocatedCoach = RawCoach & { lat: number; lng: number };
+type LocatedCoach = Coach & { lat: number; lng: number };
 
-function hasLocation(c: RawCoach): c is LocatedCoach {
+function hasLocation(c: Coach): c is LocatedCoach {
   return typeof c.lat === "number" && typeof c.lng === "number";
 }
 

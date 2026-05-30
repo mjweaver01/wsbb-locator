@@ -22,10 +22,7 @@ import type {
   CoachTier,
   RawCertification,
 } from "@shared/coach";
-
-// Re-exported so existing `from "./thinkific"` type imports keep resolving
-// while the canonical definitions live in the shared package.
-export type { Coach, CoachesPayload, CoachTier, RawCertification };
+import { TIER_RANK } from "@shared/tiers";
 
 const BASE_URL = "https://api.thinkific.com/api/public/v1";
 const PAGE_LIMIT = 250;
@@ -188,12 +185,6 @@ export async function fetchCoachesFromThinkific(): Promise<CoachesPayload> {
     );
   }
 
-  const tierRank: Record<CoachTier, number> = {
-    certified: 1,
-    instructor: 2,
-    master: 3,
-  };
-
   const userMap = new Map<
     number,
     { tier: CoachTier; certifications: RawCertification[] }
@@ -216,7 +207,7 @@ export async function fetchCoachesFromThinkific(): Promise<CoachesPayload> {
       if (!existing) {
         userMap.set(enrollment.user_id, { tier, certifications: [cert] });
       } else {
-        if (tierRank[tier] > tierRank[existing.tier]) existing.tier = tier;
+        if (TIER_RANK[tier] > TIER_RANK[existing.tier]) existing.tier = tier;
         existing.certifications.push(cert);
       }
     }

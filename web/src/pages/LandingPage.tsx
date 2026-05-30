@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef, useDeferredValue } from "react";
 import "leaflet/dist/leaflet.css";
-import type { CoachesRawJson, FilterState, RawCoach } from "@/lib/types";
+import type { Coach, CoachesPayload, FilterState } from "@/lib/types";
+import { apiFetch } from "@/lib/api";
 import { HeroSection } from "@/components/HeroSection";
 import { TierLegend } from "@/components/TierLegend";
 import { CoachMap } from "@/components/CoachMap";
@@ -9,8 +10,6 @@ import { CoachGrid } from "@/components/CoachGrid";
 import { FooterCta } from "@/components/FooterCta";
 import { ErrorState, LoadingState } from "@/components/AppState";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "";
-const DATA_URL = `${API_BASE}/api/coaches`;
 const COACH_PATHWAY_URL =
   import.meta.env.VITE_COACH_PATHWAY_URL ??
   "https://www.westside-barbell.com/pages/conjugate-coach-certification";
@@ -21,29 +20,25 @@ function normalise(s: string) {
   return s.toLowerCase().trim();
 }
 
-function hasLocation(c: RawCoach) {
+function hasLocation(c: Coach) {
   return typeof c.lat === "number" && typeof c.lng === "number";
 }
 
 export function LandingPage() {
-  const [coaches, setCoaches] = useState<RawCoach[]>([]);
+  const [coaches, setCoaches] = useState<Coach[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const cardRefs = useRef<Map<number, HTMLElement>>(new Map());
 
   useEffect(() => {
-    fetch(DATA_URL)
-      .then((r) => {
-        if (!r.ok) throw new Error(`Failed to load coach data (${r.status})`);
-        return r.json() as Promise<CoachesRawJson>;
-      })
+    apiFetch<CoachesPayload>("/api/coaches")
       .then((data) => setCoaches(data.coaches))
       .catch((err) => setError((err as Error).message))
       .finally(() => setLoading(false));
   }, []);
 
-  const filtered = useMemo<RawCoach[]>(() => {
+  const filtered = useMemo<Coach[]>(() => {
     let result = coaches;
     if (filters.tier !== "all") {
       result = result.filter((c) => c.tier === filters.tier);
