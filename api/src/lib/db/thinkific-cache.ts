@@ -3,8 +3,9 @@ import {
   type Coach,
   type CoachesPayload,
 } from "../thinkific";
+import type { RawCertification } from "@shared/coach";
 import { db } from "./db";
-import { getPgPool } from "./pg";
+import { requirePgPool } from "./pg";
 import { ensureDbSchema, isPostgresDb } from "./schema";
 
 interface ThinkificCacheCoachRow {
@@ -28,13 +29,23 @@ interface ThinkificCacheMetaRow {
   subdomain: string;
 }
 
-const pgPool = getPgPool();
-
-function requirePgPool() {
-  if (!pgPool) {
-    throw new Error("Postgres pool unavailable in postgres mode.");
+/**
+ * Defensively parse the stored certifications JSON. A single corrupt row must
+ * not crash the entire coaches load, so a bad value degrades to an empty list.
+ */
+function parseCertifications(
+  json: string,
+  thinkificUserId: number | string,
+): RawCertification[] {
+  try {
+    const parsed = JSON.parse(json);
+    return Array.isArray(parsed) ? (parsed as RawCertification[]) : [];
+  } catch {
+    console.error(
+      `[thinkific-cache] corrupt certifications_json for coach ${thinkificUserId}; defaulting to []`,
+    );
+    return [];
   }
-  return pgPool;
 }
 
 export async function saveThinkificCache(
@@ -149,12 +160,18 @@ export async function loadThinkificCache(): Promise<CoachesPayload | null> {
       fullName: row.full_name,
       avatarUrl: row.avatar_url,
       bio: row.bio,
+      // `company` is only used during the live fetch (for geocoding) and isn't
+      // persisted in the cache table, so it's unknown when loading from cache.
+      company: null,
       tier: row.tier,
       ...(row.city !== null ? { city: row.city } : {}),
       ...(row.state !== null ? { state: row.state } : {}),
       ...(row.lat !== null ? { lat: row.lat } : {}),
       ...(row.lng !== null ? { lng: row.lng } : {}),
-      certifications: JSON.parse(row.certifications_json),
+      certifications: parseCertifications(
+        row.certifications_json,
+        row.thinkific_user_id,
+      ),
     }));
 
     return {
@@ -193,12 +210,16 @@ export async function loadThinkificCache(): Promise<CoachesPayload | null> {
     fullName: row.full_name,
     avatarUrl: row.avatar_url,
     bio: row.bio,
+    company: null,
     tier: row.tier,
     ...(row.city !== null ? { city: row.city } : {}),
     ...(row.state !== null ? { state: row.state } : {}),
     ...(row.lat !== null ? { lat: row.lat } : {}),
     ...(row.lng !== null ? { lng: row.lng } : {}),
-    certifications: JSON.parse(row.certifications_json),
+    certifications: parseCertifications(
+      row.certifications_json,
+      row.thinkific_user_id,
+    ),
   }));
 
   return {

@@ -1,16 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import type { RawCoach } from "@/lib/types";
-
-interface CoachEmailLink {
-  email: string;
-  source: string;
-  createdAt: string;
-}
-
-interface MeResponse {
-  coach: RawCoach;
-  emailLinks: CoachEmailLink[];
-}
+import type { MeResponse } from "@/lib/types";
 
 interface CoachProfileAccessProps {
   apiBase: string;

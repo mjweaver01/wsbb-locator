@@ -9,6 +9,13 @@ import { adminCoachesRoutes } from "./routes/admin-coaches";
 
 export const app = new Hono();
 
+// Centralized fallback so an unexpected throw (e.g. DB outage) returns a clean
+// 500 and is logged, rather than bubbling up as a misleading status elsewhere.
+app.onError((err, c) => {
+  console.error(`[api] unhandled error on ${c.req.method} ${c.req.path}:`, err);
+  return c.json({ error: "Internal server error" }, 500);
+});
+
 app.use(
   "*",
   secureHeaders({

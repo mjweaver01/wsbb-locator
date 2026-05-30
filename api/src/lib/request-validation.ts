@@ -1,11 +1,9 @@
+import { z } from "zod";
 import type { Context } from "hono";
 import type { CoachOverride } from "./db/overrides";
+import { normalizeEmail } from "./normalize-email";
 
 export type JsonRecord = Record<string, unknown>;
-
-function normalizeEmail(value: string): string {
-  return value.trim().toLowerCase();
-}
 
 function isJsonRecord(value: unknown): value is JsonRecord {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -57,9 +55,69 @@ export function readRequiredCodeField(
   return { code: raw };
 }
 
-function isFiniteNumber(value: unknown): value is number {
-  return typeof value === "number" && Number.isFinite(value);
+// ---------------------------------------------------------------------------
+// Coach override boundary schema
+// ---------------------------------------------------------------------------
+
+function isHttpUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:";
+  } catch {
+    return false;
+  }
 }
+
+// `null` is treated as "field not supplied" so it drops out of the result —
+// the override is written as a full row, so an absent field becomes NULL.
+const nullToUndefined = (value: unknown) => (value === null ? undefined : value);
+
+const trimmedString = (field: string) =>
+  z.preprocess(
+    nullToUndefined,
+    z.string({ error: `${field} must be a string` }).trim().optional(),
+  );
+
+const avatarUrlField = z.preprocess(
+  nullToUndefined,
+  z
+    .string({ error: "avatarUrl must be a string" })
+    .trim()
+    // Empty string clears the avatar; any non-empty value must be a real URL.
+    .refine((s) => s === "" || isHttpUrl(s), "avatarUrl must be an http(s) URL")
+    .optional(),
+);
+
+const latitudeField = z.preprocess(
+  nullToUndefined,
+  z
+    .number({ error: "lat must be a number" })
+    .refine(Number.isFinite, "lat must be a number")
+    .min(-90, "lat must be between -90 and 90")
+    .max(90, "lat must be between -90 and 90")
+    .optional(),
+);
+
+const longitudeField = z.preprocess(
+  nullToUndefined,
+  z
+    .number({ error: "lng must be a number" })
+    .refine(Number.isFinite, "lng must be a number")
+    .min(-180, "lng must be between -180 and 180")
+    .max(180, "lng must be between -180 and 180")
+    .optional(),
+);
+
+// Unknown keys (e.g. identity columns like email/tier) are stripped by
+// default, so they can never sneak into an override.
+const coachOverrideSchema = z.object({
+  bio: trimmedString("bio"),
+  avatarUrl: avatarUrlField,
+  city: trimmedString("city"),
+  state: trimmedString("state"),
+  lat: latitudeField,
+  lng: longitudeField,
+});
 
 /**
  * Validate and shape an incoming coach override body. Any field not present
@@ -70,61 +128,16 @@ export function parseCoachOverride(body: JsonRecord): {
   override?: CoachOverride;
   error?: string;
 } {
+  const result = coachOverrideSchema.safeParse(body);
+  if (!result.success) {
+    return { error: result.error.issues[0]?.message ?? "Invalid override" };
+  }
+
   const override: CoachOverride = {};
-
-  if (body.bio !== undefined && body.bio !== null) {
-    if (typeof body.bio !== "string") return { error: "bio must be a string" };
-    override.bio = body.bio.trim();
-  }
-
-  if (body.avatarUrl !== undefined && body.avatarUrl !== null) {
-    if (typeof body.avatarUrl !== "string") {
-      return { error: "avatarUrl must be a string" };
+  for (const [key, value] of Object.entries(result.data)) {
+    if (value !== undefined) {
+      (override as Record<string, unknown>)[key] = value;
     }
-    const trimmed = body.avatarUrl.trim();
-    if (trimmed !== "") {
-      try {
-        const url = new URL(trimmed);
-        if (url.protocol !== "https:" && url.protocol !== "http:") {
-          return { error: "avatarUrl must be an http(s) URL" };
-        }
-      } catch {
-        return { error: "avatarUrl must be a valid URL" };
-      }
-    }
-    // Store the trimmed (and thus validated) value, not the original.
-    override.avatarUrl = trimmed;
   }
-
-  if (body.city !== undefined && body.city !== null) {
-    if (typeof body.city !== "string") {
-      return { error: "city must be a string" };
-    }
-    override.city = body.city.trim();
-  }
-
-  if (body.state !== undefined && body.state !== null) {
-    if (typeof body.state !== "string") {
-      return { error: "state must be a string" };
-    }
-    override.state = body.state.trim();
-  }
-
-  if (body.lat !== undefined && body.lat !== null) {
-    if (!isFiniteNumber(body.lat)) return { error: "lat must be a number" };
-    if (body.lat < -90 || body.lat > 90) {
-      return { error: "lat must be between -90 and 90" };
-    }
-    override.lat = body.lat;
-  }
-
-  if (body.lng !== undefined && body.lng !== null) {
-    if (!isFiniteNumber(body.lng)) return { error: "lng must be a number" };
-    if (body.lng < -180 || body.lng > 180) {
-      return { error: "lng must be between -180 and 180" };
-    }
-    override.lng = body.lng;
-  }
-
   return { override };
 }

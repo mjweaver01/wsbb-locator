@@ -116,26 +116,32 @@ coachAuthRoutes.post("/api/coach-auth/verify", (c) =>
       );
     }
 
+    // An unknown email is an expected auth failure — return the same generic
+    // 401 as a bad code so we don't leak which emails are eligible. Any other
+    // error (DB down, etc.) must NOT be masked as 401; let it surface as a 500
+    // via the app error handler so real incidents are diagnosable.
+    let resolved: Awaited<ReturnType<typeof resolveCoachByEmail>>;
     try {
-      const resolved = await resolveCoachByEmail(email);
-      const ok = await verifyAndConsumeLoginCode(
-        resolved.thinkificUserId,
-        email,
-        code,
-      );
-      if (!ok) return c.json({ error: "Invalid or expired code" }, 401);
-
-      const session = await createCoachSession(
-        resolved.thinkificUserId,
-        env.coachSessionTtlDays,
-      );
-      setSessionCookie(c, session.token, session.expiresAt);
-
-      const me = await loadMeResponse(resolved.thinkificUserId);
-      return c.json({ ok: true, me });
+      resolved = await resolveCoachByEmail(email);
     } catch {
       return c.json({ error: "Invalid or expired code" }, 401);
     }
+
+    const ok = await verifyAndConsumeLoginCode(
+      resolved.thinkificUserId,
+      email,
+      code,
+    );
+    if (!ok) return c.json({ error: "Invalid or expired code" }, 401);
+
+    const session = await createCoachSession(
+      resolved.thinkificUserId,
+      env.coachSessionTtlDays,
+    );
+    setSessionCookie(c, session.token, session.expiresAt);
+
+    const me = await loadMeResponse(resolved.thinkificUserId);
+    return c.json({ ok: true, me });
   }),
 );
 

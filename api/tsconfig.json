@@ -7,7 +7,11 @@
     "noUncheckedIndexedAccess": true,
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
-    "types": ["bun-types"]
+    "types": ["bun-types"],
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["../shared/*"]
+    }
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "../shared/**/*.ts"]
 }

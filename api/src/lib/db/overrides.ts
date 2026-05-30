@@ -1,6 +1,6 @@
 import type { Coach } from "../thinkific";
 import { db } from "./db";
-import { getPgPool } from "./pg";
+import { requirePgPool } from "./pg";
 import { dbMode, ensureDbSchema, isPostgresDb } from "./schema";
 
 export type CoachOverride = Partial<
@@ -17,15 +17,7 @@ interface CoachOverrideRow {
   lng: number | null;
 }
 
-const pgPool = getPgPool();
 export const coachOverridesDbDriver = dbMode;
-
-function requirePgPool() {
-  if (!pgPool) {
-    throw new Error("Postgres pool unavailable in postgres mode.");
-  }
-  return pgPool;
-}
 
 function toOverride(row: CoachOverrideRow): CoachOverride {
   return {

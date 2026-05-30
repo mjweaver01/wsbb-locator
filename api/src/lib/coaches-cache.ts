@@ -68,11 +68,15 @@ function loadStaticFallback(): Promise<CoachesPayload> {
  * Apply local overrides to Thinkific data. Only fields in SAFE_OVERRIDE_KEYS
  * are merged in — identity columns (id/email/name/tier/certifications) always
  * come from Thinkific, even if a malformed override row contains them.
+ *
+ * `overrides` defaults to the persisted override map; callers (and tests) can
+ * inject one to merge against a known set without hitting the DB.
  */
 export async function mergeCoachOverrides(
   data: CoachesPayload,
+  overrides?: Record<string, CoachOverride>,
 ): Promise<CoachesPayload> {
-  const overridesById = await listCoachOverrides();
+  const overridesById = overrides ?? (await listCoachOverrides());
   const coaches = data.coaches.map((coach) => {
     const override = overridesById[String(coach.thinkificUserId)];
     if (!override) return coach;

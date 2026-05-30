@@ -1,32 +1,16 @@
+import type { CoachEmailLink } from "@shared/coach";
 import { db } from "./db";
-import { getPgPool } from "./pg";
+import { requirePgPool } from "./pg";
 import { ensureDbSchema, isPostgresDb } from "./schema";
+import { normalizeEmail } from "../normalize-email";
 
-export interface CoachEmailLink {
-  thinkificUserId: number;
-  email: string;
-  source: string;
-  createdAt: string;
-}
+export type { CoachEmailLink };
 
 interface CoachEmailLinkRow {
   thinkific_user_id: number | string;
   email: string;
   source: string;
   created_at: string;
-}
-
-const pgPool = getPgPool();
-
-function requirePgPool() {
-  if (!pgPool) {
-    throw new Error("Postgres pool unavailable in postgres mode.");
-  }
-  return pgPool;
-}
-
-function normalizeEmail(email: string): string {
-  return email.trim().toLowerCase();
 }
 
 function toCoachEmailLink(row: CoachEmailLinkRow): CoachEmailLink {

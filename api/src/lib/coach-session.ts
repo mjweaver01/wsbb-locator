@@ -5,16 +5,11 @@ import { getCoachSession } from "./db/auth";
 import { listCoachEmailLinks } from "./db/email-links";
 import { findThinkificUserIdByLinkedEmail } from "./db/email-links";
 import { getCoaches } from "./coaches-cache";
-import type { Coach } from "./thinkific";
+import { normalizeEmail } from "./normalize-email";
+import type { MeResponse } from "@shared/coach";
 
-export interface MeResponse {
-  coach: Coach;
-  emailLinks: Awaited<ReturnType<typeof listCoachEmailLinks>>;
-}
-
-export function normalizeEmail(value: string): string {
-  return value.trim().toLowerCase();
-}
+export type { MeResponse };
+export { normalizeEmail };
 
 // ---------------------------------------------------------------------------
 // Session cookie helpers

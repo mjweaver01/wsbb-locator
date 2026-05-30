@@ -1,4 +1,4 @@
-import { getPgPool } from "./pg";
+import { getPgPool, requirePgPool } from "./pg";
 import { getSqliteDb } from "./db";
 
 const pgPool = getPgPool();
@@ -149,7 +149,7 @@ export async function ensureDbSchema(): Promise<void> {
   if (isPostgresDb) {
     // Don't memoize a rejected promise — a transient PG hiccup during the
     // first startup query would otherwise wedge every later request.
-    schemaInitPromise = pgPool!
+    schemaInitPromise = requirePgPool()
       .query(POSTGRES_SCHEMA_SQL)
       .then(() => undefined)
       .catch((err) => {

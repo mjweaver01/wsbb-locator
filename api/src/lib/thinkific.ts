@@ -16,6 +16,16 @@
 
 import { env } from "./env";
 import { geocodeCompany } from "./geocode";
+import type {
+  Coach,
+  CoachesPayload,
+  CoachTier,
+  RawCertification,
+} from "@shared/coach";
+
+// Re-exported so existing `from "./thinkific"` type imports keep resolving
+// while the canonical definitions live in the shared package.
+export type { Coach, CoachesPayload, CoachTier, RawCertification };
 
 const BASE_URL = "https://api.thinkific.com/api/public/v1";
 const PAGE_LIMIT = 250;
@@ -29,45 +39,8 @@ export function recalculateTierBreakdown(
 }
 
 // ---------------------------------------------------------------------------
-// Types
+// Thinkific API wire types (internal to this client)
 // ---------------------------------------------------------------------------
-
-export type CoachTier = "certified" | "instructor" | "master";
-
-export interface RawCertification {
-  level: number;
-  courseId: number;
-  completedAt: string | null;
-}
-
-export interface Coach {
-  thinkificUserId: number;
-  email: string;
-  firstName: string;
-  lastName: string;
-  fullName: string;
-  avatarUrl: string | null;
-  bio: string | null;
-  company: string | null;
-  tier: CoachTier;
-  certifications: RawCertification[];
-  city?: string;
-  state?: string;
-  lat?: number;
-  lng?: number;
-  // How city/state/lat/lng were resolved. "company-geocode" means derived from
-  // the Thinkific company field — a best-effort guess a coach override can
-  // replace. Absent when location came from an override or isn't set.
-  locationSource?: "company-geocode";
-}
-
-export interface CoachesPayload {
-  fetchedAt: string;
-  subdomain: string;
-  totalCoaches: number;
-  tierBreakdown: { master: number; instructor: number; certified: number };
-  coaches: Coach[];
-}
 
 interface ThinkificUser {
   id: number;

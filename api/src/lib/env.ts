@@ -136,10 +136,11 @@ export const env = {
     "COACH_AUTH_VERIFY_RATE_LIMIT_WINDOW_MS",
     10 * 60 * 1000,
   ),
-  coachAuthDebugExposeCode: readBoolEnvWithDefault(
-    "COACH_AUTH_DEBUG_EXPOSE_CODE",
-    false,
-  ),
+  // Returns the login code in the JSON response for local testing. Hard-gated
+  // off in production so a stray env var can never leak codes in a real deploy.
+  coachAuthDebugExposeCode:
+    !isProduction &&
+    readBoolEnvWithDefault("COACH_AUTH_DEBUG_EXPOSE_CODE", false),
   corsAllowedOrigins: configuredCorsOrigins,
   corsEnforceAllowlist: readBoolEnvWithDefault(
     "CORS_ENFORCE_ALLOWLIST",

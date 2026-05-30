@@ -15,3 +15,16 @@ export function getPgPool(): Pool | null {
   }
   return pool;
 }
+
+/**
+ * Returns the Postgres pool, throwing if it's unavailable. Call sites in the
+ * DB layer use this only on the `isPostgresDb` branch, where the pool is
+ * guaranteed to exist.
+ */
+export function requirePgPool(): Pool {
+  const pool = getPgPool();
+  if (!pool) {
+    throw new Error("Postgres pool unavailable in postgres mode.");
+  }
+  return pool;
+}

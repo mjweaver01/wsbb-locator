@@ -1,28 +1,16 @@
 import { createHash, randomBytes, randomInt, timingSafeEqual } from "crypto";
 import { db } from "./db";
-import { getPgPool } from "./pg";
+import { requirePgPool } from "./pg";
 import { ensureDbSchema, isPostgresDb } from "./schema";
+import { normalizeEmail } from "../normalize-email";
 
 interface CoachSessionRow {
   thinkific_user_id: number | string;
   expires_at: string;
 }
 
-const pgPool = getPgPool();
-
-function requirePgPool() {
-  if (!pgPool) {
-    throw new Error("Postgres pool unavailable in postgres mode.");
-  }
-  return pgPool;
-}
-
 function hashString(value: string): string {
   return createHash("sha256").update(value).digest("hex");
-}
-
-function normalizeEmail(email: string): string {
-  return email.trim().toLowerCase();
 }
 
 function nowMs(): number {
