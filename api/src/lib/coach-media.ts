@@ -118,7 +118,7 @@ export async function readCoachMedia(
       );
       if (!output.Body) return null;
       const payload = await bodyToUint8Array(output.Body);
-      return new Response(payload, {
+      return new Response(new Uint8Array(payload), {
         headers: {
           "Content-Type": output.ContentType ?? "application/octet-stream",
           "Cache-Control":
