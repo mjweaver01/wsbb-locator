@@ -221,3 +221,55 @@ export async function deleteCoachSession(token: string): Promise<void> {
   const db = getSqliteDb();
   db.run(`DELETE FROM coach_sessions WHERE token_hash = ?`, [tokenHash]);
 }
+
+/**
+ * Delete auth rows that can never be used again: expired sessions, and login
+ * codes that are either expired or already consumed. Both reads already reject
+ * these rows at request time — this just stops them accumulating forever in a
+ * long-lived process. `expires_at` is always written as a UTC ISO-8601 string
+ * (see addMinutes/addDays), so the lexicographic sqlite comparison is sound.
+ */
+export async function purgeExpiredAuthRows(): Promise<void> {
+  await ensureDbSchema();
+  if (isPostgresDb) {
+    const pool = requirePgPool();
+    await pool.query(`DELETE FROM coach_sessions WHERE expires_at <= NOW()`);
+    await pool.query(
+      `DELETE FROM coach_login_codes WHERE expires_at <= NOW() OR used_at IS NOT NULL`,
+    );
+    return;
+  }
+
+  const nowIso = new Date(nowMs()).toISOString();
+  const db = getSqliteDb();
+  db.run(`DELETE FROM coach_sessions WHERE expires_at <= ?`, [nowIso]);
+  db.run(
+    `DELETE FROM coach_login_codes WHERE expires_at <= ? OR used_at IS NOT NULL`,
+    [nowIso],
+  );
+}
+
+/**
+ * Run {@link purgeExpiredAuthRows} on an interval. Mirrors the rate-limit
+ * sweeper: fire-and-forget, unref'd so it never keeps the process alive, and
+ * runs once immediately so a freshly started instance cleans up prior rows.
+ * Returns a stop handle.
+ */
+export function startAuthGcSweeper(intervalMs: number): () => void {
+  const run = () => {
+    purgeExpiredAuthRows().catch((err) => {
+      console.error("[auth-gc] purge failed:", (err as Error).message);
+    });
+  };
+
+  run();
+  const interval = setInterval(run, intervalMs);
+  if (
+    typeof interval === "object" &&
+    interval !== null &&
+    "unref" in interval
+  ) {
+    (interval as { unref: () => void }).unref();
+  }
+  return () => clearInterval(interval);
+}

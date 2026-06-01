@@ -300,7 +300,7 @@
   white-space: nowrap;
 }
 
-/* Controls row: search (grows) + bulk actions */
+/* Controls row: bulk actions + search (grows) */
 .admin-invite__controls {
   display: flex;
   align-items: center;

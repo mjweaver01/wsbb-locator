@@ -113,6 +113,13 @@ export const env = {
     72 * 60,
   ),
   coachSessionTtlDays: readIntEnvWithDefault("COACH_SESSION_TTL_DAYS", 30),
+  // How often to delete expired/consumed login codes and expired sessions.
+  // Cleanup is for storage hygiene only — reads already reject these rows — so
+  // an hour is plenty.
+  coachAuthGcIntervalMs: readIntEnvWithDefault(
+    "COACH_AUTH_GC_INTERVAL_MS",
+    60 * 60 * 1000,
+  ),
   coachAuthCookieName:
     readEnv("COACH_AUTH_COOKIE_NAME") ?? "wsbb_coach_session",
   coachAuthCookieSecure: readBoolEnvWithDefault(

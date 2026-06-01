@@ -4,6 +4,7 @@ import { ensureDbSchema } from "./lib/db/schema";
 import { coachOverridesDbDriver } from "./lib/db/overrides";
 import { coachMediaStorageMode } from "./lib/coach-media";
 import { startRateLimitSweeper } from "./lib/rate-limit";
+import { startAuthGcSweeper } from "./lib/db/auth";
 import { serveStaticSpa } from "./lib/static";
 import { getCoaches, STATIC_FALLBACK_PATH } from "./lib/coaches-cache";
 
@@ -24,6 +25,10 @@ startRateLimitSweeper(
     env.coachAuthVerifyRateLimitWindowMs,
   ),
 );
+
+// Drop expired/consumed login codes and expired sessions so they don't
+// accumulate in a long-lived process.
+startAuthGcSweeper(env.coachAuthGcIntervalMs);
 
 // Warm the cache so the first user-facing request is instant.
 getCoaches().catch((err) =>

@@ -182,13 +182,6 @@ export function AdminInvitePage() {
               </div>
 
               <div className="admin-invite__controls">
-                <input
-                  className="admin-invite__search"
-                  type="search"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search name or email…"
-                />
                 <div className="admin-invite__bulk">
                   <button
                     type="button"
@@ -206,6 +199,13 @@ export function AdminInvitePage() {
                     Clear
                   </button>
                 </div>
+                <input
+                  className="admin-invite__search"
+                  type="search"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search name or email…"
+                />
               </div>
 
               <ul className="admin-invite__list">

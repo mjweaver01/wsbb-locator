@@ -72,7 +72,7 @@ A coach is matched by either:
 
 ## Auth
 
-Email + one-time 6-digit code, hashed with SHA-256 before storage. Verified codes mint a 32-byte hex session token (also stored as a hash) and set an HttpOnly + SameSite=Lax cookie. Rate-limited per (IP, email) for both `request` and `verify`. The in-process rate-limit map is swept on the longest configured window.
+Email + one-time 6-digit code, hashed with SHA-256 before storage. Verified codes mint a 32-byte hex session token (also stored as a hash) and set an HttpOnly + SameSite=Lax cookie. Rate-limited per (IP, email) for both `request` and `verify`. The in-process rate-limit map is swept on the longest configured window. Expired/consumed login codes and expired sessions are purged on an interval (`COACH_AUTH_GC_INTERVAL_MS`, default 1h) so they don't accumulate in a long-lived process — reads already reject them, so this is storage hygiene only.
 
 > Single-instance only — see [Known gaps](#known-gaps) before scaling horizontally.
 
@@ -226,3 +226,4 @@ Worth expanding next: `isOriginAllowed` allowlist matrix, `serveStaticSpa` exten
 - Rate limiting is in-process — move to Redis (or similar) before running >1 API instance.
 - No scheduled Thinkific resync trigger; admin-triggered only.
 - Tests cover auth primitives and helpers but not the route layer.
+- Expired-auth-row GC is per-instance (each process sweeps the shared DB); harmless but redundant if you run multiple instances.
