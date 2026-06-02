@@ -30,6 +30,8 @@ export const adminCoachesRoutes = new Hono();
 
 adminCoachesRoutes.use("*", requireAdminApiKey);
 
+adminCoachesRoutes.get("/session", (c) => c.json({ ok: true }));
+
 adminCoachesRoutes.post("/refresh", async (c) => {
   invalidateCache();
   try {

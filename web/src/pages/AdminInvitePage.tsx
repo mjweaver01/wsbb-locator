@@ -1,10 +1,14 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import type { Coach, CoachesPayload } from "@/lib/types";
 import { apiFetch } from "@/lib/api";
 import { TIER_LABELS } from "@/lib/tiers";
 
 const ADMIN_KEY_STORAGE = "wsbb_admin_key";
+
+function readStoredAdminKey() {
+  return localStorage.getItem(ADMIN_KEY_STORAGE) ?? "";
+}
 
 interface InviteResult {
   email: string;
@@ -22,7 +26,9 @@ interface InviteResponse {
 }
 
 export function AdminInvitePage() {
-  const [apiKey, setApiKey] = useState("");
+  const storedKeyOnMount = useRef(readStoredAdminKey()).current;
+  const [apiKey, setApiKey] = useState(storedKeyOnMount);
+  const [isAuthenticated, setIsAuthenticated] = useState(!!storedKeyOnMount);
   const [coaches, setCoaches] = useState<Coach[]>([]);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [search, setSearch] = useState("");
@@ -32,35 +38,57 @@ export function AdminInvitePage() {
   const [status, setStatus] = useState<string | null>(null);
   const [result, setResult] = useState<InviteResponse | null>(null);
 
-  useEffect(() => {
-    const stored = sessionStorage.getItem(ADMIN_KEY_STORAGE);
-    if (stored) setApiKey(stored);
-  }, []);
+  const loadCoaches = useCallback(async (keyOverride?: string) => {
+    const key = (keyOverride ?? apiKey).trim();
+    if (!key) {
+      setError("Enter the admin API key first.");
+      return;
+    }
 
-  const persistKey = useCallback((value: string) => {
-    setApiKey(value);
-    if (value) sessionStorage.setItem(ADMIN_KEY_STORAGE, value);
-    else sessionStorage.removeItem(ADMIN_KEY_STORAGE);
-  }, []);
-
-  const loadCoaches = useCallback(async () => {
     setLoadingCoaches(true);
     setError(null);
     setStatus(null);
     setResult(null);
     try {
+      await apiFetch("/api/coaches/session", {
+        headers: { "x-admin-api-key": key },
+      });
       const data = await apiFetch<CoachesPayload>("/api/coaches");
       const list = (data.coaches ?? []).filter((c) => c.email);
       list.sort((a, b) => a.fullName.localeCompare(b.fullName));
       setCoaches(list);
       setSelected(new Set());
+      setApiKey(key);
+      localStorage.setItem(ADMIN_KEY_STORAGE, key);
+      setIsAuthenticated(true);
       setStatus(`Loaded ${list.length} coaches.`);
     } catch (err) {
+      localStorage.removeItem(ADMIN_KEY_STORAGE);
+      setIsAuthenticated(false);
       setError((err as Error).message);
     } finally {
       setLoadingCoaches(false);
     }
+  }, [apiKey]);
+
+  useEffect(() => {
+    if (!storedKeyOnMount) return;
+    void loadCoaches(storedKeyOnMount);
+    // Restore session once on mount when a key is remembered.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  function logout() {
+    localStorage.removeItem(ADMIN_KEY_STORAGE);
+    setApiKey("");
+    setIsAuthenticated(false);
+    setCoaches([]);
+    setSelected(new Set());
+    setSearch("");
+    setResult(null);
+    setStatus("Signed out.");
+    setError(null);
+  }
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -134,9 +162,20 @@ export function AdminInvitePage() {
     <main className="coach-access-page">
       <header className="coach-access-page-header">
         <div className="coach-access-page-header__inner">
-          <Link to="/" className="coach-access-page-header__back">
-            ← Back to directory
-          </Link>
+          <div className="admin-invite__header-top">
+            <Link to="/" className="coach-access-page-header__back">
+              ← Back to directory
+            </Link>
+            {isAuthenticated && (
+              <button
+                type="button"
+                className="coach-access-page-header__pill admin-invite__logout"
+                onClick={logout}
+              >
+                Sign out
+              </button>
+            )}
+          </div>
           <p className="coach-access-page-header__eyebrow">WSBB Admin</p>
           <h1 className="coach-access-page-header__title">Invite Coaches</h1>
           <p className="coach-access-page-header__sub">
@@ -148,29 +187,37 @@ export function AdminInvitePage() {
 
       <section className="coach-access">
         <div className="coach-access__inner admin-invite">
-          <div className="coach-access__panel">
-            <h3>Admin API key</h3>
-            <label>
-              Key
-              <input
-                type="password"
-                value={apiKey}
-                onChange={(e) => persistKey(e.target.value)}
-                placeholder="COACH_ADMIN_API_KEY"
-                autoComplete="off"
-              />
-            </label>
-            <p className="coach-access__hint">
-              Stored only in this browser tab for the session.
-            </p>
-            <button
-              type="button"
-              onClick={loadCoaches}
-              disabled={loadingCoaches}
+          {!isAuthenticated && (
+            <form
+              className="coach-access__panel"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void loadCoaches();
+              }}
             >
-              {loadingCoaches ? "Loading…" : "Load coaches"}
-            </button>
-          </div>
+              <h3>Admin API key</h3>
+              <label>
+                Key
+                <input
+                  type="password"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  placeholder="COACH_ADMIN_API_KEY"
+                  autoComplete="off"
+                />
+              </label>
+              <p className="coach-access__hint">
+                Saved in this browser after a successful load.
+              </p>
+              <button type="submit" disabled={loadingCoaches}>
+                {loadingCoaches ? "Loading…" : "Load coaches"}
+              </button>
+            </form>
+          )}
+
+          {isAuthenticated && loadingCoaches && coaches.length === 0 && (
+            <p className="coach-access__status">Loading coaches…</p>
+          )}
 
           {coaches.length > 0 && (
             <div className="coach-access__panel admin-invite__panel">
