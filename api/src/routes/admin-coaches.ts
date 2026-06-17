@@ -21,7 +21,7 @@ import { parseIntParam, withJsonBody } from "../lib/http";
 import {
   getCoaches,
   invalidateCache,
-  resyncFromThinkific,
+  startBackgroundResync,
 } from "../lib/coaches-cache";
 import { resolveCoachByEmail } from "../lib/coach-session";
 import { createLoginCode } from "../lib/db/auth";
@@ -43,7 +43,7 @@ adminCoachesRoutes.post("/refresh", async (c) => {
   }
 });
 
-adminCoachesRoutes.post("/resync", async (c) => {
+adminCoachesRoutes.post("/resync", (c) => {
   if (!env.thinkificApiKey || !env.thinkificSubdomain) {
     return c.json(
       {
@@ -53,17 +53,24 @@ adminCoachesRoutes.post("/resync", async (c) => {
       400,
     );
   }
-  try {
-    const data = await resyncFromThinkific();
-    return c.json({
-      resynced: true,
-      source: "thinkific",
-      totalCoaches: data.totalCoaches,
-      fetchedAt: data.fetchedAt,
-    });
-  } catch (err) {
-    return c.json({ error: (err as Error).message }, 503);
+  // A full Thinkific fetch outlasts typical HTTP/edge timeouts, so run it in the
+  // background and return immediately rather than holding the request open
+  // until it 502s. Poll the result via GET /api/coaches.
+  const started = startBackgroundResync();
+  if (!started) {
+    return c.json(
+      { started: false, message: "A resync is already in progress." },
+      409,
+    );
   }
+  return c.json(
+    {
+      started: true,
+      message:
+        "Resync started in the background; coaches will update when it completes.",
+    },
+    202,
+  );
 });
 
 interface InviteResult {

@@ -205,3 +205,36 @@ export async function resyncFromThinkific(): Promise<CoachesPayload> {
   writeCache(data);
   return data;
 }
+
+// A full Thinkific fetch can outlast an HTTP request timeout (e.g. Railway's
+// edge returns 502 before it finishes), so the admin endpoint kicks the resync
+// off in the background and returns immediately. The single-flight guard keeps
+// a double-click from running two overlapping fetches.
+let resyncInFlight = false;
+
+export function isResyncInFlight(): boolean {
+  return resyncInFlight;
+}
+
+/**
+ * Start a resync in the background if one isn't already running. Returns whether
+ * a new run was started. Completion/failure is logged; the in-memory + DB cache
+ * update when it finishes.
+ */
+export function startBackgroundResync(): boolean {
+  if (resyncInFlight) return false;
+  resyncInFlight = true;
+  void resyncFromThinkific()
+    .then((data) =>
+      console.log(
+        `[resync] completed: ${data.totalCoaches} coaches ${JSON.stringify(data.tierBreakdown)}`,
+      ),
+    )
+    .catch((err) =>
+      console.error("[resync] failed:", (err as Error).message),
+    )
+    .finally(() => {
+      resyncInFlight = false;
+    });
+  return true;
+}

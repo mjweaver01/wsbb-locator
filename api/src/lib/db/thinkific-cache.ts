@@ -5,6 +5,7 @@ import type {
   RawCertification,
 } from "@shared/coach";
 import { recalculateTierBreakdown } from "../thinkific";
+import { deriveTier } from "@shared/tiers";
 import { getSqliteDb } from "./db";
 import { requirePgPool } from "./pg";
 import { ensureDbSchema, isPostgresDb } from "./schema";
@@ -47,6 +48,35 @@ function parseCertifications(
     );
     return [];
   }
+}
+
+function rowToCoach(row: ThinkificCacheCoachRow): Coach {
+  const certifications = parseCertifications(
+    row.certifications_json,
+    row.thinkific_user_id,
+  );
+  return {
+    thinkificUserId: Number(row.thinkific_user_id),
+    email: row.email,
+    firstName: row.first_name,
+    lastName: row.last_name,
+    fullName: row.full_name,
+    avatarUrl: row.avatar_url,
+    bio: row.bio,
+    // `company` is only used during the live fetch (for geocoding) and isn't
+    // persisted in the cache table, so it's unknown when loading from cache.
+    company: null,
+    // Re-derive the tier from the certifications rather than trusting the
+    // stored value, so a cache written by older code (or before a tier-rule
+    // change) can never serve a stale tier. Master is layered on afterwards
+    // from admin grants in mergeCoachOverrides.
+    tier: deriveTier(certifications),
+    ...(row.city !== null ? { city: row.city } : {}),
+    ...(row.state !== null ? { state: row.state } : {}),
+    ...(row.lat !== null ? { lat: row.lat } : {}),
+    ...(row.lng !== null ? { lng: row.lng } : {}),
+    certifications,
+  };
 }
 
 export async function saveThinkificCache(
@@ -154,27 +184,7 @@ export async function loadThinkificCache(): Promise<CoachesPayload | null> {
        ORDER BY tier DESC, full_name ASC`,
     );
 
-    const coaches: Coach[] = rowsResult.rows.map((row) => ({
-      thinkificUserId: Number(row.thinkific_user_id),
-      email: row.email,
-      firstName: row.first_name,
-      lastName: row.last_name,
-      fullName: row.full_name,
-      avatarUrl: row.avatar_url,
-      bio: row.bio,
-      // `company` is only used during the live fetch (for geocoding) and isn't
-      // persisted in the cache table, so it's unknown when loading from cache.
-      company: null,
-      tier: row.tier,
-      ...(row.city !== null ? { city: row.city } : {}),
-      ...(row.state !== null ? { state: row.state } : {}),
-      ...(row.lat !== null ? { lat: row.lat } : {}),
-      ...(row.lng !== null ? { lng: row.lng } : {}),
-      certifications: parseCertifications(
-        row.certifications_json,
-        row.thinkific_user_id,
-      ),
-    }));
+    const coaches: Coach[] = rowsResult.rows.map(rowToCoach);
 
     return {
       fetchedAt: meta.fetched_at,
@@ -205,25 +215,7 @@ export async function loadThinkificCache(): Promise<CoachesPayload | null> {
     )
     .all();
 
-  const coaches: Coach[] = rows.map((row) => ({
-    thinkificUserId: Number(row.thinkific_user_id),
-    email: row.email,
-    firstName: row.first_name,
-    lastName: row.last_name,
-    fullName: row.full_name,
-    avatarUrl: row.avatar_url,
-    bio: row.bio,
-    company: null,
-    tier: row.tier,
-    ...(row.city !== null ? { city: row.city } : {}),
-    ...(row.state !== null ? { state: row.state } : {}),
-    ...(row.lat !== null ? { lat: row.lat } : {}),
-    ...(row.lng !== null ? { lng: row.lng } : {}),
-    certifications: parseCertifications(
-      row.certifications_json,
-      row.thinkific_user_id,
-    ),
-  }));
+  const coaches: Coach[] = rows.map(rowToCoach);
 
   return {
     fetchedAt: meta.fetched_at,
