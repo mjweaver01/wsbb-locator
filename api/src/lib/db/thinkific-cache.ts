@@ -1,4 +1,9 @@
-import type { Coach, CoachesPayload, RawCertification } from "@shared/coach";
+import type {
+  Coach,
+  CoachesPayload,
+  CoachTier,
+  RawCertification,
+} from "@shared/coach";
 import { recalculateTierBreakdown } from "../thinkific";
 import { getSqliteDb } from "./db";
 import { requirePgPool } from "./pg";
@@ -12,7 +17,7 @@ interface ThinkificCacheCoachRow {
   full_name: string;
   avatar_url: string | null;
   bio: string | null;
-  tier: "certified" | "instructor" | "master";
+  tier: CoachTier;
   city: string | null;
   state: string | null;
   lat: number | null;

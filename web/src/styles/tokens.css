@@ -21,12 +21,12 @@
   --radius-lg: 12px;
 
   --tier-master-color: #c8a96e;
-  --tier-instructor-color: #c0bdb8;
+  --tier-candidate-color: #c0bdb8;
   --tier-certified-color: #a8a49c;
   --tier-master-border: #3a2e1a;
   --tier-master-bg: #1c160a;
-  --tier-instructor-border: #2e2d2b;
-  --tier-instructor-bg: #161615;
+  --tier-candidate-border: #2e2d2b;
+  --tier-candidate-bg: #161615;
   --tier-certified-border: #282725;
   --tier-certified-bg: #141412;
   --map-surface: #0d0d0d;

@@ -20,29 +20,29 @@ export const TIER_LABELS: Record<CoachTier, TierLabels> = {
     section: "Master Instructors",
     short: "Master",
   },
-  instructor: {
-    badge: "Instructor",
-    section: "Instructors",
-    short: "Instructor",
-  },
   certified: {
     badge: "Certified Coach",
     section: "Certified Coaches",
     short: "Certified",
   },
+  candidate: {
+    badge: "Coach Candidate",
+    section: "Coach Candidates",
+    short: "Candidate",
+  },
 };
 
 export const TIER_COLORS: Record<CoachTier, string> = {
   master: "#c8a96e",
-  instructor: "#c0bdb8",
   certified: "#a8a49c",
+  candidate: "#c0bdb8",
 };
 
 // Higher tiers paint above lower ones when map pins overlap. Derived from the
 // shared precedence rank so there's a single source of truth for ordering.
 export const TIER_Z_INDEX: Record<CoachTier, number> = {
+  candidate: (TIER_RANK.candidate - 1) * 100,
   certified: (TIER_RANK.certified - 1) * 100,
-  instructor: (TIER_RANK.instructor - 1) * 100,
   master: (TIER_RANK.master - 1) * 100,
 };
 

@@ -37,5 +37,23 @@
     "lng": -73.9497211,
     "city": "New York",
     "state": "New York"
+  },
+  "addr:london, united kingdom": {
+    "lat": 51.5074456,
+    "lng": -0.1277653,
+    "city": "Greater London",
+    "state": "England"
+  },
+  "addr:watertown, new york": {
+    "lat": 43.9747838,
+    "lng": -75.9107565,
+    "city": "City of Watertown",
+    "state": "New York"
+  },
+  "addr:columbus, oh": {
+    "lat": 39.9622601,
+    "lng": -83.0007065,
+    "city": "Columbus",
+    "state": "Ohio"
   }
 }

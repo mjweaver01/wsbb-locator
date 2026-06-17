@@ -5,7 +5,10 @@ import { dbMode, ensureDbSchema, isPostgresDb } from "./schema";
 
 export type CoachOverride = Partial<
   Pick<Coach, "bio" | "avatarUrl" | "city" | "state" | "lat" | "lng">
->;
+> & {
+  /** Admin-granted Master Instructor status. Promotes the coach's tier. */
+  isMaster?: boolean;
+};
 
 interface CoachOverrideRow {
   thinkific_user_id: number;
@@ -15,7 +18,11 @@ interface CoachOverrideRow {
   state: string | null;
   lat: number | null;
   lng: number | null;
+  // SQLite stores 0/1; Postgres stores a boolean. Boolean() normalizes both.
+  is_master: number | boolean | null;
 }
+
+const OVERRIDE_COLUMNS = `thinkific_user_id, bio, avatar_url, city, state, lat, lng, is_master`;
 
 export const coachOverridesDbDriver = dbMode;
 
@@ -27,6 +34,7 @@ function toOverride(row: CoachOverrideRow): CoachOverride {
     ...(row.state !== null ? { state: row.state } : {}),
     ...(row.lat !== null ? { lat: row.lat } : {}),
     ...(row.lng !== null ? { lng: row.lng } : {}),
+    ...(row.is_master ? { isMaster: true } : {}),
   };
 }
 
@@ -36,7 +44,7 @@ export async function getCoachOverride(
   await ensureDbSchema();
   if (isPostgresDb) {
     const result = await requirePgPool().query<CoachOverrideRow>(
-      `SELECT thinkific_user_id, bio, avatar_url, city, state, lat, lng
+      `SELECT ${OVERRIDE_COLUMNS}
        FROM coach_overrides
        WHERE thinkific_user_id = $1`,
       [thinkificUserId],
@@ -48,7 +56,7 @@ export async function getCoachOverride(
   const db = getSqliteDb();
   const row = db
     .query<CoachOverrideRow, [number]>(
-      `SELECT thinkific_user_id, bio, avatar_url, city, state, lat, lng
+      `SELECT ${OVERRIDE_COLUMNS}
        FROM coach_overrides
        WHERE thinkific_user_id = ?`,
     )
@@ -63,8 +71,7 @@ export async function listCoachOverrides(): Promise<
   await ensureDbSchema();
   if (isPostgresDb) {
     const result = await requirePgPool().query<CoachOverrideRow>(
-      `SELECT thinkific_user_id, bio, avatar_url, city, state, lat, lng
-       FROM coach_overrides`,
+      `SELECT ${OVERRIDE_COLUMNS} FROM coach_overrides`,
     );
     const out: Record<string, CoachOverride> = {};
     for (const row of result.rows) {
@@ -76,8 +83,7 @@ export async function listCoachOverrides(): Promise<
   const db = getSqliteDb();
   const rows = db
     .query<CoachOverrideRow, []>(
-      `SELECT thinkific_user_id, bio, avatar_url, city, state, lat, lng
-       FROM coach_overrides`,
+      `SELECT ${OVERRIDE_COLUMNS} FROM coach_overrides`,
     )
     .all();
 
@@ -89,8 +95,10 @@ export async function listCoachOverrides(): Promise<
 }
 
 /**
- * Full-replace upsert. The override row mirrors exactly what was passed in —
- * any field not supplied becomes NULL in the row.
+ * Full-replace upsert of the self-serve profile fields. Any field not supplied
+ * becomes NULL in the row. `is_master` is deliberately left out of both the
+ * column list and the conflict update so an admin's Master grant survives a
+ * coach editing their own profile (and new rows default to non-master).
  */
 export async function upsertCoachOverride(
   thinkificUserId: number,
@@ -148,6 +156,38 @@ export async function upsertCoachOverride(
   );
 
   return override;
+}
+
+/**
+ * Grant or revoke admin-bestowed Master Instructor status for a coach. Touches
+ * only `is_master`, leaving any self-serve profile override fields intact.
+ */
+export async function setCoachMaster(
+  thinkificUserId: number,
+  isMaster: boolean,
+): Promise<void> {
+  await ensureDbSchema();
+  if (isPostgresDb) {
+    await requirePgPool().query(
+      `INSERT INTO coach_overrides (thinkific_user_id, is_master, updated_at)
+       VALUES ($1, $2, NOW())
+       ON CONFLICT(thinkific_user_id) DO UPDATE SET
+         is_master = EXCLUDED.is_master,
+         updated_at = NOW()`,
+      [thinkificUserId, isMaster],
+    );
+    return;
+  }
+
+  const db = getSqliteDb();
+  db.run(
+    `INSERT INTO coach_overrides (thinkific_user_id, is_master, updated_at)
+     VALUES (?, ?, CURRENT_TIMESTAMP)
+     ON CONFLICT(thinkific_user_id) DO UPDATE SET
+       is_master = excluded.is_master,
+       updated_at = CURRENT_TIMESTAMP`,
+    [thinkificUserId, isMaster ? 1 : 0],
+  );
 }
 
 export async function deleteCoachOverride(

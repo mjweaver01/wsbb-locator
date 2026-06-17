@@ -16,13 +16,8 @@
 
 import { env } from "./env";
 import { geocodeCompany } from "./geocode";
-import type {
-  Coach,
-  CoachesPayload,
-  CoachTier,
-  RawCertification,
-} from "@shared/coach";
-import { TIER_RANK } from "@shared/tiers";
+import type { Coach, CoachesPayload, RawCertification } from "@shared/coach";
+import { deriveTier } from "@shared/tiers";
 
 const BASE_URL = "https://api.thinkific.com/api/public/v1";
 const PAGE_LIMIT = 250;
@@ -30,7 +25,7 @@ const PAGE_LIMIT = 250;
 export function recalculateTierBreakdown(
   coaches: Coach[],
 ): CoachesPayload["tierBreakdown"] {
-  const breakdown = { master: 0, instructor: 0, certified: 0 };
+  const breakdown = { master: 0, certified: 0, candidate: 0 };
   for (const coach of coaches) breakdown[coach.tier] += 1;
   return breakdown;
 }
@@ -156,24 +151,11 @@ export async function fetchCoachesFromThinkific(): Promise<CoachesPayload> {
   const headers = makeHeaders(apiKey, subdomain);
 
   const pathwayCourses = [
-    env.thinkificLevel1Id && {
-      courseId: env.thinkificLevel1Id,
-      level: 1,
-      tier: "certified" as const,
-    },
-    env.thinkificLevel2Id && {
-      courseId: env.thinkificLevel2Id,
-      level: 2,
-      tier: "instructor" as const,
-    },
-    env.thinkificLevel3Id && {
-      courseId: env.thinkificLevel3Id,
-      level: 3,
-      tier: "master" as const,
-    },
+    env.thinkificLevel1Id && { courseId: env.thinkificLevel1Id, level: 1 },
+    env.thinkificLevel2Id && { courseId: env.thinkificLevel2Id, level: 2 },
+    env.thinkificLevel3Id && { courseId: env.thinkificLevel3Id, level: 3 },
   ].filter(
-    (course): course is { courseId: number; level: number; tier: CoachTier } =>
-      Boolean(course),
+    (course): course is { courseId: number; level: number } => Boolean(course),
   );
 
   if (pathwayCourses.length === 0) {
@@ -185,12 +167,9 @@ export async function fetchCoachesFromThinkific(): Promise<CoachesPayload> {
     );
   }
 
-  const userMap = new Map<
-    number,
-    { tier: CoachTier; certifications: RawCertification[] }
-  >();
+  const userMap = new Map<number, { certifications: RawCertification[] }>();
 
-  for (const { courseId, level, tier } of pathwayCourses) {
+  for (const { courseId, level } of pathwayCourses) {
     const enrollments = await fetchAllPages<ThinkificEnrollment>(
       "/enrollments",
       headers,
@@ -205,9 +184,8 @@ export async function fetchCoachesFromThinkific(): Promise<CoachesPayload> {
       };
       const existing = userMap.get(enrollment.user_id);
       if (!existing) {
-        userMap.set(enrollment.user_id, { tier, certifications: [cert] });
+        userMap.set(enrollment.user_id, { certifications: [cert] });
       } else {
-        if (TIER_RANK[tier] > TIER_RANK[existing.tier]) existing.tier = tier;
         existing.certifications.push(cert);
       }
     }
@@ -219,7 +197,7 @@ export async function fetchCoachesFromThinkific(): Promise<CoachesPayload> {
   for (let i = 0; i < userEntries.length; i++) {
     const entry = userEntries[i];
     if (!entry) continue;
-    const [userId, { tier, certifications }] = entry;
+    const [userId, { certifications }] = entry;
     try {
       const user = await thinkificGet<ThinkificUser>(
         `/users/${userId}`,
@@ -234,7 +212,8 @@ export async function fetchCoachesFromThinkific(): Promise<CoachesPayload> {
         avatarUrl: user.avatar_url,
         bio: user.bio,
         company: user.company || null,
-        tier,
+        // Earned tier only — Master is layered on later from admin grants.
+        tier: deriveTier(certifications),
         certifications: certifications.sort((a, b) => a.level - b.level),
       });
     } catch {

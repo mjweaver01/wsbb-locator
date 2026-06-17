@@ -3,6 +3,7 @@ import { env } from "../lib/env";
 import { requireAdminApiKey } from "../lib/admin-auth";
 import {
   deleteCoachOverride,
+  setCoachMaster,
   upsertCoachOverride,
 } from "../lib/db/overrides";
 import {
@@ -218,6 +219,22 @@ adminCoachesRoutes.put("/:thinkificUserId/override", (c) =>
     const saved = await upsertCoachOverride(id, parsed.override);
     invalidateCache();
     return c.json({ ok: true, thinkificUserId: id, override: saved });
+  }),
+);
+
+adminCoachesRoutes.put("/:thinkificUserId/master", (c) =>
+  withJsonBody(c, async (body) => {
+    const id = parseIntParam(c, "thinkificUserId");
+    if (id instanceof Response) return id;
+
+    const isMaster = body.isMaster;
+    if (typeof isMaster !== "boolean") {
+      return c.json({ error: "isMaster must be a boolean" }, 400);
+    }
+
+    await setCoachMaster(id, isMaster);
+    invalidateCache();
+    return c.json({ ok: true, thinkificUserId: id, isMaster });
   }),
 );
 

@@ -8,8 +8,8 @@ export function HeroSection() {
         Certified Coaches
       </h1>
       <p className="hero__subtitle">
-        Every coach listed here has completed the WSBB certification pathway.
-        Find a Master Instructor, Instructor, or Certified Coach near you.
+        A certified Conjugate Method Coach has completed all three WSBB pathway
+        levels. Find a Master Instructor or Certified Coach near you.
       </p>
     </header>
   );

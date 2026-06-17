@@ -58,7 +58,13 @@ function getIcon(L: typeof Leaflet, tier: CoachTier): Leaflet.DivIcon {
 type LocatedCoach = Coach & { lat: number; lng: number };
 
 function hasLocation(c: Coach): c is LocatedCoach {
-  return typeof c.lat === "number" && typeof c.lng === "number";
+  // Coach Candidates haven't completed the full pathway, so they're listed in
+  // the directory but never pinned on the map.
+  return (
+    c.tier !== "candidate" &&
+    typeof c.lat === "number" &&
+    typeof c.lng === "number"
+  );
 }
 
 export function CoachMap({ coaches, hasLocationHint = false }: CoachMapProps) {
@@ -68,6 +74,9 @@ export function CoachMap({ coaches, hasLocationHint = false }: CoachMapProps) {
   const [active, setActive] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
+  // Frame the map to the pins once, when they first appear, then leave the
+  // view alone so later filtering/searching doesn't keep snapping it around.
+  const didFitRef = useRef(false);
 
   const coachesWithLocation = useMemo(
     () => coaches.filter(hasLocation),
@@ -174,6 +183,17 @@ export function CoachMap({ coaches, hasLocationHint = false }: CoachMapProps) {
       // Defensive — if a parent layout shift changed our height, make sure
       // Leaflet recomputes its panes inside the wrapper.
       map.invalidateSize({ animate: false });
+
+      // First load: fit the view to the boundary of the visible pins instead
+      // of the default US framing. maxZoom keeps a lone pin from zooming to
+      // street level.
+      if (!didFitRef.current && sortedCoaches.length > 0) {
+        const bounds = L.latLngBounds(
+          sortedCoaches.map((c) => [c.lat, c.lng] as [number, number]),
+        );
+        map.fitBounds(bounds, { padding: [48, 48], maxZoom: 8, animate: false });
+        didFitRef.current = true;
+      }
     });
 
     return () => {

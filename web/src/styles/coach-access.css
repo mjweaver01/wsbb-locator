@@ -368,21 +368,28 @@
   background: var(--bg);
 }
 
+.admin-invite__row {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid var(--divider);
+}
+
+.admin-invite__list li:last-child.admin-invite__row {
+  border-bottom: none;
+}
+
 .admin-invite .admin-invite__item {
+  flex: 1;
+  min-width: 0;
   display: grid;
   grid-template-columns: 20px minmax(140px, auto) 1fr auto;
   align-items: center;
   gap: 14px;
   padding: 11px 14px;
-  border-bottom: 1px solid var(--divider);
   cursor: pointer;
   font-size: 13px;
   color: var(--text);
   transition: background 0.12s ease;
-}
-
-.admin-invite__list li:last-child .admin-invite__item {
-  border-bottom: none;
 }
 
 .admin-invite .admin-invite__item:hover {
@@ -433,16 +440,53 @@
   border-color: var(--tier-master-border);
 }
 
-.admin-invite__tier--instructor {
-  color: var(--tier-instructor-color);
-  background: var(--tier-instructor-bg);
-  border-color: var(--tier-instructor-border);
+.admin-invite__tier--candidate {
+  color: var(--tier-candidate-color);
+  background: var(--tier-candidate-bg);
+  border-color: var(--tier-candidate-border);
 }
 
 .admin-invite__tier--certified {
   color: var(--tier-certified-color);
   background: var(--tier-certified-bg);
   border-color: var(--tier-certified-border);
+}
+
+.admin-invite__master {
+  flex-shrink: 0;
+  align-self: center;
+  margin-right: 14px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color 0.12s ease,
+    border-color 0.12s ease,
+    background 0.12s ease;
+}
+
+.admin-invite__master:hover:not(:disabled) {
+  color: var(--tier-master-color);
+  border-color: var(--tier-master-border);
+}
+
+.admin-invite__master--on {
+  color: var(--tier-master-color);
+  background: var(--tier-master-bg);
+  border-color: var(--tier-master-border);
+}
+
+.admin-invite__master:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
 .admin-invite__empty {

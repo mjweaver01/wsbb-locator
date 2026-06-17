@@ -4,8 +4,10 @@ import {
   fetchCoachesFromThinkific,
   recalculateTierBreakdown,
 } from "./thinkific";
+import { deriveTier } from "@shared/tiers";
 import { env } from "./env";
 import { listCoachOverrides, type CoachOverride } from "./db/overrides";
+import { listManualCoaches } from "./db/manual-coaches";
 import {
   loadThinkificCache,
   saveThinkificCache,
@@ -59,14 +61,32 @@ export function getCacheStatus(): {
   };
 }
 
-function loadStaticFallback(): Promise<CoachesPayload> {
-  return Bun.file(STATIC_FALLBACK_PATH).json() as Promise<CoachesPayload>;
+async function loadStaticFallback(): Promise<CoachesPayload> {
+  const payload = (await Bun.file(
+    STATIC_FALLBACK_PATH,
+  ).json()) as CoachesPayload;
+  // The snapshot's baked tiers may predate the current pathway rules, so
+  // re-derive each coach's earned tier from their certifications. Master is
+  // applied afterwards from admin grants in mergeCoachOverrides.
+  const coaches = payload.coaches.map((coach) => ({
+    ...coach,
+    tier: deriveTier(coach.certifications),
+  }));
+  return {
+    ...payload,
+    coaches,
+    tierBreakdown: recalculateTierBreakdown(coaches),
+  };
 }
 
 /**
  * Apply local overrides to Thinkific data. Only fields in SAFE_OVERRIDE_KEYS
- * are merged in — identity columns (id/email/name/tier/certifications) always
- * come from Thinkific, even if a malformed override row contains them.
+ * are merged in — identity columns (id/email/name/certifications) always come
+ * from Thinkific, even if a malformed override row contains them.
+ *
+ * The one exception is `tier`: an admin `isMaster` grant promotes the coach to
+ * Master Instructor here. Master is honorary and never earned from courses, so
+ * it lives as a local grant layered over the Thinkific-derived tier.
  *
  * `overrides` defaults to the persisted override map; callers (and tests) can
  * inject one to merge against a known set without hitting the DB.
@@ -86,6 +106,7 @@ export async function mergeCoachOverrides(
         (merged as unknown as Record<string, unknown>)[key] = value;
       }
     }
+    if (override.isMaster) merged.tier = "master";
     return merged;
   });
 
@@ -95,6 +116,33 @@ export async function mergeCoachOverrides(
     totalCoaches: coaches.length,
     tierBreakdown: recalculateTierBreakdown(coaches),
   };
+}
+
+/**
+ * Append manually-added ("house") coaches that don't originate from Thinkific
+ * (see `db/manual-coaches.ts`) and recompute the totals. Manual coaches carry
+ * their own identity/tier/location, so they're added as-is after the Thinkific
+ * override merge.
+ */
+async function appendManualCoaches(
+  data: CoachesPayload,
+): Promise<CoachesPayload> {
+  const manual = await listManualCoaches();
+  if (manual.length === 0) return data;
+  const coaches = [...data.coaches, ...manual];
+  return {
+    ...data,
+    coaches,
+    totalCoaches: coaches.length,
+    tierBreakdown: recalculateTierBreakdown(coaches),
+  };
+}
+
+/** Merge local overrides and append manual coaches into a served payload. */
+async function buildServedPayload(
+  base: CoachesPayload,
+): Promise<CoachesPayload> {
+  return appendManualCoaches(await mergeCoachOverrides(base));
 }
 
 /**
@@ -118,7 +166,7 @@ export async function getCoaches(): Promise<{
   try {
     const cached = await loadThinkificCache();
     if (cached) {
-      const data = await mergeCoachOverrides(cached);
+      const data = await buildServedPayload(cached);
       writeCache(data);
       console.log(
         `[db-cache] loaded ${data.totalCoaches} coaches from thinkific cache table`,
@@ -133,7 +181,7 @@ export async function getCoaches(): Promise<{
   }
 
   try {
-    const data = await mergeCoachOverrides(await loadStaticFallback());
+    const data = await buildServedPayload(await loadStaticFallback());
     writeCache(data);
     console.log(
       `[static] loaded ${data.totalCoaches} coaches from coaches-raw.json`,
@@ -153,7 +201,7 @@ export async function getCoaches(): Promise<{
 export async function resyncFromThinkific(): Promise<CoachesPayload> {
   const thinkificData = await fetchCoachesFromThinkific();
   await saveThinkificCache(thinkificData);
-  const data = await mergeCoachOverrides(thinkificData);
+  const data = await buildServedPayload(thinkificData);
   writeCache(data);
   return data;
 }

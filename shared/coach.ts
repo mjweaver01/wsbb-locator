@@ -6,7 +6,15 @@
  * them; neither side should redefine them locally.
  */
 
-export type CoachTier = "certified" | "instructor" | "master";
+/**
+ * A coach's standing in the directory:
+ * - `candidate` — completed at least one pathway course but not the full set.
+ * - `certified` — completed every pathway level (Level 1, 2 and 3): a
+ *   certified Conjugate Method Coach.
+ * - `master` — Master Instructor. An honorary status granted by hand to a
+ *   select few via the admin tools (never earned automatically from courses).
+ */
+export type CoachTier = "candidate" | "certified" | "master";
 
 export interface RawCertification {
   level: number;
@@ -41,7 +49,7 @@ export interface CoachesPayload {
   fetchedAt: string;
   subdomain: string;
   totalCoaches: number;
-  tierBreakdown: { master: number; instructor: number; certified: number };
+  tierBreakdown: { master: number; certified: number; candidate: number };
   coaches: Coach[];
 }
 

@@ -17,6 +17,7 @@ const SQLITE_SCHEMA_SQL = `
     state TEXT,
     lat REAL,
     lng REAL,
+    is_master INTEGER NOT NULL DEFAULT 0,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
 
@@ -51,6 +52,23 @@ const SQLITE_SCHEMA_SQL = `
   CREATE INDEX IF NOT EXISTS idx_coach_email_links_thinkific_user_id
   ON coach_email_links(thinkific_user_id);
 
+  CREATE TABLE IF NOT EXISTS manual_coaches (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT NOT NULL UNIQUE COLLATE NOCASE,
+    first_name TEXT NOT NULL,
+    last_name TEXT NOT NULL,
+    avatar_url TEXT,
+    bio TEXT,
+    company TEXT,
+    tier TEXT NOT NULL,
+    city TEXT,
+    state TEXT,
+    lat REAL,
+    lng REAL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+
   CREATE TABLE IF NOT EXISTS thinkific_cache_meta (
     id INTEGER PRIMARY KEY CHECK (id = 1),
     fetched_at TEXT NOT NULL,
@@ -65,7 +83,7 @@ const SQLITE_SCHEMA_SQL = `
     full_name TEXT NOT NULL,
     avatar_url TEXT,
     bio TEXT,
-    tier TEXT NOT NULL CHECK (tier IN ('certified', 'instructor', 'master')),
+    tier TEXT NOT NULL,
     city TEXT,
     state TEXT,
     lat REAL,
@@ -83,6 +101,7 @@ const POSTGRES_SCHEMA_SQL = `
     state TEXT,
     lat DOUBLE PRECISION,
     lng DOUBLE PRECISION,
+    is_master BOOLEAN NOT NULL DEFAULT FALSE,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   );
 
@@ -120,6 +139,23 @@ const POSTGRES_SCHEMA_SQL = `
   CREATE INDEX IF NOT EXISTS idx_coach_email_links_thinkific_user_id
   ON coach_email_links(thinkific_user_id);
 
+  CREATE TABLE IF NOT EXISTS manual_coaches (
+    id BIGSERIAL PRIMARY KEY,
+    email TEXT NOT NULL UNIQUE,
+    first_name TEXT NOT NULL,
+    last_name TEXT NOT NULL,
+    avatar_url TEXT,
+    bio TEXT,
+    company TEXT,
+    tier TEXT NOT NULL,
+    city TEXT,
+    state TEXT,
+    lat DOUBLE PRECISION,
+    lng DOUBLE PRECISION,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  );
+
   CREATE TABLE IF NOT EXISTS thinkific_cache_meta (
     id INTEGER PRIMARY KEY CHECK (id = 1),
     fetched_at TIMESTAMPTZ NOT NULL,
@@ -134,7 +170,7 @@ const POSTGRES_SCHEMA_SQL = `
     full_name TEXT NOT NULL,
     avatar_url TEXT,
     bio TEXT,
-    tier TEXT NOT NULL CHECK (tier IN ('certified', 'instructor', 'master')),
+    tier TEXT NOT NULL,
     city TEXT,
     state TEXT,
     lat DOUBLE PRECISION,
@@ -142,6 +178,43 @@ const POSTGRES_SCHEMA_SQL = `
     certifications_json TEXT NOT NULL
   );
 `;
+
+// Idempotent migrations for databases created before a column/constraint
+// change. `CREATE TABLE IF NOT EXISTS` never alters an existing table, so
+// these bring older tables up to date.
+const POSTGRES_MIGRATIONS_SQL = `
+  ALTER TABLE coach_overrides
+    ADD COLUMN IF NOT EXISTS is_master BOOLEAN NOT NULL DEFAULT FALSE;
+  -- The tier CHECK constraint used to forbid the 'candidate' tier; drop it.
+  ALTER TABLE thinkific_coaches_cache
+    DROP CONSTRAINT IF EXISTS thinkific_coaches_cache_tier_check;
+`;
+
+function migrateSqlite(): void {
+  const db = getSqliteDb();
+
+  const overrideCols = db
+    .query<{ name: string }, []>(`PRAGMA table_info(coach_overrides)`)
+    .all();
+  if (!overrideCols.some((c) => c.name === "is_master")) {
+    db.run(
+      `ALTER TABLE coach_overrides ADD COLUMN is_master INTEGER NOT NULL DEFAULT 0`,
+    );
+  }
+
+  // The cache table once carried a tier CHECK that forbids 'candidate'.
+  // SQLite can't drop a CHECK in place, so recreate the (disposable) cache
+  // table when the old constraint is still present.
+  const cacheTable = db
+    .query<{ sql: string | null }, []>(
+      `SELECT sql FROM sqlite_master WHERE type='table' AND name='thinkific_coaches_cache'`,
+    )
+    .get();
+  if (cacheTable?.sql?.includes("CHECK")) {
+    db.run(`DROP TABLE thinkific_coaches_cache`);
+    db.exec(SQLITE_SCHEMA_SQL);
+  }
+}
 
 export async function ensureDbSchema(): Promise<void> {
   if (schemaInitPromise) return schemaInitPromise;
@@ -151,6 +224,7 @@ export async function ensureDbSchema(): Promise<void> {
     // first startup query would otherwise wedge every later request.
     schemaInitPromise = requirePgPool()
       .query(POSTGRES_SCHEMA_SQL)
+      .then(() => requirePgPool().query(POSTGRES_MIGRATIONS_SQL))
       .then(() => undefined)
       .catch((err) => {
         schemaInitPromise = null;
@@ -158,6 +232,7 @@ export async function ensureDbSchema(): Promise<void> {
       });
   } else {
     getSqliteDb().exec(SQLITE_SCHEMA_SQL);
+    migrateSqlite();
     schemaInitPromise = Promise.resolve();
   }
 

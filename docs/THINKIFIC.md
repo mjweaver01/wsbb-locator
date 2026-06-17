@@ -26,13 +26,30 @@ curl -s -H "Authorization: Bearer $TOKEN" \
 
 ## Tiers ↔ courses
 
-Each pathway level maps to one Thinkific course ID. A coach's tier is the **highest** level they've completed; all completions are kept in `certifications`.
+Each pathway level maps to one Thinkific course ID. All completions are kept in
+`certifications`, and the **earned tier is derived from the full set** (see
+`deriveTier` in `shared/tiers.ts`):
 
-| Env var | Level | Tier |
-| ------- | ----- | ---- |
-| `THINKIFIC_LEVEL1_ID` | 1 | `certified` |
-| `THINKIFIC_LEVEL2_ID` | 2 | `instructor` |
-| `THINKIFIC_LEVEL3_ID` | 3 | `master` |
+- **`certified`** ("Certified Conjugate Method Coach") — completed **all three**
+  levels (Level 1 **and** 2 **and** 3).
+- **`candidate`** ("Coach Candidate") — completed at least one level but not the
+  full set. Listed in the directory but **not pinned on the map**.
+
+| Env var | Level |
+| ------- | ----- |
+| `THINKIFIC_LEVEL1_ID` | 1 |
+| `THINKIFIC_LEVEL2_ID` | 2 |
+| `THINKIFIC_LEVEL3_ID` | 3 |
+
+### Master Instructor
+
+`master` is **not** earned from any course — it's an honorary status granted by
+hand to a select few. Admins toggle it per coach on the **Invite Coaches** admin
+page (the "Make Master" button), which calls
+`PUT /api/coaches/:thinkificUserId/master` with `{ "isMaster": true|false }`.
+The grant is stored as `is_master` on the `coach_overrides` row and layered over
+the Thinkific-derived tier at serve time, so it survives resyncs and a coach
+editing their own profile. There is no `THINKIFIC_MASTER_ID`.
 
 **Finding course IDs:** leave the three `*_ID` vars empty and run `bun run fetch`. The client lists every course (`id` + `name`) and throws, so you can copy the right IDs in.
 

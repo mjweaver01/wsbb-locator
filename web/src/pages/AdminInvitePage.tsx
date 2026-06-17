@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import type { Coach, CoachesPayload } from "@/lib/types";
 import { apiFetch } from "@/lib/api";
 import { TIER_LABELS } from "@/lib/tiers";
+import { deriveTier } from "@shared/tiers";
 
 const ADMIN_KEY_STORAGE = "wsbb_admin_key";
 
@@ -37,6 +38,7 @@ export function AdminInvitePage() {
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [result, setResult] = useState<InviteResponse | null>(null);
+  const [masterBusy, setMasterBusy] = useState<Set<number>>(new Set());
 
   const loadCoaches = useCallback(async (keyOverride?: string) => {
     const key = (keyOverride ?? apiKey).trim();
@@ -156,6 +158,50 @@ export function AdminInvitePage() {
     }
   }
 
+  async function toggleMaster(coach: Coach) {
+    const key = apiKey.trim();
+    if (!key) {
+      setError("Enter the admin API key first.");
+      return;
+    }
+    const isMaster = coach.tier !== "master";
+
+    setMasterBusy((prev) => new Set(prev).add(coach.thinkificUserId));
+    setError(null);
+    setStatus(null);
+    try {
+      await apiFetch(`/api/coaches/${coach.thinkificUserId}/master`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-api-key": key,
+        },
+        body: JSON.stringify({ isMaster }),
+      });
+      // Revoking returns the coach to their earned tier, derived from their
+      // completed certifications (mirrors the server-side rule).
+      const nextTier = isMaster ? "master" : deriveTier(coach.certifications);
+      setCoaches((prev) =>
+        prev.map((c) =>
+          c.thinkificUserId === coach.thinkificUserId
+            ? { ...c, tier: nextTier }
+            : c,
+        ),
+      );
+      setStatus(
+        `${coach.fullName} is ${isMaster ? "now a Master Instructor" : "no longer a Master Instructor"}.`,
+      );
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setMasterBusy((prev) => {
+        const next = new Set(prev);
+        next.delete(coach.thinkificUserId);
+        return next;
+      });
+    }
+  }
+
   const failedResults = result?.results.filter((r) => !r.ok) ?? [];
 
   return (
@@ -258,8 +304,10 @@ export function AdminInvitePage() {
               <ul className="admin-invite__list">
                 {filtered.map((coach) => {
                   const checked = selected.has(coach.thinkificUserId);
+                  const isMaster = coach.tier === "master";
+                  const busy = masterBusy.has(coach.thinkificUserId);
                   return (
-                    <li key={coach.thinkificUserId}>
+                    <li key={coach.thinkificUserId} className="admin-invite__row">
                       <label
                         className={`admin-invite__item${checked ? " admin-invite__item--checked" : ""}`}
                       >
@@ -280,6 +328,19 @@ export function AdminInvitePage() {
                           {TIER_LABELS[coach.tier].short}
                         </span>
                       </label>
+                      <button
+                        type="button"
+                        className={`admin-invite__master${isMaster ? " admin-invite__master--on" : ""}`}
+                        onClick={() => void toggleMaster(coach)}
+                        disabled={busy}
+                        title={
+                          isMaster
+                            ? "Revoke Master Instructor status"
+                            : "Grant Master Instructor status"
+                        }
+                      >
+                        {busy ? "…" : isMaster ? "★ Master" : "Make Master"}
+                      </button>
                     </li>
                   );
                 })}

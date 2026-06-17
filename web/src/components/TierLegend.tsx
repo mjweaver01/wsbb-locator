@@ -6,7 +6,9 @@ export function TierLegend() {
       <div className="tier-legend__inner">
         <span className="tier-legend__label">Tiers</span>
         <div className="tier-legend__items">
-          {TIER_ORDER.map((tier) => (
+          {/* Candidates are never pinned on the map, so they're left off the
+              map legend. */}
+          {TIER_ORDER.filter((tier) => tier !== "candidate").map((tier) => (
             <span key={tier} className={`tier-badge tier-badge--${tier}`}>
               <span className={`tier-badge__dot tier-badge__dot--${tier}`} />
               {TIER_LABELS[tier].badge}
