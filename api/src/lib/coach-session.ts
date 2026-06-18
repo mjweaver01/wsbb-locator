@@ -12,6 +12,28 @@ import type { MeResponse } from "@shared/coach";
 // Session cookie helpers
 // ---------------------------------------------------------------------------
 
+// The SPA is embedded as a cross-site iframe (Shopify is the top-level site),
+// so the session cookie is "third-party". A SameSite=Lax cookie is neither sent
+// nor stored in that context, which breaks save/upload after login. Over HTTPS
+// we therefore use SameSite=None + Secure, plus Partitioned (CHIPS) so it still
+// works in browsers that block third-party cookies by default.
+//
+// SameSite=None *requires* Secure, which isn't available over plain-HTTP local
+// dev — so when the cookie isn't secure we fall back to Lax (dev runs the app
+// first-party at localhost, where Lax is fine).
+function sessionCookieBaseOptions() {
+  return env.coachAuthCookieSecure
+    ? {
+        sameSite: "None" as const,
+        secure: true,
+        partitioned: true,
+      }
+    : {
+        sameSite: "Lax" as const,
+        secure: false,
+      };
+}
+
 export function setSessionCookie(
   c: Context,
   token: string,
@@ -24,16 +46,15 @@ export function setSessionCookie(
   setCookie(c, env.coachAuthCookieName, token, {
     path: "/",
     httpOnly: true,
-    sameSite: "Lax",
     maxAge: maxAgeSeconds,
-    secure: env.coachAuthCookieSecure,
+    ...sessionCookieBaseOptions(),
   });
 }
 
 export function clearSessionCookie(c: Context): void {
   deleteCookie(c, env.coachAuthCookieName, {
     path: "/",
-    secure: env.coachAuthCookieSecure,
+    ...sessionCookieBaseOptions(),
   });
 }
 
