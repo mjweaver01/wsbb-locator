@@ -11,10 +11,11 @@
  * - `candidate` — completed at least one pathway course but not the full set.
  * - `certified` — completed every pathway level (Level 1, 2 and 3): a
  *   certified Conjugate Method Coach.
- * - `master` — Master Instructor. An honorary status granted by hand to a
- *   select few via the admin tools (never earned automatically from courses).
+ * - `instructor` — Instructor. Admin-granted only; sits above certified coaches.
+ * - `master` — Master Instructor. Admin-granted only; sits above instructors.
+ * - `founder` — Pathway Founder. Admin-granted only; the top tier.
  */
-export type CoachTier = "candidate" | "certified" | "master";
+export type CoachTier = "candidate" | "certified" | "instructor" | "master" | "founder";
 
 export interface RawCertification {
   level: number;
@@ -49,7 +50,7 @@ export interface CoachesPayload {
   fetchedAt: string;
   subdomain: string;
   totalCoaches: number;
-  tierBreakdown: { master: number; certified: number; candidate: number };
+  tierBreakdown: { founder: number; master: number; instructor: number; certified: number; candidate: number };
   coaches: Coach[];
 }
 

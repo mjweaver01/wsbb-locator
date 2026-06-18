@@ -1,6 +1,6 @@
 import { Search } from "lucide-react";
 import { Link } from "react-router-dom";
-import type { FilterState, TierFilter } from "@/lib/types";
+import type { CoachTier, FilterState, TierFilter } from "@/lib/types";
 import { TIER_LABELS, TIER_ORDER } from "@/lib/tiers";
 
 interface FilterBarProps {
@@ -9,15 +9,8 @@ interface FilterBarProps {
   visibleCount: number;
   totalCount: number;
   level1Url: string;
+  presentTiers: Set<CoachTier>;
 }
-
-const TIER_BUTTONS: { value: TierFilter; label: string }[] = [
-  { value: "all", label: "All" },
-  ...TIER_ORDER.map((tier) => ({
-    value: tier,
-    label: TIER_LABELS[tier].short,
-  })),
-];
 
 export function FilterBar({
   filters,
@@ -25,7 +18,16 @@ export function FilterBar({
   visibleCount,
   totalCount,
   level1Url,
+  presentTiers,
 }: FilterBarProps) {
+  const tierButtons: { value: TierFilter; label: string }[] = [
+    { value: "all", label: "All" },
+    ...TIER_ORDER.filter((tier) => presentTiers.has(tier)).map((tier) => ({
+      value: tier as TierFilter,
+      label: TIER_LABELS[tier].short,
+    })),
+  ];
+
   return (
     <nav className="filter-bar" aria-label="Coach filters">
       <div className="filter-bar__inner">
@@ -34,7 +36,7 @@ export function FilterBar({
           role="group"
           aria-label="Filter by tier"
         >
-          {TIER_BUTTONS.map(({ value, label }) => {
+          {tierButtons.map(({ value, label }) => {
             const isActive = filters.tier === value;
             const nextTier: TierFilter =
               value === "all" ? "all" : isActive ? "all" : value;

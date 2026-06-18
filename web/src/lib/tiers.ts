@@ -15,10 +15,20 @@ interface TierLabels {
 }
 
 export const TIER_LABELS: Record<CoachTier, TierLabels> = {
+  founder: {
+    badge: "Pathway Founder",
+    section: "Pathway Founders",
+    short: "Founder",
+  },
   master: {
     badge: "Master Instructor",
     section: "Master Instructors",
     short: "Master",
+  },
+  instructor: {
+    badge: "Instructor",
+    section: "Instructors",
+    short: "Instructor",
   },
   certified: {
     badge: "Certified Coach",
@@ -33,7 +43,9 @@ export const TIER_LABELS: Record<CoachTier, TierLabels> = {
 };
 
 export const TIER_COLORS: Record<CoachTier, string> = {
+  founder: "#d4a017",
   master: "#c8a96e",
+  instructor: "#c8c6c2",
   certified: "#a8a49c",
   candidate: "#c0bdb8",
 };
@@ -43,7 +55,9 @@ export const TIER_COLORS: Record<CoachTier, string> = {
 export const TIER_Z_INDEX: Record<CoachTier, number> = {
   candidate: (TIER_RANK.candidate - 1) * 100,
   certified: (TIER_RANK.certified - 1) * 100,
+  instructor: (TIER_RANK.instructor - 1) * 100,
   master: (TIER_RANK.master - 1) * 100,
+  founder: (TIER_RANK.founder - 1) * 100,
 };
 
 export const LEVEL_LABEL: Record<number, string> = {

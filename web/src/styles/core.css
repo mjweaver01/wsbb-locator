@@ -84,22 +84,34 @@
   white-space: nowrap;
 }
 
+.tier-badge--founder {
+  color: var(--tier-founder-color);
+  border-color: var(--tier-founder-border);
+  background: var(--tier-founder-bg);
+}
+
 .tier-badge--master {
   color: var(--tier-master-color);
   border-color: var(--tier-master-border);
   background: var(--tier-master-bg);
 }
 
-.tier-badge--candidate {
-  color: var(--tier-candidate-color);
-  border-color: var(--tier-candidate-border);
-  background: var(--tier-candidate-bg);
+.tier-badge--instructor {
+  color: var(--tier-instructor-color);
+  border-color: var(--tier-instructor-border);
+  background: var(--tier-instructor-bg);
 }
 
 .tier-badge--certified {
   color: var(--tier-certified-color);
   border-color: var(--tier-certified-border);
   background: var(--tier-certified-bg);
+}
+
+.tier-badge--candidate {
+  color: var(--tier-candidate-color);
+  border-color: var(--tier-candidate-border);
+  background: var(--tier-candidate-bg);
 }
 
 .tier-badge__dot {
@@ -109,14 +121,20 @@
   flex-shrink: 0;
 }
 
+.tier-badge__dot--founder {
+  background: var(--tier-founder-color);
+}
 .tier-badge__dot--master {
   background: var(--tier-master-color);
 }
-.tier-badge__dot--candidate {
-  background: var(--tier-candidate-color);
+.tier-badge__dot--instructor {
+  background: var(--tier-instructor-color);
 }
 .tier-badge__dot--certified {
   background: var(--tier-certified-color);
+}
+.tier-badge__dot--candidate {
+  background: var(--tier-candidate-color);
 }
 
 /* ── Coach Map ───────────────────────────────────────── */
@@ -439,17 +457,25 @@
   color: var(--text);
 }
 
+.filter-btn--founder.filter-btn--active {
+  color: var(--tier-founder-color);
+  border-color: var(--tier-founder-border);
+}
 .filter-btn--master.filter-btn--active {
   color: var(--tier-master-color);
   border-color: var(--tier-master-border);
 }
-.filter-btn--candidate.filter-btn--active {
-  color: var(--tier-candidate-color);
-  border-color: var(--tier-candidate-border);
+.filter-btn--instructor.filter-btn--active {
+  color: var(--tier-instructor-color);
+  border-color: var(--tier-instructor-border);
 }
 .filter-btn--certified.filter-btn--active {
   color: var(--tier-certified-color);
   border-color: var(--tier-certified-border);
+}
+.filter-btn--candidate.filter-btn--active {
+  color: var(--tier-candidate-color);
+  border-color: var(--tier-candidate-border);
 }
 
 .filter-bar__divider {
@@ -661,14 +687,20 @@
   transform: translateY(-1px);
 }
 
+.coach-card--founder {
+  border-top: 2px solid var(--tier-founder-border);
+}
 .coach-card--master {
   border-top: 2px solid var(--tier-master-border);
 }
-.coach-card--candidate {
-  border-top: 2px solid var(--tier-candidate-border);
+.coach-card--instructor {
+  border-top: 2px solid var(--tier-instructor-border);
 }
 .coach-card--certified {
   border-top: 2px solid var(--tier-certified-border);
+}
+.coach-card--candidate {
+  border-top: 2px solid var(--tier-candidate-border);
 }
 
 .coach-card__header {
@@ -701,22 +733,34 @@
   border: 2px solid var(--card-border);
 }
 
+.coach-avatar--initials-founder {
+  background: var(--tier-founder-bg);
+  color: var(--tier-founder-color);
+  border-color: var(--tier-founder-border);
+}
+
 .coach-avatar--initials-master {
   background: var(--tier-master-bg);
   color: var(--tier-master-color);
   border-color: var(--tier-master-border);
 }
 
-.coach-avatar--initials-candidate {
-  background: var(--tier-candidate-bg);
-  color: var(--tier-candidate-color);
-  border-color: var(--tier-candidate-border);
+.coach-avatar--initials-instructor {
+  background: var(--tier-instructor-bg);
+  color: var(--tier-instructor-color);
+  border-color: var(--tier-instructor-border);
 }
 
 .coach-avatar--initials-certified {
   background: var(--tier-certified-bg);
   color: var(--tier-certified-color);
   border-color: var(--tier-certified-border);
+}
+
+.coach-avatar--initials-candidate {
+  background: var(--tier-candidate-bg);
+  color: var(--tier-candidate-color);
+  border-color: var(--tier-candidate-border);
 }
 
 .coach-card__identity {

@@ -6,7 +6,9 @@ import type { CoachTier, RawCertification } from "./coach";
 
 /** Display order, highest tier first (directory sections, legend, map z-order). */
 export const TIER_ORDER: readonly CoachTier[] = [
+  "founder",
   "master",
+  "instructor",
   "certified",
   "candidate",
 ];
@@ -19,7 +21,9 @@ export const TIER_ORDER: readonly CoachTier[] = [
 export const TIER_RANK: Record<CoachTier, number> = {
   candidate: 1,
   certified: 2,
-  master: 3,
+  instructor: 3,
+  master: 4,
+  founder: 5,
 };
 
 /**
@@ -32,12 +36,13 @@ export const REQUIRED_CERT_LEVELS: readonly number[] = [1, 2, 3];
  * Derive a coach's *earned* tier from their completed certifications. Returns
  * `certified` only when every required level is present; otherwise `candidate`.
  *
- * Note: `master` is never derived here — it's an honorary status granted by
- * admins on top of the earned tier (see `mergeCoachOverrides`).
+ * Note: `founder`, `master`, and `instructor` are never derived here — they are
+ * honorary statuses granted by admins on top of the earned tier (see
+ * `mergeCoachOverrides`).
  */
 export function deriveTier(
   certifications: readonly RawCertification[],
-): Exclude<CoachTier, "master"> {
+): Exclude<CoachTier, "founder" | "master" | "instructor"> {
   const completedLevels = new Set(certifications.map((c) => c.level));
   const isCertified = REQUIRED_CERT_LEVELS.every((level) =>
     completedLevels.has(level),

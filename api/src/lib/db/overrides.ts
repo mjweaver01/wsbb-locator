@@ -1,4 +1,4 @@
-import type { Coach } from "@shared/coach";
+import type { Coach, CoachTier } from "@shared/coach";
 import { getSqliteDb } from "./db";
 import { requirePgPool } from "./pg";
 import { dbMode, ensureDbSchema, isPostgresDb } from "./schema";
@@ -6,9 +6,14 @@ import { dbMode, ensureDbSchema, isPostgresDb } from "./schema";
 export type CoachOverride = Partial<
   Pick<Coach, "bio" | "avatarUrl" | "city" | "state" | "lat" | "lng">
 > & {
-  /** Admin-granted Master Instructor status. Promotes the coach's tier. */
+  /** Admin-granted tier flag — only one of these should be true at a time. */
   isMaster?: boolean;
+  isInstructor?: boolean;
+  isFounder?: boolean;
 };
+
+/** Admin-grantable tiers (exclusive — only one can be active per coach). */
+export type AdminTier = Extract<CoachTier, "founder" | "master" | "instructor">;
 
 interface CoachOverrideRow {
   thinkific_user_id: number;
@@ -20,9 +25,11 @@ interface CoachOverrideRow {
   lng: number | null;
   // SQLite stores 0/1; Postgres stores a boolean. Boolean() normalizes both.
   is_master: number | boolean | null;
+  is_instructor: number | boolean | null;
+  is_founder: number | boolean | null;
 }
 
-const OVERRIDE_COLUMNS = `thinkific_user_id, bio, avatar_url, city, state, lat, lng, is_master`;
+const OVERRIDE_COLUMNS = `thinkific_user_id, bio, avatar_url, city, state, lat, lng, is_master, is_instructor, is_founder`;
 
 export const coachOverridesDbDriver = dbMode;
 
@@ -35,6 +42,8 @@ function toOverride(row: CoachOverrideRow): CoachOverride {
     ...(row.lat !== null ? { lat: row.lat } : {}),
     ...(row.lng !== null ? { lng: row.lng } : {}),
     ...(row.is_master ? { isMaster: true } : {}),
+    ...(row.is_instructor ? { isInstructor: true } : {}),
+    ...(row.is_founder ? { isFounder: true } : {}),
   };
 }
 
@@ -159,36 +168,47 @@ export async function upsertCoachOverride(
 }
 
 /**
- * Grant or revoke admin-bestowed Master Instructor status for a coach. Touches
- * only `is_master`, leaving any self-serve profile override fields intact.
+ * Grant or revoke an admin-bestowed tier (founder, master, instructor). Only
+ * one admin tier can be active per coach — setting any one clears the others.
+ * Pass `null` to strip all admin-granted tiers. Touches only the tier flags,
+ * leaving self-serve profile override fields intact.
  */
-export async function setCoachMaster(
+export async function setAdminTier(
   thinkificUserId: number,
-  isMaster: boolean,
+  tier: AdminTier | null,
 ): Promise<void> {
   await ensureDbSchema();
+  const isFounder = tier === "founder";
+  const isMaster = tier === "master";
+  const isInstructor = tier === "instructor";
+
   if (isPostgresDb) {
     await requirePgPool().query(
-      `INSERT INTO coach_overrides (thinkific_user_id, is_master, updated_at)
-       VALUES ($1, $2, NOW())
+      `INSERT INTO coach_overrides (thinkific_user_id, is_founder, is_master, is_instructor, updated_at)
+       VALUES ($1, $2, $3, $4, NOW())
        ON CONFLICT(thinkific_user_id) DO UPDATE SET
+         is_founder = EXCLUDED.is_founder,
          is_master = EXCLUDED.is_master,
+         is_instructor = EXCLUDED.is_instructor,
          updated_at = NOW()`,
-      [thinkificUserId, isMaster],
+      [thinkificUserId, isFounder, isMaster, isInstructor],
     );
     return;
   }
 
   const db = getSqliteDb();
   db.run(
-    `INSERT INTO coach_overrides (thinkific_user_id, is_master, updated_at)
-     VALUES (?, ?, CURRENT_TIMESTAMP)
+    `INSERT INTO coach_overrides (thinkific_user_id, is_founder, is_master, is_instructor, updated_at)
+     VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
      ON CONFLICT(thinkific_user_id) DO UPDATE SET
+       is_founder = excluded.is_founder,
        is_master = excluded.is_master,
+       is_instructor = excluded.is_instructor,
        updated_at = CURRENT_TIMESTAMP`,
-    [thinkificUserId, isMaster ? 1 : 0],
+    [thinkificUserId, isFounder ? 1 : 0, isMaster ? 1 : 0, isInstructor ? 1 : 0],
   );
 }
+
 
 export async function deleteCoachOverride(
   thinkificUserId: number,

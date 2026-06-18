@@ -25,7 +25,7 @@ const PAGE_LIMIT = 250;
 export function recalculateTierBreakdown(
   coaches: Coach[],
 ): CoachesPayload["tierBreakdown"] {
-  const breakdown = { master: 0, certified: 0, candidate: 0 };
+  const breakdown = { founder: 0, master: 0, instructor: 0, certified: 0, candidate: 0 };
   for (const coach of coaches) breakdown[coach.tier] += 1;
   return breakdown;
 }

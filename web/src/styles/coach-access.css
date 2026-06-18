@@ -434,22 +434,34 @@
   white-space: nowrap;
 }
 
+.admin-invite__tier--founder {
+  color: var(--tier-founder-color);
+  background: var(--tier-founder-bg);
+  border-color: var(--tier-founder-border);
+}
+
 .admin-invite__tier--master {
   color: var(--tier-master-color);
   background: var(--tier-master-bg);
   border-color: var(--tier-master-border);
 }
 
-.admin-invite__tier--candidate {
-  color: var(--tier-candidate-color);
-  background: var(--tier-candidate-bg);
-  border-color: var(--tier-candidate-border);
+.admin-invite__tier--instructor {
+  color: var(--tier-instructor-color);
+  background: var(--tier-instructor-bg);
+  border-color: var(--tier-instructor-border);
 }
 
 .admin-invite__tier--certified {
   color: var(--tier-certified-color);
   background: var(--tier-certified-bg);
   border-color: var(--tier-certified-border);
+}
+
+.admin-invite__tier--candidate {
+  color: var(--tier-candidate-color);
+  background: var(--tier-candidate-bg);
+  border-color: var(--tier-candidate-border);
 }
 
 .admin-invite__master {

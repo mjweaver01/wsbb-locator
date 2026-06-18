@@ -1,9 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import type { Coach, CoachesPayload } from "@/lib/types";
+import type { Coach, CoachesPayload, CoachTier } from "@/lib/types";
 import { apiFetch } from "@/lib/api";
 import { TIER_LABELS } from "@/lib/tiers";
 import { deriveTier } from "@shared/tiers";
+
+type AdminTier = "founder" | "master" | "instructor";
+const ADMIN_TIER_OPTIONS: { value: AdminTier | ""; label: string }[] = [
+  { value: "", label: "None" },
+  { value: "founder", label: "Pathway Founder" },
+  { value: "master", label: "Master Instructor" },
+  { value: "instructor", label: "Instructor" },
+];
 
 const ADMIN_KEY_STORAGE = "wsbb_admin_key";
 
@@ -38,7 +46,7 @@ export function AdminInvitePage() {
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [result, setResult] = useState<InviteResponse | null>(null);
-  const [masterBusy, setMasterBusy] = useState<Set<number>>(new Set());
+  const [tierBusy, setTierBusy] = useState<Set<number>>(new Set());
 
   const loadCoaches = useCallback(async (keyOverride?: string) => {
     const key = (keyOverride ?? apiKey).trim();
@@ -158,29 +166,27 @@ export function AdminInvitePage() {
     }
   }
 
-  async function toggleMaster(coach: Coach) {
+  async function setAdminTier(coach: Coach, tier: AdminTier | "") {
     const key = apiKey.trim();
     if (!key) {
       setError("Enter the admin API key first.");
       return;
     }
-    const isMaster = coach.tier !== "master";
 
-    setMasterBusy((prev) => new Set(prev).add(coach.thinkificUserId));
+    setTierBusy((prev) => new Set(prev).add(coach.thinkificUserId));
     setError(null);
     setStatus(null);
     try {
-      await apiFetch(`/api/coaches/${coach.thinkificUserId}/master`, {
+      await apiFetch(`/api/coaches/${coach.thinkificUserId}/tier`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           "x-admin-api-key": key,
         },
-        body: JSON.stringify({ isMaster }),
+        body: JSON.stringify({ tier: tier || null }),
       });
-      // Revoking returns the coach to their earned tier, derived from their
-      // completed certifications (mirrors the server-side rule).
-      const nextTier = isMaster ? "master" : deriveTier(coach.certifications);
+      const nextTier: CoachTier =
+        tier || deriveTier(coach.certifications);
       setCoaches((prev) =>
         prev.map((c) =>
           c.thinkificUserId === coach.thinkificUserId
@@ -188,13 +194,12 @@ export function AdminInvitePage() {
             : c,
         ),
       );
-      setStatus(
-        `${coach.fullName} is ${isMaster ? "now a Master Instructor" : "no longer a Master Instructor"}.`,
-      );
+      const label = tier ? TIER_LABELS[tier].badge : "no admin tier";
+      setStatus(`${coach.fullName} is now: ${label}.`);
     } catch (err) {
       setError((err as Error).message);
     } finally {
-      setMasterBusy((prev) => {
+      setTierBusy((prev) => {
         const next = new Set(prev);
         next.delete(coach.thinkificUserId);
         return next;
@@ -304,8 +309,12 @@ export function AdminInvitePage() {
               <ul className="admin-invite__list">
                 {filtered.map((coach) => {
                   const checked = selected.has(coach.thinkificUserId);
-                  const isMaster = coach.tier === "master";
-                  const busy = masterBusy.has(coach.thinkificUserId);
+                  const busy = tierBusy.has(coach.thinkificUserId);
+                  const adminTier = (["founder", "master", "instructor"] as AdminTier[]).includes(
+                    coach.tier as AdminTier,
+                  )
+                    ? (coach.tier as AdminTier)
+                    : "";
                   return (
                     <li key={coach.thinkificUserId} className="admin-invite__row">
                       <label
@@ -328,19 +337,21 @@ export function AdminInvitePage() {
                           {TIER_LABELS[coach.tier].short}
                         </span>
                       </label>
-                      <button
-                        type="button"
-                        className={`admin-invite__master${isMaster ? " admin-invite__master--on" : ""}`}
-                        onClick={() => void toggleMaster(coach)}
+                      <select
+                        className="admin-invite__tier-select"
+                        value={adminTier}
                         disabled={busy}
-                        title={
-                          isMaster
-                            ? "Revoke Master Instructor status"
-                            : "Grant Master Instructor status"
+                        onChange={(e) =>
+                          void setAdminTier(coach, e.target.value as AdminTier | "")
                         }
+                        title="Grant or revoke an admin-bestowed tier"
                       >
-                        {busy ? "…" : isMaster ? "★ Master" : "Make Master"}
-                      </button>
+                        {ADMIN_TIER_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {busy ? "…" : opt.label}
+                          </option>
+                        ))}
+                      </select>
                     </li>
                   );
                 })}

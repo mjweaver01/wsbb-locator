@@ -8,7 +8,7 @@ function makePayload(): CoachesPayload {
     fetchedAt: "2026-01-01T00:00:00.000Z",
     subdomain: "westside-barbell",
     totalCoaches: 2,
-    tierBreakdown: { master: 1, certified: 1, candidate: 0 },
+    tierBreakdown: { founder: 0, master: 1, instructor: 0, certified: 1, candidate: 0 },
     coaches: [
       {
         thinkificUserId: 1,
@@ -67,7 +67,9 @@ describe("mergeCoachOverrides", () => {
 
     expect(merged.totalCoaches).toBe(2);
     expect(merged.tierBreakdown).toEqual({
+      founder: 0,
       master: 1,
+      instructor: 0,
       certified: 1,
       candidate: 0,
     });
@@ -83,7 +85,9 @@ describe("mergeCoachOverrides", () => {
 
     expect(coach.tier).toBe("master");
     expect(merged.tierBreakdown).toEqual({
+      founder: 0,
       master: 2,
+      instructor: 0,
       certified: 0,
       candidate: 0,
     });

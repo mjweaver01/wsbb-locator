@@ -18,6 +18,8 @@ export const SQLITE_SCHEMA_SQL = `
     lat REAL,
     lng REAL,
     is_master INTEGER NOT NULL DEFAULT 0,
+    is_instructor INTEGER NOT NULL DEFAULT 0,
+    is_founder INTEGER NOT NULL DEFAULT 0,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
 
@@ -102,6 +104,8 @@ const POSTGRES_SCHEMA_SQL = `
     lat DOUBLE PRECISION,
     lng DOUBLE PRECISION,
     is_master BOOLEAN NOT NULL DEFAULT FALSE,
+    is_instructor BOOLEAN NOT NULL DEFAULT FALSE,
+    is_founder BOOLEAN NOT NULL DEFAULT FALSE,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   );
 
@@ -185,6 +189,10 @@ const POSTGRES_SCHEMA_SQL = `
 const POSTGRES_MIGRATIONS_SQL = `
   ALTER TABLE coach_overrides
     ADD COLUMN IF NOT EXISTS is_master BOOLEAN NOT NULL DEFAULT FALSE;
+  ALTER TABLE coach_overrides
+    ADD COLUMN IF NOT EXISTS is_instructor BOOLEAN NOT NULL DEFAULT FALSE;
+  ALTER TABLE coach_overrides
+    ADD COLUMN IF NOT EXISTS is_founder BOOLEAN NOT NULL DEFAULT FALSE;
   -- The tier CHECK constraint used to forbid the 'candidate' tier; drop it.
   ALTER TABLE thinkific_coaches_cache
     DROP CONSTRAINT IF EXISTS thinkific_coaches_cache_tier_check;
@@ -199,6 +207,16 @@ function migrateSqlite(): void {
   if (!overrideCols.some((c) => c.name === "is_master")) {
     db.run(
       `ALTER TABLE coach_overrides ADD COLUMN is_master INTEGER NOT NULL DEFAULT 0`,
+    );
+  }
+  if (!overrideCols.some((c) => c.name === "is_instructor")) {
+    db.run(
+      `ALTER TABLE coach_overrides ADD COLUMN is_instructor INTEGER NOT NULL DEFAULT 0`,
+    );
+  }
+  if (!overrideCols.some((c) => c.name === "is_founder")) {
+    db.run(
+      `ALTER TABLE coach_overrides ADD COLUMN is_founder INTEGER NOT NULL DEFAULT 0`,
     );
   }
 

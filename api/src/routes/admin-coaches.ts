@@ -3,8 +3,9 @@ import { env } from "../lib/env";
 import { requireAdminApiKey } from "../lib/admin-auth";
 import {
   deleteCoachOverride,
-  setCoachMaster,
+  setAdminTier,
   upsertCoachOverride,
+  type AdminTier,
 } from "../lib/db/overrides";
 import {
   deleteCoachEmailLink,
@@ -229,19 +230,24 @@ adminCoachesRoutes.put("/:thinkificUserId/override", (c) =>
   }),
 );
 
-adminCoachesRoutes.put("/:thinkificUserId/master", (c) =>
+const ADMIN_TIERS = new Set<AdminTier>(["founder", "master", "instructor"]);
+
+adminCoachesRoutes.put("/:thinkificUserId/tier", (c) =>
   withJsonBody(c, async (body) => {
     const id = parseIntParam(c, "thinkificUserId");
     if (id instanceof Response) return id;
 
-    const isMaster = body.isMaster;
-    if (typeof isMaster !== "boolean") {
-      return c.json({ error: "isMaster must be a boolean" }, 400);
+    const { tier } = body;
+    if (tier !== null && (typeof tier !== "string" || !ADMIN_TIERS.has(tier as AdminTier))) {
+      return c.json(
+        { error: "tier must be 'founder', 'master', 'instructor', or null" },
+        400,
+      );
     }
 
-    await setCoachMaster(id, isMaster);
+    await setAdminTier(id, tier as AdminTier | null);
     invalidateCache();
-    return c.json({ ok: true, thinkificUserId: id, isMaster });
+    return c.json({ ok: true, thinkificUserId: id, tier: tier ?? null });
   }),
 );
 

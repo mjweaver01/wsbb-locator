@@ -38,6 +38,11 @@ export function LandingPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  const presentTiers = useMemo(
+    () => new Set(coaches.map((c) => c.tier)),
+    [coaches],
+  );
+
   const filtered = useMemo<Coach[]>(() => {
     let result = coaches;
     if (filters.tier !== "all") {
@@ -77,6 +82,7 @@ export function LandingPage() {
         visibleCount={filtered.length}
         totalCount={coaches.length}
         level1Url={COACH_PATHWAY_URL}
+        presentTiers={presentTiers}
       />
       <CoachGrid
         coaches={filtered}

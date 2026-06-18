@@ -106,7 +106,9 @@ export async function mergeCoachOverrides(
         (merged as unknown as Record<string, unknown>)[key] = value;
       }
     }
-    if (override.isMaster) merged.tier = "master";
+    if (override.isFounder) merged.tier = "founder";
+    else if (override.isMaster) merged.tier = "master";
+    else if (override.isInstructor) merged.tier = "instructor";
     return merged;
   });
 

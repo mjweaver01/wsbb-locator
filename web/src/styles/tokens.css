@@ -20,15 +20,21 @@
   --radius-md: 8px;
   --radius-lg: 12px;
 
+  --tier-founder-color: #d4a017;
+  --tier-founder-border: #3d2c08;
+  --tier-founder-bg: #1a1208;
   --tier-master-color: #c8a96e;
-  --tier-candidate-color: #c0bdb8;
-  --tier-certified-color: #a8a49c;
   --tier-master-border: #3a2e1a;
   --tier-master-bg: #1c160a;
-  --tier-candidate-border: #2e2d2b;
-  --tier-candidate-bg: #161615;
+  --tier-instructor-color: #c8c6c2;
+  --tier-instructor-border: #2e2d2c;
+  --tier-instructor-bg: #151515;
+  --tier-certified-color: #a8a49c;
   --tier-certified-border: #282725;
   --tier-certified-bg: #141412;
+  --tier-candidate-color: #c0bdb8;
+  --tier-candidate-border: #2e2d2b;
+  --tier-candidate-bg: #161615;
   --map-surface: #0d0d0d;
   --overlay-scrim: rgba(10, 10, 10, 0.75);
   --overlay-attribution-bg: rgba(10, 10, 10, 0.92);
