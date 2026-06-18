@@ -11,7 +11,8 @@ interface CoachCardProps {
 
 function getInitials(fullName: string): string {
   return fullName
-    .split(" ")
+    .trim()
+    .split(/\s+/)
     .slice(0, 2)
     .map((n) => n[0])
     .join("")
