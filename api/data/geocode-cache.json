@@ -56,5 +56,16 @@
     "city": "Columbus",
     "state": "Ohio"
   },
-  "tier one performance": null
+  "tier one performance": null,
+  "addr:lilburn, ga": {
+    "lat": 33.8901036,
+    "lng": -84.1429719,
+    "city": "Lilburn",
+    "state": "Georgia"
+  },
+  "addr:veneto, italy": {
+    "lat": 45.6476663,
+    "lng": 11.8665254,
+    "state": "Veneto"
+  }
 }
