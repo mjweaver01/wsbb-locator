@@ -1,20 +1,29 @@
-import { StrictMode } from "react";
+import { StrictMode, useEffect } from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import "./index.css";
 import { LandingPage } from "./pages/LandingPage";
 import { CoachAccessPage } from "./pages/CoachAccessPage";
 import { AdminInvitePage } from "./pages/AdminInvitePage";
 import { NotFoundPage } from "./pages/NotFoundPage";
-import { initEmbedAutoResize } from "./lib/embed";
+import { initEmbedAutoResize, postScrollToTop } from "./lib/embed";
 
 // Report our content height to a host page (e.g. Shopify) when this SPA is
 // embedded in an iframe, so the host can size the frame with no inner scrollbar.
 initEmbedAutoResize();
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    postScrollToTop();
+  }, [pathname]);
+  return null;
+}
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/coach-access" element={<CoachAccessPage />} />

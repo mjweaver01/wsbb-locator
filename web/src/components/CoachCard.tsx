@@ -73,9 +73,13 @@ export function CoachCard({
         </div>
       </div>
 
-      <p className={`coach-card__bio${!bio ? " coach-card__bio--empty" : ""}`}>
-        {bio ?? "Bio not yet added."}
-      </p>
+      {bio ?? (
+        <p
+          className={`coach-card__bio${!bio ? " coach-card__bio--empty" : ""}`}
+        >
+          Bio not yet added
+        </p>
+      )}
 
       <div className="coach-card__certs">
         {certifications.map((cert) => (

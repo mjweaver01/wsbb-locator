@@ -12,6 +12,14 @@
 const MESSAGE_NAMESPACE = "wsbb-locator";
 
 type HeightMessage = { type: "wsbb-locator:height"; height: number };
+type ScrollTopMessage = { type: "wsbb-locator:scroll-to-top" };
+
+export function postScrollToTop(): void {
+  if (typeof window === "undefined" || window.parent === window) return;
+  const message: ScrollTopMessage = { type: `${MESSAGE_NAMESPACE}:scroll-to-top` };
+  window.parent.postMessage(message, "*");
+  window.scrollTo(0, 0);
+}
 
 function measureHeight(): number {
   const doc = document.documentElement;

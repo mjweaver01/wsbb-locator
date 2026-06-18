@@ -42,9 +42,18 @@
     window.addEventListener('message', function (event) {
       if (event.origin !== allowedOrigin) return;
       var data = event.data;
-      if (!data || data.type !== 'wsbb-locator:height') return;
-      var height = parseInt(data.height, 10);
-      if (height > 0) frame.style.height = height + 'px';
+      if (!data) return;
+
+      if (data.type === 'wsbb-locator:height') {
+        var height = parseInt(data.height, 10);
+        if (height > 0) frame.style.height = height + 'px';
+        return;
+      }
+
+      if (data.type === 'wsbb-locator:scroll-to-top') {
+        var frameTop = frame.getBoundingClientRect().top + window.scrollY;
+        window.scrollTo({ top: frameTop, behavior: 'smooth' });
+      }
     });
 
     // The app posts height on load + on any layout change, but ask once after

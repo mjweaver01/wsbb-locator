@@ -142,7 +142,7 @@ async function appendManualCoaches(
 async function buildServedPayload(
   base: CoachesPayload,
 ): Promise<CoachesPayload> {
-  return appendManualCoaches(await mergeCoachOverrides(base));
+  return mergeCoachOverrides(await appendManualCoaches(base));
 }
 
 /**
