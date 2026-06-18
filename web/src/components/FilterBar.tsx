@@ -73,7 +73,7 @@ export function FilterBar({
         </div>
 
         <span className="filter-bar__count">
-          <strong>{visibleCount}</strong> / {totalCount} coaches
+          <strong>{visibleCount}</strong> / {totalCount} listings
         </span>
 
         <Link
