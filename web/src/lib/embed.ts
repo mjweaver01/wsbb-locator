@@ -22,24 +22,31 @@ export function postScrollToTop(): void {
 }
 
 function measureHeight(): number {
-  const doc = document.documentElement;
   const body = document.body;
-  // Take the largest of the usual suspects — different layouts (absolute map,
-  // flex columns) put the true content height in different places.
-  return Math.ceil(
-    Math.max(
-      doc.scrollHeight,
-      doc.offsetHeight,
-      body?.scrollHeight ?? 0,
-      body?.offsetHeight ?? 0,
-    ),
-  );
+  if (!body) return Math.ceil(document.documentElement.scrollHeight);
+  // Measure the actual bottom of the rendered content rather than
+  // documentElement/body scrollHeight. Inside an iframe the host sizes the
+  // frame to whatever height we report, which makes `100vh`-based layouts (and
+  // therefore scrollHeight) fill the frame — so scrollHeight can only ever grow
+  // and never reports that the content got shorter. The bounding-box bottom of
+  // the content reflects the true height regardless of the frame's size.
+  // `bottom` is viewport-relative; add scroll offset to get the document-space
+  // height so a scrolled frame doesn't under-report.
+  return Math.ceil(body.getBoundingClientRect().bottom + window.scrollY);
 }
 
 export function initEmbedAutoResize(): void {
   if (typeof window === "undefined") return;
   // Only meaningful inside an iframe with a different-origin (or any) parent.
   if (window.parent === window) return;
+
+  // Neutralize the `min-height: 100vh` rules (see base.css) while framed. They
+  // make the footer stick to the bottom on short standalone pages, but inside
+  // an iframe `100vh` resolves to the frame's current height, pinning the
+  // content tall and preventing it from ever shrinking back down.
+  const style = document.createElement("style");
+  style.textContent = "body, #root { min-height: 0 !important; }";
+  document.head.appendChild(style);
 
   let lastSent = -1;
   const post = (): void => {
