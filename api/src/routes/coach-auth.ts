@@ -84,7 +84,7 @@ coachAuthRoutes.post("/api/coach-auth/request", (c) =>
 
     return c.json({
       ok: true,
-      message: "If this email is eligible, a login code has been sent.",
+      message: "If this email is eligible, a login code will be sent shortly.",
       ...(debugCode ? { debugCode } : {}),
     });
   }),
@@ -181,7 +181,10 @@ coachAuthRoutes.put("/api/coach-auth/me", (c) =>
       override.lng == null &&
       (override.city || override.state)
     ) {
-      const geo = await geocodeAddress(override.city ?? "", override.state ?? "");
+      const geo = await geocodeAddress(
+        override.city ?? "",
+        override.state ?? "",
+      );
       if (geo) {
         override.lat = geo.lat;
         override.lng = geo.lng;
