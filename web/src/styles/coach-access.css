@@ -332,11 +332,13 @@
 .admin-invite__search {
   flex: 1 1 240px;
   min-width: 0;
+  box-sizing: border-box;
+  height: 34px;
   background: var(--input-bg);
   border: 1px solid var(--card-border);
   border-radius: var(--radius-sm);
   color: var(--text);
-  padding: 9px 12px;
+  padding: 0 12px;
   font-size: 13px;
 }
 
@@ -352,7 +354,9 @@
 }
 
 .admin-invite .admin-invite__bulk button {
-  padding: 8px 12px;
+  box-sizing: border-box;
+  height: 34px;
+  padding: 0 12px;
   font-size: 11px;
 }
 
@@ -499,6 +503,53 @@
 .admin-invite__master:disabled {
   opacity: 0.5;
   cursor: default;
+}
+
+.admin-invite__tier-select {
+  flex-shrink: 0;
+  align-self: center;
+  margin-right: 14px;
+  padding: 5px 28px 5px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--card-border);
+  background: var(--input-bg);
+  color: var(--muted);
+  font-family: var(--font-label);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23666' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 9px center;
+  cursor: pointer;
+  transition: border-color 0.12s ease, color 0.12s ease;
+}
+
+.admin-invite__tier-select:hover:not(:disabled) {
+  border-color: var(--card-border-hover);
+  color: var(--text);
+}
+
+.admin-invite__tier-select:focus {
+  outline: none;
+  border-color: var(--card-border-hover);
+  color: var(--text);
+}
+
+.admin-invite__tier-select:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.admin-invite__tier-filter-select {
+  box-sizing: border-box;
+  height: 34px;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 13px;
+  padding: 0 28px 0 10px;
 }
 
 .admin-invite__empty {

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import type { Coach, CoachesPayload, CoachTier } from "@/lib/types";
 import { apiFetch } from "@/lib/api";
-import { TIER_LABELS } from "@/lib/tiers";
+import { TIER_LABELS, TIER_ORDER } from "@/lib/tiers";
 import { deriveTier } from "@shared/tiers";
 
 type AdminTier = "founder" | "master" | "instructor";
@@ -41,6 +41,7 @@ export function AdminInvitePage() {
   const [coaches, setCoaches] = useState<Coach[]>([]);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [search, setSearch] = useState("");
+  const [tierFilter, setTierFilter] = useState<CoachTier | "all">("all");
   const [loadingCoaches, setLoadingCoaches] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -95,20 +96,26 @@ export function AdminInvitePage() {
     setCoaches([]);
     setSelected(new Set());
     setSearch("");
+    setTierFilter("all");
     setResult(null);
     setStatus("Signed out.");
     setError(null);
   }
 
+  const presentTiers = useMemo(
+    () => TIER_ORDER.filter((t) => coaches.some((c) => c.tier === t)),
+    [coaches],
+  );
+
   const filtered = useMemo(() => {
+    let result = coaches;
+    if (tierFilter !== "all") result = result.filter((c) => c.tier === tierFilter);
     const q = search.trim().toLowerCase();
-    if (!q) return coaches;
-    return coaches.filter(
-      (c) =>
-        c.fullName.toLowerCase().includes(q) ||
-        c.email.toLowerCase().includes(q),
+    if (q) result = result.filter(
+      (c) => c.fullName.toLowerCase().includes(q) || c.email.toLowerCase().includes(q),
     );
-  }, [coaches, search]);
+    return result;
+  }, [coaches, search, tierFilter]);
 
   function toggle(id: number) {
     setSelected((prev) => {
@@ -129,6 +136,8 @@ export function AdminInvitePage() {
 
   function clearSelection() {
     setSelected(new Set());
+    setTierFilter("all");
+    setSearch("");
   }
 
   async function sendInvites() {
@@ -286,17 +295,27 @@ export function AdminInvitePage() {
                     className="coach-access__ghost"
                     onClick={selectAllFiltered}
                   >
-                    Select all{search ? " shown" : ""}
+                    Select all{search || tierFilter !== "all" ? " shown" : ""}
                   </button>
                   <button
                     type="button"
                     className="coach-access__ghost"
                     onClick={clearSelection}
-                    disabled={selected.size === 0}
+                    disabled={selected.size === 0 && tierFilter === "all" && !search}
                   >
                     Clear
                   </button>
                 </div>
+                <select
+                  className="admin-invite__tier-select admin-invite__tier-filter-select"
+                  value={tierFilter}
+                  onChange={(e) => setTierFilter(e.target.value as CoachTier | "all")}
+                >
+                  <option value="all">All tiers</option>
+                  {presentTiers.map((t) => (
+                    <option key={t} value={t}>{TIER_LABELS[t].section}</option>
+                  ))}
+                </select>
                 <input
                   className="admin-invite__search"
                   type="search"
