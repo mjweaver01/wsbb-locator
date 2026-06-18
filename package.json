@@ -16,6 +16,10 @@
     "start": "bun run build && SERVE_STATIC=true bun run --cwd api start",
     "test": "bun run --cwd api test",
     "fetch": "bun run api/src/scripts/fetch-thinkific.ts",
+    "resync": "bun run api/src/scripts/resync-thinkific.ts",
+    "coach:add": "bun run api/src/scripts/add-manual-coach.ts",
+    "coach:location": "bun run api/src/scripts/set-coach-location.ts",
+    "db:sync": "bun run api/src/scripts/db-sync.ts",
     "format": "prettier . --write"
   },
   "devDependencies": {

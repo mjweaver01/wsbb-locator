@@ -29,6 +29,10 @@ app.use(
       connectSrc: ["'self'"],
       fontSrc: ["'self'", "data:"],
     },
+    // Allow this app to be embedded in an <iframe> on any site (e.g. a Shopify
+    // page). secureHeaders otherwise defaults X-Frame-Options to SAMEORIGIN,
+    // which blocks all cross-origin framing.
+    xFrameOptions: false,
     strictTransportSecurity: env.coachAuthCookieSecure
       ? "max-age=31536000; includeSubDomains"
       : false,

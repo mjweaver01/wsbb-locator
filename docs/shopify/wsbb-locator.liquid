@@ -1,0 +1,92 @@
+{% comment %}
+  WSBB Coach Locator — embeds the Railway-hosted SPA in an iframe and
+  auto-resizes it to the embedded content (no inner scrollbar).
+
+  Install:
+    1. Shopify admin → Online Store → Themes → ⋯ → Edit code.
+    2. Sections → Add a new section → name it "wsbb-locator". Replace the
+       generated file's contents with this file.
+    3. Open the page in the theme editor (or add `{% section 'wsbb-locator' %}`
+       to a page template / custom-liquid block) and set the iframe URL.
+
+  The default `iframe_url` points at the live Railway deployment. The matching
+  height emitter ships in the SPA (web/src/lib/embed.ts) and is on by default.
+{% endcomment %}
+
+<div class="wsbb-locator" data-wsbb-locator>
+  <iframe
+    data-wsbb-locator-frame
+    src="{{ section.settings.iframe_url }}"
+    title="{{ section.settings.iframe_title | escape }}"
+    loading="lazy"
+    style="width: 100%; height: {{ section.settings.min_height }}px; border: 0; display: block;"
+    allow="geolocation"
+    referrerpolicy="strict-origin-when-cross-origin"
+  ></iframe>
+</div>
+
+<script>
+  (function () {
+    var root = document.currentScript.previousElementSibling;
+    var frame = root.querySelector('[data-wsbb-locator-frame]');
+    if (!frame) return;
+
+    // Only accept height messages from the embedded app's own origin.
+    var allowedOrigin;
+    try {
+      allowedOrigin = new URL(frame.src).origin;
+    } catch (e) {
+      return;
+    }
+
+    window.addEventListener('message', function (event) {
+      if (event.origin !== allowedOrigin) return;
+      var data = event.data;
+      if (!data || data.type !== 'wsbb-locator:height') return;
+      var height = parseInt(data.height, 10);
+      if (height > 0) frame.style.height = height + 'px';
+    });
+
+    // The app posts height on load + on any layout change, but ask once after
+    // the frame loads in case our listener attached after its first post.
+    frame.addEventListener('load', function () {
+      frame.contentWindow.postMessage(
+        { type: 'wsbb-locator:request-height' },
+        allowedOrigin
+      );
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "WSBB Locator",
+  "settings": [
+    {
+      "type": "text",
+      "id": "iframe_url",
+      "label": "App URL",
+      "default": "https://wsbb-coaches.up.railway.app/",
+      "info": "The hosted coach-locator app to embed (must be https)."
+    },
+    {
+      "type": "text",
+      "id": "iframe_title",
+      "label": "Iframe title (accessibility)",
+      "default": "WSBB Certified Coach Locator"
+    },
+    {
+      "type": "range",
+      "id": "min_height",
+      "label": "Initial height",
+      "min": 400,
+      "max": 1600,
+      "step": 50,
+      "unit": "px",
+      "default": 900,
+      "info": "Height before the app reports its real size. Auto-resizes after load."
+    }
+  ],
+  "presets": [{ "name": "WSBB Locator" }]
+}
+{% endschema %}

@@ -8,7 +8,7 @@ export const isPostgresDb = dbMode === "postgres";
 
 let schemaInitPromise: Promise<void> | null = null;
 
-const SQLITE_SCHEMA_SQL = `
+export const SQLITE_SCHEMA_SQL = `
   CREATE TABLE IF NOT EXISTS coach_overrides (
     thinkific_user_id INTEGER PRIMARY KEY,
     bio TEXT,

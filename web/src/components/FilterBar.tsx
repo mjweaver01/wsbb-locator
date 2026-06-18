@@ -13,7 +13,10 @@ interface FilterBarProps {
 
 const TIER_BUTTONS: { value: TierFilter; label: string }[] = [
   { value: "all", label: "All" },
-  ...TIER_ORDER.map((tier) => ({ value: tier, label: TIER_LABELS[tier].short })),
+  ...TIER_ORDER.map((tier) => ({
+    value: tier,
+    label: TIER_LABELS[tier].short,
+  })),
 ];
 
 export function FilterBar({
@@ -77,7 +80,7 @@ export function FilterBar({
           to="/coach-access"
           className="filter-bar__cta filter-bar__cta--muted"
         >
-          Update Listing
+          Update Your Listing
         </Link>
 
         <a
