@@ -11,6 +11,8 @@ let schemaInitPromise: Promise<void> | null = null;
 export const SQLITE_SCHEMA_SQL = `
   CREATE TABLE IF NOT EXISTS coach_overrides (
     thinkific_user_id INTEGER PRIMARY KEY,
+    first_name TEXT,
+    last_name TEXT,
     bio TEXT,
     avatar_url TEXT,
     city TEXT,
@@ -97,6 +99,8 @@ export const SQLITE_SCHEMA_SQL = `
 const POSTGRES_SCHEMA_SQL = `
   CREATE TABLE IF NOT EXISTS coach_overrides (
     thinkific_user_id BIGINT PRIMARY KEY,
+    first_name TEXT,
+    last_name TEXT,
     bio TEXT,
     avatar_url TEXT,
     city TEXT,
@@ -188,6 +192,10 @@ const POSTGRES_SCHEMA_SQL = `
 // these bring older tables up to date.
 const POSTGRES_MIGRATIONS_SQL = `
   ALTER TABLE coach_overrides
+    ADD COLUMN IF NOT EXISTS first_name TEXT;
+  ALTER TABLE coach_overrides
+    ADD COLUMN IF NOT EXISTS last_name TEXT;
+  ALTER TABLE coach_overrides
     ADD COLUMN IF NOT EXISTS is_master BOOLEAN NOT NULL DEFAULT FALSE;
   ALTER TABLE coach_overrides
     ADD COLUMN IF NOT EXISTS is_instructor BOOLEAN NOT NULL DEFAULT FALSE;
@@ -204,6 +212,12 @@ function migrateSqlite(): void {
   const overrideCols = db
     .query<{ name: string }, []>(`PRAGMA table_info(coach_overrides)`)
     .all();
+  if (!overrideCols.some((c) => c.name === "first_name")) {
+    db.run(`ALTER TABLE coach_overrides ADD COLUMN first_name TEXT`);
+  }
+  if (!overrideCols.some((c) => c.name === "last_name")) {
+    db.run(`ALTER TABLE coach_overrides ADD COLUMN last_name TEXT`);
+  }
   if (!overrideCols.some((c) => c.name === "is_master")) {
     db.run(
       `ALTER TABLE coach_overrides ADD COLUMN is_master INTEGER NOT NULL DEFAULT 0`,

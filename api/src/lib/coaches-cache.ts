@@ -19,6 +19,8 @@ export const STATIC_FALLBACK_PATH = resolve(
 );
 
 const SAFE_OVERRIDE_KEYS = [
+  "firstName",
+  "lastName",
   "bio",
   "avatarUrl",
   "city",
@@ -81,8 +83,10 @@ async function loadStaticFallback(): Promise<CoachesPayload> {
 
 /**
  * Apply local overrides to Thinkific data. Only fields in SAFE_OVERRIDE_KEYS
- * are merged in — identity columns (id/email/name/certifications) always come
- * from Thinkific, even if a malformed override row contains them.
+ * are merged in — the remaining identity columns (id/email/certifications)
+ * always come from Thinkific, even if a malformed override row contains them.
+ * Name (first/last) is coach-editable, so it lives in SAFE_OVERRIDE_KEYS and
+ * fullName is recomputed below when overridden.
  *
  * The one exception is `tier`: an admin `isMaster` grant promotes the coach to
  * Master Instructor here. Master is honorary and never earned from courses, so
@@ -105,6 +109,11 @@ export async function mergeCoachOverrides(
       if (value !== undefined) {
         (merged as unknown as Record<string, unknown>)[key] = value;
       }
+    }
+    // fullName is derived, so recompute it whenever a coach overrode either
+    // name part — otherwise it would still show the Thinkific-sourced name.
+    if (override.firstName !== undefined || override.lastName !== undefined) {
+      merged.fullName = `${merged.firstName} ${merged.lastName}`.trim();
     }
     if (override.isFounder) merged.tier = "founder";
     else if (override.isMaster) merged.tier = "master";

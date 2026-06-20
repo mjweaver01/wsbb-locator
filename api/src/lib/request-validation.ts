@@ -78,6 +78,23 @@ const trimmedString = (field: string) =>
     z.string({ error: `${field} must be a string` }).trim().optional(),
   );
 
+// Name fields differ from bio/city: an empty value means "revert to the
+// identity (Thinkific/manual) name", so it's dropped rather than written as a
+// blank override. A provided name is capped to keep the directory tidy.
+const nameField = (field: string) =>
+  z.preprocess(
+    (value) => {
+      if (value === null) return undefined;
+      if (typeof value === "string" && value.trim() === "") return undefined;
+      return value;
+    },
+    z
+      .string({ error: `${field} must be a string` })
+      .trim()
+      .max(80, `${field} must be 80 characters or fewer`)
+      .optional(),
+  );
+
 const avatarUrlField = z.preprocess(
   nullToUndefined,
   z
@@ -111,6 +128,8 @@ const longitudeField = z.preprocess(
 // Unknown keys (e.g. identity columns like email/tier) are stripped by
 // default, so they can never sneak into an override.
 const coachOverrideSchema = z.object({
+  firstName: nameField("firstName"),
+  lastName: nameField("lastName"),
   bio: trimmedString("bio"),
   avatarUrl: avatarUrlField,
   city: trimmedString("city"),

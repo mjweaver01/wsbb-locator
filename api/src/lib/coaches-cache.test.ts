@@ -110,6 +110,32 @@ describe("mergeCoachOverrides", () => {
     expect(coach.tier).toBe("master");
   });
 
+  test("overriding a name recomputes fullName", async () => {
+    const overrides: Record<string, CoachOverride> = {
+      "1": { firstName: "Renamed", lastName: "Person" },
+    };
+
+    const merged = await mergeCoachOverrides(makePayload(), overrides);
+    const coach = merged.coaches.find((c) => c.thinkificUserId === 1)!;
+
+    expect(coach.firstName).toBe("Renamed");
+    expect(coach.lastName).toBe("Person");
+    expect(coach.fullName).toBe("Renamed Person");
+  });
+
+  test("overriding only the first name recomputes fullName with the source last name", async () => {
+    const overrides: Record<string, CoachOverride> = {
+      "1": { firstName: "Renamed" },
+    };
+
+    const merged = await mergeCoachOverrides(makePayload(), overrides);
+    const coach = merged.coaches.find((c) => c.thinkificUserId === 1)!;
+
+    expect(coach.firstName).toBe("Renamed");
+    expect(coach.lastName).toBe("Coach");
+    expect(coach.fullName).toBe("Renamed Coach");
+  });
+
   test("leaves coaches without an override untouched", async () => {
     const merged = await mergeCoachOverrides(makePayload(), {});
     const coach = merged.coaches.find((c) => c.thinkificUserId === 2)!;

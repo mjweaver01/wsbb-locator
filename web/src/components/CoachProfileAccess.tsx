@@ -1,6 +1,23 @@
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import type { MeResponse } from "@/lib/types";
 import { apiUrl } from "@/lib/api";
+
+/** First initials of a name, for the avatar placeholder (e.g. "Tom Barry" → "TB"). */
+function initialsOf(name: string): string {
+  return name
+    .split(/\s+/)
+    .map((part) => part[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
 
 interface CoachProfileAccessProps {
   showIntro?: boolean;
@@ -9,6 +26,8 @@ interface CoachProfileAccessProps {
 export function CoachProfileAccess({
   showIntro = true,
 }: CoachProfileAccessProps) {
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [avatarUrlMode, setAvatarUrlMode] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [selectedAvatarFile, setSelectedAvatarFile] = useState<File | null>(
     null,
@@ -24,6 +43,8 @@ export function CoachProfileAccess({
   const [profileSaving, setProfileSaving] = useState(false);
   const [me, setMe] = useState<MeResponse | null>(null);
 
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [bio, setBio] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [city, setCity] = useState("");
@@ -48,6 +69,8 @@ export function CoachProfileAccess({
 
   const hydrateProfile = useCallback((data: MeResponse) => {
     setMe(data);
+    setFirstName(data.coach.firstName ?? "");
+    setLastName(data.coach.lastName ?? "");
     setBio(data.coach.bio ?? "");
     setAvatarUrl(data.coach.avatarUrl ?? "");
     setCity(data.coach.city ?? "");
@@ -157,6 +180,8 @@ export function CoachProfileAccess({
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          firstName,
+          lastName,
           bio,
           avatarUrl: effectiveAvatarUrl,
           city,
@@ -210,25 +235,9 @@ export function CoachProfileAccess({
     return uploadData.me;
   }
 
-  async function uploadAvatar() {
-    if (!selectedAvatarFile) {
-      setError("Choose an image before uploading.");
-      return;
-    }
-
-    setAvatarUploading(true);
-    setError(null);
-    setRequestStatus(null);
-
-    try {
-      const updatedMe = await uploadSelectedAvatar();
-      hydrateProfile(updatedMe);
-      setRequestStatus("Avatar uploaded.");
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setAvatarUploading(false);
-    }
+  function clearSelectedAvatar() {
+    setSelectedAvatarFile(null);
+    if (avatarInputRef.current) avatarInputRef.current.value = "";
   }
 
   async function logout() {
@@ -242,6 +251,8 @@ export function CoachProfileAccess({
       setMe(null);
       setEmail("");
       setCode("");
+      setFirstName("");
+      setLastName("");
       setBio("");
       setAvatarUrl("");
       setCity("");
@@ -316,6 +327,107 @@ export function CoachProfileAccess({
               Thinkific email: <strong>{me.coach.email}</strong>
             </p>
 
+            <div className="coach-access__row">
+              <label>
+                First name
+                <input
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  maxLength={80}
+                  autoComplete="given-name"
+                />
+              </label>
+              <label>
+                Last name
+                <input
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  maxLength={80}
+                  autoComplete="family-name"
+                />
+              </label>
+            </div>
+            <div className="coach-access__avatar">
+              <div
+                className="coach-access__avatar-figure"
+                onClick={() => !avatarUrlMode && !(avatarUploading || profileSaving) && avatarInputRef.current?.click()}
+                role="button"
+                aria-label="Change profile photo"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === "Enter" && !avatarUrlMode && !(avatarUploading || profileSaving) && avatarInputRef.current?.click()}
+              >
+                {selectedAvatarPreview || avatarUrl ? (
+                  <img
+                    src={selectedAvatarPreview ?? avatarUrl}
+                    alt={`${me.coach.fullName} profile photo`}
+                    className="coach-access__avatar-img"
+                  />
+                ) : (
+                  <span
+                    className="coach-access__avatar-fallback"
+                    aria-hidden="true"
+                  >
+                    {initialsOf(`${firstName} ${lastName}`.trim() || me.coach.fullName)}
+                  </span>
+                )}
+              </div>
+              <div className="coach-access__avatar-body">
+                <span className="coach-access__avatar-title">Profile photo</span>
+                <div className="coach-access__avatar-actions">
+                  {!avatarUrlMode && (
+                    <button
+                      type="button"
+                      className="coach-access__btn-outline"
+                      onClick={() => avatarInputRef.current?.click()}
+                      disabled={avatarUploading || profileSaving}
+                    >
+                      {selectedAvatarFile || avatarUrl ? "Change photo" : "Upload photo"}
+                    </button>
+                  )}
+                  {selectedAvatarFile && !avatarUrlMode && (
+                    <button
+                      type="button"
+                      className="coach-access__avatar-remove"
+                      onClick={clearSelectedAvatar}
+                      disabled={avatarUploading || profileSaving}
+                    >
+                      Remove
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="coach-access__avatar-remove"
+                    onClick={() => setAvatarUrlMode((v) => !v)}
+                    disabled={avatarUploading || profileSaving}
+                  >
+                    {avatarUrlMode ? "Use upload" : "Use URL"}
+                  </button>
+                </div>
+                <input
+                  ref={avatarInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  className="coach-access__visually-hidden"
+                  onChange={(e) =>
+                    setSelectedAvatarFile(e.target.files?.[0] ?? null)
+                  }
+                />
+                {avatarUrlMode ? (
+                  <input
+                    type="url"
+                    placeholder="https://…"
+                    value={avatarUrl}
+                    onChange={(e) => setAvatarUrl(e.target.value)}
+                  />
+                ) : (
+                  <p className="coach-access__hint">
+                    {selectedAvatarFile
+                      ? `${selectedAvatarFile.name} — applied when you save`
+                      : "JPG, PNG, WEBP, or GIF, up to 5 MB."}
+                  </p>
+                )}
+              </div>
+            </div>
             <label>
               Bio
               <textarea
@@ -324,44 +436,6 @@ export function CoachProfileAccess({
                 rows={4}
               />
             </label>
-            <label>
-              Avatar URL
-              <input
-                value={avatarUrl}
-                onChange={(e) => setAvatarUrl(e.target.value)}
-              />
-            </label>
-            <div className="coach-access__avatar-upload">
-              {(selectedAvatarPreview || avatarUrl) && (
-                <img
-                  src={selectedAvatarPreview ?? avatarUrl}
-                  alt={`${me.coach.fullName} avatar preview`}
-                  className="coach-access__avatar-preview coach-access__avatar-upload-preview"
-                />
-              )}
-              <div className="coach-access__avatar-upload-controls">
-                <label>
-                  Upload image
-                  <input
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp,image/gif"
-                    onChange={(e) =>
-                      setSelectedAvatarFile(e.target.files?.[0] ?? null)
-                    }
-                  />
-                </label>
-                <p className="coach-access__hint">
-                  JPG, PNG, WEBP, or GIF up to 5 MB.
-                </p>
-                <button
-                  type="button"
-                  onClick={uploadAvatar}
-                  disabled={avatarUploading || !selectedAvatarFile}
-                >
-                  {avatarUploading ? "Uploading…" : "Upload avatar"}
-                </button>
-              </div>
-            </div>
             <div className="coach-access__row">
               <label>
                 City

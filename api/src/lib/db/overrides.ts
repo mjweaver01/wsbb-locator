@@ -4,7 +4,10 @@ import { requirePgPool } from "./pg";
 import { dbMode, ensureDbSchema, isPostgresDb } from "./schema";
 
 export type CoachOverride = Partial<
-  Pick<Coach, "bio" | "avatarUrl" | "city" | "state" | "lat" | "lng">
+  Pick<
+    Coach,
+    "firstName" | "lastName" | "bio" | "avatarUrl" | "city" | "state" | "lat" | "lng"
+  >
 > & {
   /** Admin-granted tier flag — only one of these should be true at a time. */
   isMaster?: boolean;
@@ -17,6 +20,8 @@ export type AdminTier = Extract<CoachTier, "founder" | "master" | "instructor">;
 
 interface CoachOverrideRow {
   thinkific_user_id: number;
+  first_name: string | null;
+  last_name: string | null;
   bio: string | null;
   avatar_url: string | null;
   city: string | null;
@@ -29,12 +34,14 @@ interface CoachOverrideRow {
   is_founder: number | boolean | null;
 }
 
-const OVERRIDE_COLUMNS = `thinkific_user_id, bio, avatar_url, city, state, lat, lng, is_master, is_instructor, is_founder`;
+const OVERRIDE_COLUMNS = `thinkific_user_id, first_name, last_name, bio, avatar_url, city, state, lat, lng, is_master, is_instructor, is_founder`;
 
 export const coachOverridesDbDriver = dbMode;
 
 function toOverride(row: CoachOverrideRow): CoachOverride {
   return {
+    ...(row.first_name !== null ? { firstName: row.first_name } : {}),
+    ...(row.last_name !== null ? { lastName: row.last_name } : {}),
     ...(row.bio !== null ? { bio: row.bio } : {}),
     ...(row.avatar_url !== null ? { avatarUrl: row.avatar_url } : {}),
     ...(row.city !== null ? { city: row.city } : {}),
@@ -117,9 +124,11 @@ export async function upsertCoachOverride(
   if (isPostgresDb) {
     await requirePgPool().query(
       `INSERT INTO coach_overrides (
-        thinkific_user_id, bio, avatar_url, city, state, lat, lng, updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+        thinkific_user_id, first_name, last_name, bio, avatar_url, city, state, lat, lng, updated_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
       ON CONFLICT(thinkific_user_id) DO UPDATE SET
+        first_name = EXCLUDED.first_name,
+        last_name  = EXCLUDED.last_name,
         bio        = EXCLUDED.bio,
         avatar_url = EXCLUDED.avatar_url,
         city       = EXCLUDED.city,
@@ -129,6 +138,8 @@ export async function upsertCoachOverride(
         updated_at = NOW()`,
       [
         thinkificUserId,
+        override.firstName ?? null,
+        override.lastName ?? null,
         override.bio ?? null,
         override.avatarUrl ?? null,
         override.city ?? null,
@@ -143,9 +154,11 @@ export async function upsertCoachOverride(
   const db = getSqliteDb();
   db.run(
     `INSERT INTO coach_overrides (
-      thinkific_user_id, bio, avatar_url, city, state, lat, lng, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+      thinkific_user_id, first_name, last_name, bio, avatar_url, city, state, lat, lng, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
     ON CONFLICT(thinkific_user_id) DO UPDATE SET
+      first_name = excluded.first_name,
+      last_name  = excluded.last_name,
       bio        = excluded.bio,
       avatar_url = excluded.avatar_url,
       city       = excluded.city,
@@ -155,6 +168,8 @@ export async function upsertCoachOverride(
       updated_at = CURRENT_TIMESTAMP`,
     [
       thinkificUserId,
+      override.firstName ?? null,
+      override.lastName ?? null,
       override.bio ?? null,
       override.avatarUrl ?? null,
       override.city ?? null,

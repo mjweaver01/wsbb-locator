@@ -77,4 +77,22 @@ describe("parseCoachOverride", () => {
     const result = parseCoachOverride({ lng: -1000 });
     expect(result.error).toBe("lng must be between -180 and 180");
   });
+
+  test("trims and keeps name fields", () => {
+    const result = parseCoachOverride({
+      firstName: "  Tom ",
+      lastName: " Barry ",
+    });
+    expect(result.override).toEqual({ firstName: "Tom", lastName: "Barry" });
+  });
+
+  test("empty name is dropped (reverts to the identity name)", () => {
+    const result = parseCoachOverride({ firstName: "   ", lastName: "" });
+    expect(result.override).toEqual({});
+  });
+
+  test("rejects a name longer than 80 characters", () => {
+    const result = parseCoachOverride({ firstName: "a".repeat(81) });
+    expect(result.error).toBe("firstName must be 80 characters or fewer");
+  });
 });
