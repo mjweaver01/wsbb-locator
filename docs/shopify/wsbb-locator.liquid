@@ -31,16 +31,13 @@
     var frame = root.querySelector('[data-wsbb-locator-frame]');
     if (!frame) return;
 
-    // Only accept height messages from the embedded app's own origin.
-    var allowedOrigin;
-    try {
-      allowedOrigin = new URL(frame.src).origin;
-    } catch (e) {
-      return;
-    }
-
+    // Only trust messages coming from this iframe's own window. Matching on
+    // event.source is more robust than comparing event.origin to frame.src:
+    // a redirect, custom domain, or trailing-slash difference shifts the
+    // posting origin and would otherwise drop every height/scroll message,
+    // leaving the frame stuck at its initial height.
     window.addEventListener('message', function (event) {
-      if (event.origin !== allowedOrigin) return;
+      if (event.source !== frame.contentWindow) return;
       var data = event.data;
       if (!data) return;
 
@@ -59,10 +56,9 @@
     // The app posts height on load + on any layout change, but ask once after
     // the frame loads in case our listener attached after its first post.
     frame.addEventListener('load', function () {
-      frame.contentWindow.postMessage(
-        { type: 'wsbb-locator:request-height' },
-        allowedOrigin
-      );
+      // Target '*' is safe here: the payload only asks the app to report its
+      // height, and the app verifies the message type before responding.
+      frame.contentWindow.postMessage({ type: 'wsbb-locator:request-height' }, '*');
     });
   })();
 </script>

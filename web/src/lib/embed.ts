@@ -6,19 +6,57 @@
 //
 // The matching listener lives in the Shopify Liquid section (see
 // docs/SHOPIFY_EMBED.md). Messages are tagged so the host can ignore unrelated
-// postMessage traffic; the host verifies event.origin, so posting to "*" here
-// only ever leaks a height integer.
+// postMessage traffic; the host only trusts messages whose event.source is this
+// iframe's window, so posting to "*" here only ever leaks a height integer.
 
 const MESSAGE_NAMESPACE = "wsbb-locator";
 
 type HeightMessage = { type: "wsbb-locator:height"; height: number };
 type ScrollTopMessage = { type: "wsbb-locator:scroll-to-top" };
 
+function isFramed(): boolean {
+  return typeof window !== "undefined" && window.parent !== window;
+}
+
 export function postScrollToTop(): void {
-  if (typeof window === "undefined" || window.parent === window) return;
+  if (!isFramed()) return;
   const message: ScrollTopMessage = { type: `${MESSAGE_NAMESPACE}:scroll-to-top` };
   window.parent.postMessage(message, "*");
   window.scrollTo(0, 0);
+}
+
+// Module-level so both the ResizeObserver and explicit callers (e.g. route
+// changes) share the same dedupe state.
+let lastSentHeight = -1;
+
+export function postHeight(force = false): void {
+  if (!isFramed()) return;
+  const height = measureHeight();
+  if (!force && height === lastSentHeight) return;
+  lastSentHeight = height;
+  const message: HeightMessage = { type: `${MESSAGE_NAMESPACE}:height`, height };
+  window.parent.postMessage(message, "*");
+}
+
+// Call when the SPA navigates to a new route. The ResizeObserver only fires
+// once as the route mounts — before the new page's avatar image, web fonts, and
+// lazy content settle — so the host frame can get stuck at the previous page's
+// height. Re-measure across the next several frames (and a couple of slower
+// timeouts) so the frame lands on the right height, then ask the host to scroll
+// the app back to the top.
+export function notifyEmbedNavigated(): void {
+  if (!isFramed()) return;
+  postScrollToTop();
+
+  let frames = 0;
+  const tick = (): void => {
+    postHeight(true);
+    if (++frames < 6) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+  // Catch slower async settles (web fonts swapping, images decoding).
+  setTimeout(() => postHeight(true), 250);
+  setTimeout(() => postHeight(true), 600);
 }
 
 function measureHeight(): number {
@@ -48,31 +86,20 @@ export function initEmbedAutoResize(): void {
   style.textContent = "body, #root { min-height: 0 !important; }";
   document.head.appendChild(style);
 
-  let lastSent = -1;
-  const post = (): void => {
-    const height = measureHeight();
-    if (height === lastSent) return;
-    lastSent = height;
-    const message: HeightMessage = {
-      type: `${MESSAGE_NAMESPACE}:height`,
-      height,
-    };
-    window.parent.postMessage(message, "*");
-  };
-
   // ResizeObserver catches layout shifts: map tiles loading, filtering the
   // coach grid, route changes, fonts settling, viewport width changes.
-  const observer = new ResizeObserver(() => post());
+  const observer = new ResizeObserver(() => postHeight());
   observer.observe(document.documentElement);
   if (document.body) observer.observe(document.body);
 
-  window.addEventListener("load", post);
+  window.addEventListener("load", () => postHeight());
 
   // Let the host pull a fresh height on demand (e.g. right after it injects the
   // iframe, before our observers have fired).
   window.addEventListener("message", (event: MessageEvent) => {
-    if (event.data?.type === `${MESSAGE_NAMESPACE}:request-height`) post();
+    if (event.data?.type === `${MESSAGE_NAMESPACE}:request-height`)
+      postHeight(true);
   });
 
-  post();
+  postHeight(true);
 }
