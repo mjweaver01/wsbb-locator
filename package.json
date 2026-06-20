@@ -20,6 +20,7 @@
     "coach:add": "bun run api/src/scripts/add-manual-coach.ts",
     "coach:location": "bun run api/src/scripts/set-coach-location.ts",
     "db:sync": "bun run api/src/scripts/db-sync.ts",
+    "db:pull": "railway run bash -c 'DATABASE_URL=\"$DATABASE_PUBLIC_URL\" bun run api/src/scripts/pull-prod-db.ts'",
     "format": "prettier . --write"
   },
   "devDependencies": {
