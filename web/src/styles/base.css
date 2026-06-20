@@ -15,12 +15,12 @@ html {
 }
 
 body {
-  min-height: 100vh;
+  min-height: var(--app-min-height, 100vh);
   background: var(--bg);
 }
 
 #root {
-  min-height: 100vh;
+  min-height: var(--app-min-height, 100vh);
 }
 
 a {

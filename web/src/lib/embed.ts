@@ -38,14 +38,18 @@ export function postHeight(force = false): void {
   window.parent.postMessage(message, "*");
 }
 
-// Call when the SPA navigates to a new route. The ResizeObserver only fires
-// once as the route mounts — before the new page's avatar image, web fonts, and
-// lazy content settle — so the host frame can get stuck at the previous page's
-// height. Re-measure across the next several frames (and a couple of slower
-// timeouts) so the frame lands on the right height, then ask the host to scroll
-// the app back to the top.
+// Call when the SPA navigates to a new route. Order matters: resize the host
+// frame to the new page BEFORE asking it to scroll. Otherwise the host starts
+// smooth-scrolling toward the (still tall) frame, then the height message
+// shrinks the document mid-animation — which clamps/cancels the scroll partway
+// and strands the host below the top of the app. The ResizeObserver also only
+// fires once as the route mounts, before the new page's avatar image and web
+// fonts settle, so we re-measure across the next several frames and re-issue
+// the scroll once the height has stabilized.
 export function notifyEmbedNavigated(): void {
   if (!isFramed()) return;
+
+  postHeight(true);
   postScrollToTop();
 
   let frames = 0;
@@ -54,8 +58,12 @@ export function notifyEmbedNavigated(): void {
     if (++frames < 6) requestAnimationFrame(tick);
   };
   requestAnimationFrame(tick);
-  // Catch slower async settles (web fonts swapping, images decoding).
-  setTimeout(() => postHeight(true), 250);
+  // Catch slower async settles (web fonts swapping, images decoding) and
+  // re-scroll once the frame has reached its final height.
+  setTimeout(() => {
+    postHeight(true);
+    postScrollToTop();
+  }, 300);
   setTimeout(() => postHeight(true), 600);
 }
 
@@ -78,13 +86,16 @@ export function initEmbedAutoResize(): void {
   // Only meaningful inside an iframe with a different-origin (or any) parent.
   if (window.parent === window) return;
 
-  // Neutralize the `min-height: 100vh` rules (see base.css) while framed. They
-  // make the footer stick to the bottom on short standalone pages, but inside
-  // an iframe `100vh` resolves to the frame's current height, pinning the
-  // content tall and preventing it from ever shrinking back down.
-  const style = document.createElement("style");
-  style.textContent = "body, #root { min-height: 0 !important; }";
-  document.head.appendChild(style);
+  // Collapse the viewport-height min-heights while framed. On a standalone page
+  // they make content fill the viewport, but inside an iframe `vh` resolves to
+  // the frame's *current* height — pinning content as tall as the frame so it
+  // can never shrink back down (measureHeight reads that pinned bottom and the
+  // frame stays stuck). Every such rule reads these tokens (see tokens.css), so
+  // flipping them here neutralizes all of them at once, including any future
+  // full-height wrapper that uses the same tokens.
+  const root = document.documentElement;
+  root.style.setProperty("--app-min-height", "auto");
+  root.style.setProperty("--section-min-height", "auto");
 
   // ResizeObserver catches layout shifts: map tiles loading, filtering the
   // coach grid, route changes, fonts settling, viewport width changes.

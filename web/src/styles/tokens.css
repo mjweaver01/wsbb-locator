@@ -20,6 +20,13 @@
   --radius-md: 8px;
   --radius-lg: 12px;
 
+  /* Viewport-height min-heights, driven through variables so the embed code can
+     flip them to `auto` when the app runs inside an iframe (see lib/embed.ts).
+     Otherwise `vh` resolves to the frame's current height and pins content tall,
+     stopping the auto-resize from ever shrinking the frame. */
+  --app-min-height: 100vh;
+  --section-min-height: 60vh;
+
   --tier-founder-color: #d4a017;
   --tier-founder-border: #3d2c08;
   --tier-founder-bg: #1a1208;

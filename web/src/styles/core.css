@@ -933,7 +933,7 @@
 
 .loading-state,
 .error-state {
-  min-height: 60vh;
+  min-height: var(--section-min-height, 60vh);
   display: flex;
   align-items: center;
   justify-content: center;
