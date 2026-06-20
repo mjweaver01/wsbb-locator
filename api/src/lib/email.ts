@@ -1,3 +1,4 @@
+import nodemailer from "nodemailer";
 import { env } from "./env";
 
 export interface SendCoachLoginCodeInput {
@@ -41,6 +42,29 @@ function escapeHtml(value: string): string {
     .replace(/'/g, "&#39;");
 }
 
+function createSmtpTransport() {
+  if (!env.smtpHost) throw new Error("SMTP_HOST is required when EMAIL_PROVIDER=smtp");
+  if (!env.emailFrom) throw new Error("EMAIL_FROM is required when EMAIL_PROVIDER=smtp");
+  return nodemailer.createTransport({
+    host: env.smtpHost,
+    port: env.smtpPort,
+    secure: env.smtpSecure,
+    auth: env.smtpUser && env.smtpPass
+      ? { user: env.smtpUser, pass: env.smtpPass }
+      : undefined,
+  });
+}
+
+async function sendWithSmtp(opts: {
+  to: string;
+  subject: string;
+  text: string;
+  html: string;
+}): Promise<void> {
+  const transport = createSmtpTransport();
+  await transport.sendMail({ from: env.emailFrom, ...opts });
+}
+
 async function sendWithResend({
   toEmail,
   code,
@@ -81,9 +105,19 @@ export async function sendCoachLoginCode(
     return;
   }
 
+  if (env.emailProvider === "smtp") {
+    await sendWithSmtp({
+      to: input.toEmail,
+      subject: "Your WSBB coach login code",
+      text: `Your WSBB coach login code is ${input.code}. It expires in ${env.coachAuthCodeTtlMinutes} minutes.`,
+      html: `<p>Your WSBB coach login code is <strong>${escapeHtml(input.code)}</strong>.</p><p>This code expires in ${env.coachAuthCodeTtlMinutes} minutes.</p>`,
+    });
+    return;
+  }
+
   if (env.emailProvider !== "console") {
     throw new Error(
-      `Unsupported EMAIL_PROVIDER "${env.emailProvider}". Use "console" or "resend".`,
+      `Unsupported EMAIL_PROVIDER "${env.emailProvider}". Use "console", "resend", or "smtp".`,
     );
   }
 
@@ -163,9 +197,15 @@ export async function sendCoachInvite(
     return;
   }
 
+  if (env.emailProvider === "smtp") {
+    const { subject, text, html } = buildInviteEmail(input);
+    await sendWithSmtp({ to: input.toEmail, subject, text, html });
+    return;
+  }
+
   if (env.emailProvider !== "console") {
     throw new Error(
-      `Unsupported EMAIL_PROVIDER "${env.emailProvider}". Use "console" or "resend".`,
+      `Unsupported EMAIL_PROVIDER "${env.emailProvider}". Use "console", "resend", or "smtp".`,
     );
   }
 
