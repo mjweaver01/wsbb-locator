@@ -64,6 +64,17 @@ function readFirstEnv(names: string[]): string | undefined {
   return undefined;
 }
 
+/**
+ * The AWS SDK validates the region as a DNS hostname component and throws if it
+ * contains illegal characters (e.g. a stray "$" from an unexpanded variable
+ * reference like "$iad"). Strip anything that isn't a valid region character
+ * and fall back to "auto" if nothing usable remains.
+ */
+function sanitizeS3Region(value: string | undefined): string {
+  const cleaned = (value ?? "").toLowerCase().replace(/[^a-z0-9-]/g, "");
+  return cleaned || "auto";
+}
+
 const configuredCorsOrigins = readCsvEnv("CORS_ALLOWED_ORIGINS");
 const isProduction = readEnv("NODE_ENV") === "production";
 
@@ -90,8 +101,9 @@ export const env = {
     "SECRET_ACCESS_KEY",
   ]),
   coachAvatarS3Bucket: readFirstEnv(["AWS_S3_BUCKET_NAME", "BUCKET"]),
-  coachAvatarS3Region:
-    readFirstEnv(["AWS_DEFAULT_REGION", "AWS_REGION", "REGION"]) ?? "auto",
+  coachAvatarS3Region: sanitizeS3Region(
+    readFirstEnv(["AWS_DEFAULT_REGION", "AWS_REGION", "REGION"]),
+  ),
   coachAvatarS3UrlStyle: (
     readFirstEnv(["AWS_S3_URL_STYLE"]) ?? "virtual"
   ).toLowerCase(),
