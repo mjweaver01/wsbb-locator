@@ -137,13 +137,28 @@ export function CoachProfileAccess({
     setRequestStatus(null);
 
     try {
+      // If the coach picked an image but never clicked "Upload avatar", saving
+      // should still persist it. Upload first and use the resulting URL in the
+      // PUT below — otherwise the PUT (which replaces the whole override) would
+      // clobber the freshly uploaded avatar with the stale avatarUrl in state.
+      let effectiveAvatarUrl = avatarUrl;
+      if (selectedAvatarFile) {
+        setAvatarUploading(true);
+        try {
+          const uploadedMe = await uploadSelectedAvatar();
+          effectiveAvatarUrl = uploadedMe.coach.avatarUrl ?? avatarUrl;
+        } finally {
+          setAvatarUploading(false);
+        }
+      }
+
       const response = await fetch(apiUrl("/api/coach-auth/me"), {
         method: "PUT",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           bio,
-          avatarUrl,
+          avatarUrl: effectiveAvatarUrl,
           city,
           state,
         }),
@@ -164,6 +179,37 @@ export function CoachProfileAccess({
     }
   }
 
+  // Upload the currently selected avatar file and return the refreshed profile.
+  // Shared by the explicit "Upload avatar" button and the save flow so a pending
+  // image is persisted either way.
+  async function uploadSelectedAvatar(): Promise<MeResponse> {
+    if (!selectedAvatarFile) {
+      throw new Error("Choose an image before uploading.");
+    }
+
+    const body = new FormData();
+    body.append("avatar", selectedAvatarFile);
+
+    const uploadResponse = await fetch(apiUrl("/api/coach-auth/me/avatar"), {
+      method: "POST",
+      credentials: "include",
+      body,
+    });
+    const uploadData = (await uploadResponse.json()) as {
+      error?: string;
+      avatarUrl?: string;
+      me?: MeResponse | null;
+    };
+    if (!uploadResponse.ok) {
+      throw new Error(uploadData.error ?? "Could not upload avatar");
+    }
+    if (!uploadData.me) {
+      throw new Error("Uploaded image, but profile is not available");
+    }
+
+    return uploadData.me;
+  }
+
   async function uploadAvatar() {
     if (!selectedAvatarFile) {
       setError("Choose an image before uploading.");
@@ -175,30 +221,8 @@ export function CoachProfileAccess({
     setRequestStatus(null);
 
     try {
-      const body = new FormData();
-      body.append("avatar", selectedAvatarFile);
-
-      const uploadResponse = await fetch(
-        apiUrl("/api/coach-auth/me/avatar"),
-        {
-          method: "POST",
-          credentials: "include",
-          body,
-        },
-      );
-      const uploadData = (await uploadResponse.json()) as {
-        error?: string;
-        avatarUrl?: string;
-        me?: MeResponse | null;
-      };
-      if (!uploadResponse.ok) {
-        throw new Error(uploadData.error ?? "Could not upload avatar");
-      }
-      if (!uploadData.me) {
-        throw new Error("Uploaded image, but profile is not available");
-      }
-
-      hydrateProfile(uploadData.me);
+      const updatedMe = await uploadSelectedAvatar();
+      hydrateProfile(updatedMe);
       setRequestStatus("Avatar uploaded.");
     } catch (err) {
       setError((err as Error).message);
