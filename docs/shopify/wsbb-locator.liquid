@@ -48,8 +48,9 @@
       }
 
       if (data.type === 'wsbb-locator:scroll-to-top') {
-        var frameTop = frame.getBoundingClientRect().top + window.scrollY;
-        window.scrollTo({ top: frameTop, behavior: 'smooth' });
+        // Scroll the whole host page to the very top, not just to the top of
+        // the iframe — the app asks for this when it navigates to a new route.
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     });
 
